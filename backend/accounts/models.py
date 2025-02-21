@@ -13,9 +13,6 @@ from api.models import TimeStampedModel
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     username = models.CharField(max_length=200, unique=True, blank=True, null=True)
     email = models.EmailField(_("email address"), unique=True, blank=True, null=True)
-    phone_number = models.CharField(max_length=15, unique=True)
-    first_name = models.CharField(max_length=140)
-    last_name = models.CharField(max_length=140)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_verified = models.BooleanField(default=False)
