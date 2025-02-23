@@ -1,0 +1,67 @@
+from rest_framework import serializers
+
+from django.core import exceptions
+from django.contrib.auth.password_validation import (
+    validate_password
+)
+
+from .models import User
+from api.utils import is_valid_email
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=200)
+    password2 = serializers.CharField(max_length=200)
+
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'password',
+            'password2'
+        ]
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'password2': {'write_only': True}
+        }
+
+    def validate(self, attrs):
+        password = attrs.get('password')
+        password2 = attrs.get('password2')
+
+        if password != password2:
+            raise serializers.ValidationError({
+                'password': "Passwords don't match"
+            })
+        
+        # Remove password2 as it's not to be stored
+        del attrs['password2']
+
+        user = User(**attrs)
+        errors = dict()
+
+        try:
+            validate_password(user=user, password=password)
+        except exceptions.ValidationError as e:
+            errors['password'] = list(e.messages)
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return super().validate(attrs)
+
+    def validate_email(self, value):
+        email = value.strip().lower()
+
+        if not is_valid_email(email):
+            raise serializers.ValidationError("Email is invalid. Please enter a valif email address.")
+
+        if User.objects.filter(
+            email__iexact=email
+        ).exists():
+            raise serializers.ValidationError(f"An account with this email address already exists. Please use another one.")
+        else:
+            return email
+        
+    def create(self, validated_data):
+        return super().create(validated_data)
+    
