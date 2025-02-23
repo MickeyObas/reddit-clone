@@ -1,7 +1,8 @@
 from django.db import models
 
+from api.models import TimeStampedModel
 
-class Community(models.Model):
+class Community(TimeStampedModel):
     class Type(models.TextChoices):
         PUBLIC = "PUBLIC" , "Public"
         RESTRICTED = "RESTRICTED", "Restricted"

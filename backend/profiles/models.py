@@ -1,7 +1,9 @@
 from django.db import models
 
+from api.models import TimeStampedModel
 
-class Profile(models.Model):
+
+class Profile(TimeStampedModel):
     user = models.OneToOneField('accounts.User', on_delete=models.CASCADE)
     display_name = models.CharField(max_length=50, blank=True, null=True)
     about_description = models.TextField()

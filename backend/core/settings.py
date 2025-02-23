@@ -26,8 +26,10 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'api.apps.ApiConfig',
     'comments.apps.CommentsConfig',
+    'communities.apps.CommunitiesConfig',
     'posts.apps.PostsConfig',
     'profiles.apps.ProfilesConfig',
+    'tags.apps.TagsConfig',
     'votes.apps.VotesConfig',
 
     # External apps 
