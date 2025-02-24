@@ -8,7 +8,7 @@ class VerificationCodeModelAdmin(admin.ModelAdmin):
         'email',
         'code',
         'is_expired',
-        'expiry_time'
+        'is_approved'
     ]
 
 admin.site.register(VerificationCode, VerificationCodeModelAdmin)

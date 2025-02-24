@@ -1,11 +1,13 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.utils import timezone
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
+from django.contrib.auth import authenticate
 
 from .models import VerificationCode
 from accounts.serializers import UserRegistrationSerializer
@@ -105,6 +107,7 @@ def verify_email(request):
             return Response({'error': 'Code expired'}, status=status.HTTP_400_BAD_REQUEST)
         
         code_entry.is_approved = True
+        code_entry.save()
 
         return Response({'message': 'Email verification successful'})
     
@@ -119,3 +122,27 @@ def register(request):
         user = serializer.save()
         return Response({'message': 'User registration successful'}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def login(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    if not username:
+        return Response({'error': 'Please enter your email or username'})
+
+    if not password:
+        return Response({'error': 'Please enter your password'})
+
+    user = authenticate(username=username, password=password)
+
+    if user is not None:
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+

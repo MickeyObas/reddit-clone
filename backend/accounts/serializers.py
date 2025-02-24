@@ -7,6 +7,7 @@ from django.contrib.auth.password_validation import (
 
 from .models import User
 from api.utils import is_valid_email
+from api.models import VerificationCode
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=200)
@@ -53,15 +54,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         email = value.strip().lower()
 
         if not is_valid_email(email):
-            raise serializers.ValidationError("Email is invalid. Please enter a valif email address.")
+            raise serializers.ValidationError("Email is invalid. Please enter a valid email address.")
 
         if User.objects.filter(
             email__iexact=email
         ).exists():
             raise serializers.ValidationError(f"An account with this email address already exists. Please use another one.")
-        else:
-            return email
         
+        email_verified = VerificationCode.objects.filter(
+            email=email,
+            is_approved=True
+        ).exists()
+
+        if not email_verified:
+            raise serializers.ValidationError('Cannot create account. User email is not verified.')
+
+        return email
+        
+     
     def create(self, validated_data):
-        return super().create(validated_data)
+        user = User.objects.create_user(**validated_data)
+        return user
     
