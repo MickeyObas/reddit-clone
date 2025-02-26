@@ -1,10 +1,14 @@
 @import "./reset.css";
 @import "tailwindcss";
 
+@theme{
+  --color-deep-red: #d93900;
+}
 
 :root{
   --dark: #0e1113;
   --warm-white: #e5e7eb;
+  --reddit-red: #d93900;
 }
 
 body{
