@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { JSX, useState } from "react";
 import { validateEmail } from "../utils";
 
 // Assets
@@ -8,7 +8,7 @@ import googleIcon from '../assets/icons/google.png';
 import checkIcon from '../assets/icons/check.png';
 
 
-function Register() {
+const Register = (): JSX.Element => {
 
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -94,7 +94,6 @@ function Register() {
         <button
           disabled={!isValid} 
           className={`mt-auto text-center w-full bg-[#2A3236] py-3.5 rounded-full ${!isValid ? 'opacity-40' : 'bg-deep-red'}`}
-          onClick={() => console.log("Clicked")}
           >Continue</button>
       </div>
     </div>

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { JSX, useState } from "react";
 
 
-const EmailVerify = () => {
+const EmailVerify = (): JSX.Element => {
 
   const [code, setCode] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -9,24 +9,23 @@ const EmailVerify = () => {
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
 
-    // I want only numbers - but don't want to use input:number
     if (/^\d*$/.test(inputValue)) {
       setCode(inputValue);
     }
   };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleBlur = ()=> {
     if(code && code.length < 6){
       setError(`Please lengthen this text to 6 characters or more (You are currently using ${code.length} character${code.length > 1 ? 's' : ''}).`);
     }
   }
   
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleFocus = () => {
     setError("");
   }
 
   return (
-    <div onBlur={handleBlur} className="container mx-auto p-5 h-screen">
+    <div className="container mx-auto p-5 h-screen">
     <div className="flex flex-col h-full">
       <div className="pt-10">
         <h1 className="text-2xl font-bold text-center mb-4">Verify your email</h1>
@@ -54,7 +53,6 @@ const EmailVerify = () => {
         <button
           disabled={!(code.length === 6)} 
           className={`mt-auto text-center w-full bg-[#2A3236] py-3.5 rounded-full ${!(code.length === 6) ? 'opacity-40' : 'bg-deep-red'}`}
-          onClick={() => console.log("Clicked")}
           >Continue</button>
       </div> 
     </div>

@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { JSX, useState } from "react";
 
 // Assets
 import exclamationIcon from '../assets/icons/exclamation-mark.png';
 import checkIcon from '../assets/icons/check.png';
 
+// Types
+type ErrorState = {
+  username: string,
+  password: string
+}
 
-const RegisterNoVerify = () => {
+
+const RegisterNoVerify = (): JSX.Element => {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState({
+  const [error, setError] = useState<ErrorState>({
     username: '',
     password: ''
   });

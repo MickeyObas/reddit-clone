@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { validateEmail } from "../utils";
+import { JSX, useState } from "react";
 
 // Assets
 import exclamationIcon from '../assets/icons/exclamation-mark.png';
@@ -7,13 +6,19 @@ import appleIcon from '../assets/icons/apple-logo.png';
 import googleIcon from '../assets/icons/google.png';
 import checkIcon from '../assets/icons/check.png';
 
+// Types
+type ErrorState = {
+  emailOrUsername: string,
+  password: string
+}
 
-function Login() {
 
-  const [emailorUsername, setEmailOrUsername] = useState('');
+const Login = (): JSX.Element => {
+
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState({
-    emailorUsername: '',
+  const [error, setError] = useState<ErrorState>({
+    emailOrUsername: '',
     password: ''
   });
   const [isEmailOrUsernameValid, setIsEmailOrUsernameValid] = useState(false);
@@ -27,16 +32,16 @@ function Login() {
   };
 
   const handleEmailOrUsernameBlur = () => {
-    if(!emailorUsername){
-      setError((prev) => ({...prev, emailorUsername: "Please fill out this field."}));
+    if(!emailOrUsername){
+      setError((prev) => ({...prev, emailOrUsername: "Please fill out this field."}));
     }else{
-      setError((prev) => ({...prev, emailorUsername: ""}));
+      setError((prev) => ({...prev, emailOrUsername: ""}));
     };
-    setIsEmailOrUsernameValid(!!emailorUsername);
+    setIsEmailOrUsernameValid(!!emailOrUsername);
   }
 
   const handlEmailorUsernameFocus = () => {
-    setError((prev) => ({...prev, emailorUsername: ""}));
+    setError((prev) => ({...prev, emailOrUsername: ""}));
   }
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,18 +89,18 @@ function Login() {
               <input 
                 type="email"
                 placeholder="Email *" 
-                className={`peer bg-[#2A3236] p-4 border-0 outline-0 rounded-2xl w-full focus:outline-2 focus:outline-white ${error.emailorUsername && 'outline-deep-red outline-2'}`}
-                value={emailorUsername}
+                className={`peer bg-[#2A3236] p-4 border-0 outline-0 rounded-2xl w-full focus:outline-2 focus:outline-white ${error.emailOrUsername && 'outline-deep-red outline-2'}`}
+                value={emailOrUsername}
                 onChange={handleEmailChange}
                 onBlur={handleEmailOrUsernameBlur}
                 onFocus={handlEmailorUsernameFocus}
                 />
-                {error.emailorUsername ? (<img 
+                {error.emailOrUsername ? (<img 
                   src={exclamationIcon}
                   alt="Error icon"
                   className="absolute w-5 top-1/2 -translate-y-1/2 right-[1rem]"
                   />) : (
-                    emailorUsername && (
+                    emailOrUsername && (
                       <img 
                         src={checkIcon}
                         alt="Check icon"
@@ -104,7 +109,7 @@ function Login() {
                     )
                   )}
             </div>
-              <p className="min-h-5 mt-1 ps-3 text-xs text-deep-red">{error.emailorUsername}</p>
+              <p className="min-h-5 mt-1 ps-3 text-xs text-deep-red">{error.emailOrUsername}</p>
           </div>
           <div>
             <div className="relative w-full">
