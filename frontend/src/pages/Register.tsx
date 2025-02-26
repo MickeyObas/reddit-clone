@@ -1,4 +1,5 @@
 import { JSX, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { validateEmail } from "../utils";
 
 // Assets
@@ -6,9 +7,12 @@ import exclamationIcon from '../assets/icons/exclamation-mark.png';
 import appleIcon from '../assets/icons/apple-logo.png';
 import googleIcon from '../assets/icons/google.png';
 import checkIcon from '../assets/icons/check.png';
+import { BACKEND_URL } from "../config";
 
 
 const Register = (): JSX.Element => {
+
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -35,6 +39,35 @@ const Register = (): JSX.Element => {
 
   const handleFocus = () => {
     setError("");
+  };
+
+  const handleClick = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    console.log(e);
+
+    // Send confirmation code
+    try{
+      const response = await fetch(`${BACKEND_URL}/send-confirmation-email/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email
+        })
+      });
+
+      if(!response.ok){
+        const error = await response.json();
+        console.log(error);
+      }else{
+        const data = await response.json();
+        console.log("Email sent", data);
+        navigate('/email-verify')
+      }
+
+    }catch(err){
+      console.error(err);
+    }
   }
 
   return (
@@ -92,6 +125,7 @@ const Register = (): JSX.Element => {
           <p className="mt-2.5">Already a redditor? <a className="text-blue-400" href="/login">Log in</a></p>
         </div>
         <button
+        onClick={handleClick}
           disabled={!isValid} 
           className={`mt-auto text-center w-full bg-[#2A3236] py-3.5 rounded-full ${!isValid ? 'opacity-40' : 'bg-deep-red'}`}
           >Continue</button>

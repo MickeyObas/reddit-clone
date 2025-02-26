@@ -1,10 +1,13 @@
-import { JSX, useState } from "react";
+import { JSX, useEffect, useState } from "react";
+import { BACKEND_URL } from "../config";
 
 
 const EmailVerify = (): JSX.Element => {
 
   const [code, setCode] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [codeResendCountdown, setCodeResendCountdown] = useState(59);
+  const [canResend, setCanResend] = useState(false);
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -22,7 +25,51 @@ const EmailVerify = (): JSX.Element => {
   
   const handleFocus = () => {
     setError("");
+  };
+
+  const handleResendClick = async () => {
+    if(!canResend){
+      return;
+    };
+
+    // Resend confirmation email
+    try{
+      const response = await fetch(`${BACKEND_URL}/resend-confirmation-email/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: "mickeygoke@gmail.com"
+        })
+      });
+
+      if(!response.ok){
+        const error = await response.json();
+        console.log(error);
+      }else{
+        const data = await response.json();
+        console.log("Email sent again", data);
+        setCanResend(false);
+        setCodeResendCountdown(59);
+      }
+    }catch(err){
+      console.error(err);
+    }
   }
+
+  useEffect(() => {
+    if(codeResendCountdown <= 0){
+      setCanResend(true);
+      return;
+    };
+
+    const timer = setInterval(() => {
+      setCodeResendCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [codeResendCountdown])
 
   return (
     <div className="container mx-auto p-5 h-screen">
@@ -49,7 +96,14 @@ const EmailVerify = (): JSX.Element => {
         </div>
       </div>
       <div className="mt-auto">
-        <p className="text-center mb-8">Didn't get an email?<a className="ms-4 underline font-medium">Resend</a></p>
+        <p className="text-center mb-8">Didn't get an email?{
+          !canResend 
+          ? <span className="ms-3 text-xs opacity-50">Resend in {codeResendCountdown} seconds</span>
+          : <span 
+            className="ms-4 underline font-medium"
+            onClick={handleResendClick}
+            >Resend</span>}
+        </p>
         <button
           disabled={!(code.length === 6)} 
           className={`mt-auto text-center w-full bg-[#2A3236] py-3.5 rounded-full ${!(code.length === 6) ? 'opacity-40' : 'bg-deep-red'}`}

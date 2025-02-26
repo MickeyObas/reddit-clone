@@ -21,6 +21,7 @@ from .utils import (
 @api_view(['POST'])
 def send_confirmation_code_to_email(request):
     email = request.data.get('email')
+    print(email)
 
     if not email:
         return Response({'error': "Email address is required"}, status=status.HTTP_400_BAD_REQUEST)

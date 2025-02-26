@@ -8,7 +8,7 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-^=y5mbfsxok1=g0izd$w82yza#@+fedx7sf7vx83@-04s(%yx='
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = True
 
@@ -34,10 +34,12 @@ INSTALLED_APPS = [
 
     # External apps 
     'rest_framework',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -145,3 +147,10 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
+
+
+# CORS
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
