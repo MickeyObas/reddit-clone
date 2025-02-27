@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.contrib.auth import authenticate
 
 from .models import VerificationCode
+from accounts.models import User
 from accounts.serializers import UserRegistrationSerializer
 
 from .utils import (
@@ -21,7 +22,6 @@ from .utils import (
 @api_view(['POST'])
 def send_confirmation_code_to_email(request):
     email = request.data.get('email')
-    print(email)
 
     if not email:
         return Response({'error': "Email address is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -30,6 +30,11 @@ def send_confirmation_code_to_email(request):
 
     if not is_valid_email(email):
         return Response({'error': 'Invalid email address'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if User.objects.filter(
+        email=email
+    ).exists():
+        return Response({'error': 'A user with this email address aleady exists.'}, status=400)
     
     code = generate_6_digit_code()
 
@@ -132,10 +137,17 @@ def login(request):
     password = request.data.get('password')
 
     if not username:
-        return Response({'error': 'Please enter your email or username'})
+        return Response({'error': 'Please enter your email or username'}, status=400)
 
     if not password:
-        return Response({'error': 'Please enter your password'})
+        return Response({'error': 'Please enter your password'}, status=400)
+    
+    username = username.strip()
+
+    # NOTE: Checks if User is attempting login with email or username
+    # TODO: Prevent Users from using '@' in usernames, or this'll break lmao
+    if '@' in username:
+        username=username.lower()
 
     user = authenticate(username=username, password=password)
 

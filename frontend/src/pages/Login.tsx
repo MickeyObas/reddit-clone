@@ -2,11 +2,11 @@ import { JSX, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Assets
-import exclamationIcon from '../assets/icons/exclamation-mark.png';
 import appleIcon from '../assets/icons/apple-logo.png';
 import googleIcon from '../assets/icons/google.png';
-import checkIcon from '../assets/icons/check.png';
 import { BACKEND_URL } from "../config";
+import { FormInput } from "../components/FormInput";
+import { Button } from "../components/Button";
 
 // Types
 type ErrorState = {
@@ -31,7 +31,7 @@ const Login = (): JSX.Element => {
 
   const isFormValid = isEmailOrUsernameValid && isPasswordValid;
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEmailOrUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmailOrUsername(e.target.value);
     setIsEmailOrUsernameValid(!!e.target.value);
   };
@@ -106,7 +106,7 @@ const Login = (): JSX.Element => {
           <h1 className="text-2xl font-bold text-center">Log In</h1>
           <p className="text-center my-3">By continuing, you agree to our <span className="text-blue-400">User Agreement</span> and acknowledge that you understand the <span className="text-blue-400">Privacy Policy</span>.</p>
           <div className="flex flex-col mt-4 gap-y-2">
-            <div className="relative flex items-center p-2 rounded-full bg-white color text-slate-800">
+            <div className="relative flex items-center p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
               <div className="w-5 h-5 bg-red-400 rounded-full"></div>
               <p className="ms-3">Continue as Michael</p>
               <img
@@ -114,7 +114,7 @@ const Login = (): JSX.Element => {
                 src={googleIcon} 
                 alt="Google Icon" />
             </div>
-            <div className="flex items-center p-2 rounded-full bg-white color text-slate-800">
+            <div className="flex items-center p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
               <img 
                 className="w-[17px] h-[17px]"
                 src={appleIcon}
@@ -125,79 +125,39 @@ const Login = (): JSX.Element => {
           </div>
           <div className="divider my-3">OR</div>
           <p className="min-h-5 mt-1 ps-3 text-xs text-deep-red">{error.general}</p>
-          <div className="mb-1">
-            <div className="relative w-full">
-              <input 
-                type="email"
-                placeholder="Email *" 
-                className={`peer bg-[#2A3236] p-4 border-0 outline-0 rounded-2xl w-full focus:outline-2 focus:outline-white ${error.emailOrUsername && 'outline-deep-red outline-2'}`}
-                value={emailOrUsername}
-                onChange={handleEmailChange}
-                onBlur={handleEmailOrUsernameBlur}
-                onFocus={handlEmailorUsernameFocus}
-                />
-                {error.emailOrUsername ? (<img 
-                  src={exclamationIcon}
-                  alt="Error icon"
-                  className="absolute w-5 top-1/2 -translate-y-1/2 right-[1rem]"
-                  />) : (
-                    emailOrUsername && (
-                      <img 
-                        src={checkIcon}
-                        alt="Check icon"
-                        className="peer-focus:hidden absolute w-5 top-1/2 -translate-y-1/2 right-[1rem] opacity-60"
-                      />
-                    )
-                  )}
-            </div>
-              <p className="min-h-5 mt-1 ps-3 text-xs text-deep-red">{error.emailOrUsername}</p>
-          </div>
-          <div>
-            <div className="relative w-full">
-              <input 
-                type="password"
-                placeholder="Password *" 
-                className={`peer bg-[#2A3236] p-4 border-0 outline-0 rounded-2xl w-full focus:outline-2 focus:outline-white ${error.password && 'outline-deep-red outline-2'}`}
-                value={password}
-                onChange={handlePasswordChange}
-                onBlur={handlePasswordBlur}
-                onFocus={handlePasswordFocus}
-                />
-                {error.password ? (<img 
-                  src={exclamationIcon}
-                  alt="Error icon"
-                  className="absolute w-5 top-1/2 -translate-y-1/2 right-[1rem]"
-                  />) : (
-                    password && (
-                      <img 
-                        src={checkIcon}
-                        alt="Check icon"
-                        className="peer-focus:hidden absolute w-5 top-1/2 -translate-y-1/2 right-[1rem] opacity-60"
-                      />
-                    )
-                  )}
-            </div>
-              <p className="min-h-5 mt-1 ps-3 text-xs text-deep-red">{error.password}</p>
-          </div>
+          <FormInput
+            containerClassName="mb-1"
+            type="email"
+            placeholder="Email or Username *"
+            value={emailOrUsername}
+            error={error.emailOrUsername}
+            isValid={isEmailOrUsernameValid}
+            onChange={handleEmailOrUsernameChange}
+            onBlur={handleEmailOrUsernameBlur}
+            onFocus={handlEmailorUsernameFocus}
+          />
+          <FormInput 
+            type="password"
+            placeholder="Password *"
+            value={password}
+            error={error.password}
+            isValid={isPasswordValid}
+            onChange={handlePasswordChange}
+            onBlur={handlePasswordBlur}
+            onFocus={handlePasswordFocus}
+          />
           <p className="mt-2.5">New to Reddit? <a className="text-blue-400" href="/register">Sign Up</a></p>
         </div>
-        <button
-          disabled={(!isFormValid)} 
-          className={`mt-auto text-center w-full bg-[#2A3236] py-3.5 rounded-full ${(!isFormValid) ? 'opacity-40' : 'bg-deep-red'}`}
+        <Button 
           onClick={handleContinue}
-          >Continue</button>
+          disabled={!isFormValid}
+          isValid={isFormValid}
+          label="Continue"
+          className="mt-auto"
+        />
       </div>
     </div>
   )
 }
 
 export default Login;
-
-/* 
-else if(!email.includes("@")){
-  setError((prev) => ({...prev, email: `Please include an '@' in the email address. '${email}' is missing an '@'.`}));
-}else if(email[-1] === '@'){
-  setError((prev) => ({...prev, email: `Please enter a part following '@'. '${email}' is incomplete.`}));
-}else if(!validateEmail(email)){
-  setError((prev) => ({...prev, email: "Please enter a valid email address."}));
-}*/
