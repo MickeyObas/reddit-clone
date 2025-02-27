@@ -1,4 +1,5 @@
 import { JSX, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Assets
 import exclamationIcon from '../assets/icons/exclamation-mark.png';
@@ -16,6 +17,7 @@ type ErrorState = {
 
 
 const Login = (): JSX.Element => {
+  const navigate = useNavigate();
 
   const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -86,6 +88,11 @@ const Login = (): JSX.Element => {
       }else{
         const data = await response.json();
         console.log("Login successful!");
+        // Store credentials 
+        localStorage.setItem('accessToken', data.access);
+        localStorage.setItem('refreshToken', data.refresh);
+        navigate('/');
+        
       }
     }catch(err){
       console.error(err);

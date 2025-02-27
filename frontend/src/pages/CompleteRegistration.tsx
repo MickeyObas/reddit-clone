@@ -1,13 +1,12 @@
-import { JSX, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { validateEmail } from "../utils";
+import { BACKEND_URL } from "../config";
 
 // Assets
 import exclamationIcon from '../assets/icons/exclamation-mark.png';
 import checkIcon from '../assets/icons/check.png';
 
-import { BACKEND_URL } from "../config";
-import { useAuth } from "../contexts/AuthContext";
 
 type ErrorState = {
   email: string,
@@ -16,9 +15,8 @@ type ErrorState = {
 }
 
 
-const RegisterTwo = (): JSX.Element => {
+const CompleteRegistration: React.FC = () => {
   const navigate = useNavigate();
-  const { setIsRegistered } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password1, setPassword1] = useState('');
@@ -128,8 +126,8 @@ const RegisterTwo = (): JSX.Element => {
         const data = await response.json();
         console.log(data);
         alert("Registration complete!");
-        // navigate('/')
-        setIsRegistered(true);
+        navigate('/login')
+        // setIsRegistered(true);
       }
 
     }catch(err){
@@ -238,4 +236,4 @@ const RegisterTwo = (): JSX.Element => {
   )
 }
 
-export default RegisterTwo;
+export default CompleteRegistration;

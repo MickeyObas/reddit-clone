@@ -1,14 +1,12 @@
-import { JSX, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useEffect, useState } from "react";
 import { BACKEND_URL } from "../config";
 
-import { useAuth } from "../contexts/AuthContext";
+interface VerifyEmailProps{
+  email: string,
+  setStep: (step: number) => void
+}
 
-
-const EmailVerify = (): JSX.Element => {
-  const navigate = useNavigate();
-  const { setIsVerified } = useAuth();
+const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
 
   const [code, setCode] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -46,7 +44,7 @@ const EmailVerify = (): JSX.Element => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: "mickeygoke@gmail.com"
+          email
         })
       });
 
@@ -72,8 +70,8 @@ const EmailVerify = (): JSX.Element => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: "mickeygoke@gmail.com",
-          code: code
+          email,
+          code
         })
       });
 
@@ -84,8 +82,7 @@ const EmailVerify = (): JSX.Element => {
       }else{
         const data = await response.json();
         console.log("Verification successful", data);
-        // navigate('/register-2/')
-        setIsVerified(true);
+        setStep(3);
       }
 
     }catch(err){
@@ -152,4 +149,4 @@ const EmailVerify = (): JSX.Element => {
   )
 }
 
-export default EmailVerify;
+export default VerifyEmail;

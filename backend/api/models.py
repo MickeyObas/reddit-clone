@@ -21,7 +21,7 @@ class VerificationCode(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if not self.expiry_time:
-            self.expiry_time = timezone.now() + timezone.timedelta(minutes=10)
+            self.expiry_time = timezone.now() + timezone.timedelta(minutes=3)
         super().save(*args, **kwargs)
 
     def is_expired(self):

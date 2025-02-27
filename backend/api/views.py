@@ -102,7 +102,8 @@ def verify_email(request):
     try:
         code_entry = VerificationCode.objects.get(
             email=email,
-            code=user_code
+            code=user_code,
+            is_approved=False
         )
         if timezone.now() > code_entry.expiry_time:
             return Response({'error': 'Code expired'}, status=status.HTTP_400_BAD_REQUEST)

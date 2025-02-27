@@ -1,35 +1,29 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { ProtectedRoutes } from "../utils";
 
 // Pages
 import Register from "../pages/Register";
 import Login from "../pages/Login";
-import EmailVerify from "../pages/EmailVerify";
-import RegisterNoVerify from "../pages/RegisterNoVerify";
-import RegisterTwo from "../pages/RegisterTwo";
+import Home from "../pages/Home";
 
 
 const AppRoutes = () => {
-  const { isVerified, isRegistered } = useAuth();
-  
 
   return (
+
     <Routes>
+
+      {/* Public Routes */}
       <Route path="/register" element={<Register />} />
-      <Route 
-        path="/email-verify" 
-        element={isVerified 
-          ? isRegistered
-            ? <Navigate to={'/login/'} />
-            : <RegisterTwo />
-          : <EmailVerify/>}
-      />
-      <Route 
-        path="/register-2" 
-        element={isVerified ? <RegisterTwo /> : <Navigate to={'/register/'}/>} 
-      />
       <Route path="/login" element={<Login />} />
-      <Route path="/register-no-verify" element={<RegisterNoVerify />} />
+
+      {/* Private Routes */}
+      <Route element={<ProtectedRoutes />}>
+        <Route path="/">
+          <Route index path="" element={<Home />} />
+        </Route>
+      </Route>
+  
     </Routes>
   )
 };
