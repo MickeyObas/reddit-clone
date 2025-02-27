@@ -5,9 +5,11 @@ import exclamationIcon from '../assets/icons/exclamation-mark.png';
 import appleIcon from '../assets/icons/apple-logo.png';
 import googleIcon from '../assets/icons/google.png';
 import checkIcon from '../assets/icons/check.png';
+import { BACKEND_URL } from "../config";
 
 // Types
 type ErrorState = {
+  general: string,
   emailOrUsername: string,
   password: string
 }
@@ -18,6 +20,7 @@ const Login = (): JSX.Element => {
   const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<ErrorState>({
+    general: '',
     emailOrUsername: '',
     password: ''
   });
@@ -59,6 +62,36 @@ const Login = (): JSX.Element => {
     setError((prev) => ({...prev, password: ''}));
   };
 
+  const handleContinue = async () => {
+    // Clear general error
+    setError((prev) => ({...prev, general: ''}))
+
+    // Resend confirmation email
+    try{
+      const response = await fetch(`${BACKEND_URL}/token/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: emailOrUsername,
+          password: password
+        })
+      });
+
+      if(!response.ok){
+        const error = await response.json();
+        setError((prev) => ({...prev, general: error.error}))
+        console.log(error);
+      }else{
+        const data = await response.json();
+        console.log("Login successful!");
+      }
+    }catch(err){
+      console.error(err);
+    }
+  }
+
   return (
     <div className="container mx-auto p-5 h-screen">
       <div className="flex flex-col h-full">
@@ -84,6 +117,7 @@ const Login = (): JSX.Element => {
             </div>
           </div>
           <div className="divider my-3">OR</div>
+          <p className="min-h-5 mt-1 ps-3 text-xs text-deep-red">{error.general}</p>
           <div className="mb-1">
             <div className="relative w-full">
               <input 
@@ -143,7 +177,7 @@ const Login = (): JSX.Element => {
         <button
           disabled={(!isFormValid)} 
           className={`mt-auto text-center w-full bg-[#2A3236] py-3.5 rounded-full ${(!isFormValid) ? 'opacity-40' : 'bg-deep-red'}`}
-          onClick={() => console.log("Clicked")}
+          onClick={handleContinue}
           >Continue</button>
       </div>
     </div>

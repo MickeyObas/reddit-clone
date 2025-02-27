@@ -14,6 +14,7 @@ const Register = (): JSX.Element => {
 
   const navigate = useNavigate();
 
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isValid, setIsValid] = useState(false);

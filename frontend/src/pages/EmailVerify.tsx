@@ -1,8 +1,14 @@
 import { JSX, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { BACKEND_URL } from "../config";
+
+import { useAuth } from "../contexts/AuthContext";
 
 
 const EmailVerify = (): JSX.Element => {
+  const navigate = useNavigate();
+  const { setIsVerified } = useAuth();
 
   const [code, setCode] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -58,6 +64,35 @@ const EmailVerify = (): JSX.Element => {
     }
   }
 
+  const handleContinueClick = async () => {
+    try{
+      const response = await fetch(`${BACKEND_URL}/verify-email/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: "mickeygoke@gmail.com",
+          code: code
+        })
+      });
+
+      if(!response.ok){
+        const error = await response.json();
+        setError(error.error);
+        console.log(error);
+      }else{
+        const data = await response.json();
+        console.log("Verification successful", data);
+        // navigate('/register-2/')
+        setIsVerified(true);
+      }
+
+    }catch(err){
+      console.error(err);
+    }
+  }
+
   useEffect(() => {
     if(codeResendCountdown <= 0){
       setCanResend(true);
@@ -90,6 +125,8 @@ const EmailVerify = (): JSX.Element => {
               onChange={handleCodeChange}
               onBlur={handleBlur}
               onFocus={handleFocus}
+              autoComplete="verificaion-code"
+              name="verificaion-code"
               />
           </div>
             <p className="min-h-5 mt-1 ps-3 text-xs text-deep-red">{error}</p>
@@ -105,6 +142,7 @@ const EmailVerify = (): JSX.Element => {
             >Resend</span>}
         </p>
         <button
+          onClick={handleContinueClick}
           disabled={!(code.length === 6)} 
           className={`mt-auto text-center w-full bg-[#2A3236] py-3.5 rounded-full ${!(code.length === 6) ? 'opacity-40' : 'bg-deep-red'}`}
           >Continue</button>
