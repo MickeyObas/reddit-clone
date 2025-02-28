@@ -142,13 +142,9 @@ def login(request):
     if not password:
         return Response({'error': 'Please enter your password'}, status=400)
     
-    username = username.strip()
-
-    # NOTE: Checks if User is attempting login with email or username
-    # TODO: Prevent Users from using '@' in usernames, or this'll break lmao
-    if '@' in username:
-        username=username.lower()
-
+    # TODO: Forbid Users from using '@' in usernames or custom backend'll break lmao
+    
+    username = username.strip().lower()
     user = authenticate(username=username, password=password)
 
     if user is not None:
