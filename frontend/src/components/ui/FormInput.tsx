@@ -1,5 +1,5 @@
-import exclamationIcon from '../assets/icons/exclamation-mark.png';
-import checkIcon from '../assets/icons/check.png';
+import exclamationIcon from '../../assets/icons/exclamation-mark.png';
+import checkIcon from '../../assets/icons/check.png';
 
 interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string,

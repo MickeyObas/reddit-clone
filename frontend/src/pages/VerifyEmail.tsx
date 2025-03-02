@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "../config";
-import { FormInput } from "../components/FormInput";
-import { Button } from "../components/Button";
+import { FormInput } from "../components/ui/FormInput";
+import { Button } from "../components/ui/Button";
 
 interface VerifyEmailProps{
   email: string,

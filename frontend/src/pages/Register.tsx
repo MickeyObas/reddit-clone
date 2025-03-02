@@ -9,8 +9,8 @@ import VerifyEmail from "./VerifyEmail";
 import CompleteRegistration from "./CompleteRegistration";
 
 // Components
-import { Button } from "../components/Button";
-import { FormInput } from "../components/FormInput";
+import { Button } from "../components/ui/Button";
+import { FormInput } from "../components/ui/FormInput";
 
 
 const Register: React.FC = () => {

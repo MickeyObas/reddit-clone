@@ -4,8 +4,8 @@ import { validateEmail } from "../utils";
 import { BACKEND_URL } from "../config";
 
 // Assets
-import { FormInput } from "../components/FormInput";
-import { Button } from "../components/Button";
+import { FormInput } from "../components/ui/FormInput";
+import { Button } from "../components/ui/Button";
 
 
 type ErrorState = {

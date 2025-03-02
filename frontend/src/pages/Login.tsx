@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 import appleIcon from '../assets/icons/apple-logo.png';
 import googleIcon from '../assets/icons/google.png';
 import { BACKEND_URL } from "../config";
-import { FormInput } from "../components/FormInput";
-import { Button } from "../components/Button";
+import { FormInput } from "../components/ui/FormInput";
+import { Button } from "../components/ui/Button";
 
 // Types
 type ErrorState = {
