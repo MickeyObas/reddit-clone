@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect} from 'react';
 
+import redditIcon from '../assets/icons/reddit.png';
+import dotIcon from '../assets/icons/dot.png';
 import communityIcon from '../assets/icons/community.png';
 import { ChevronDown } from 'lucide-react';
 import { CircleAlert } from 'lucide-react';
@@ -9,7 +11,8 @@ import checkIcon from '../assets/icons/check.png';
 
 type ErrorState = {
   title: string,
-  link: string
+  link: string,
+  content: string
 }
 
 const communities = ["React", "Django", "Next.js", "Node.js", "Python", "JavaScript", "React", "Django", "Next.js", "Node.js", "Python", "JavaScript"];
@@ -18,11 +21,13 @@ const CreatePost = () => {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [community, setCommunity] = useState('');
   const [link, setLink] = useState('');
   const [selectedLink, setSelectedLink] = useState<'TEXT' | 'IMAGE' | 'LINK'>('TEXT')
   const [error, setError] = useState<ErrorState>({
     title: '',
-    link: ''
+    link: '',
+    content: ''
   })
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(true);
   const [search, setSearch] = useState('');
@@ -79,8 +84,24 @@ const CreatePost = () => {
     }
   }
 
+  const handleContentBlur =  (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    if(!content){
+      setError((prev) => ({...prev, content: 'Please fill out this field.'}))
+    }else{
+      setError((prev) => ({...prev, content: ''}))
+    }
+  }
+
   const handleCommunityClick = () => {
 
+  }
+
+  const handleCreatePostClick = () => {
+    const post = {
+      title,
+      content
+    };
+    console.log(post);
   }
 
   // Effects
@@ -96,6 +117,8 @@ const CreatePost = () => {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
 
   }, [])
+
+  const isValid = title && content;
 
   return (
     <div className="grid grid-cols-1 py-5 px-4 gap-y-5">
@@ -145,10 +168,25 @@ const CreatePost = () => {
           )}
           </div>
           <ul 
-            className='absolute top-[50px] left-[30px] z-10 flex flex-col gap-y-4 bg-white w-[60vw] p-4 shadow-2xl max-h-[75vw] overflow-y-auto rounded-lg'
+            className='absolute top-[50px] left-[30px] z-10 flex flex-col gap-y-4 bg-white w-[68vw] p-4 shadow-2xl max-h-[75vw] overflow-y-auto rounded-lg'
             >
             {filteredCommunities.map((community, idx) => (
-              <li key={idx}>{community}</li>
+              <li 
+                key={idx}
+                className='flex items-center py-0.5'
+                >
+                  <div className='w-8 h-8'>
+                    <img src={redditIcon} alt="" className='w-full h-full'/>
+                  </div>
+                  <div className='flex flex-col ms-2'>
+                    <span className='font-medium'>My Community</span>
+                    <div className='flex items-center text-xs text-slate-500'>
+                      <span className=''>999,999 Members</span>
+                      <img className='w-2 h-2 mx-0.5 mt-0.5' src={dotIcon} alt="" />
+                      <span>Subscribed</span>
+                    </div>
+                  </div>
+                </li>
             ))}
           </ul>
         </div>
@@ -212,13 +250,28 @@ const CreatePost = () => {
       >Add flairs and tags</button>
 
       {selectedLink === 'TEXT' && (
-        <textarea 
-        ref={textAreaRef}
-        value={content}
-        onChange={handleContentChange}
-        className='border border-gray-300 px-3 py-3 rounded-2xl resize-none overflow-hidden focus:outline-slate-400'
-        placeholder='Body'
-        rows={3}></textarea>
+        <div>
+          <textarea 
+          ref={textAreaRef}
+          value={content}
+          onChange={handleContentChange}
+          onBlur={handleContentBlur}
+          className='w-full border border-gray-300 px-3 py-3 rounded-2xl resize-none overflow-hidden focus:outline-slate-400'
+          placeholder='Body'
+          rows={3}></textarea>
+          <div className='flex justify-between text-xs px-3 mt-1 min-h-5'>
+          {error.content && (
+            <div className='error flex items-center'>
+            <CircleAlert 
+              size={18}
+              color='red'
+            />
+            <span className='ms-1'>Please fill out this field. Content is required.</span>
+          </div>
+          )}
+          </div>
+        </div>
+
       )}
 
       {selectedLink === 'IMAGE' && (
@@ -274,10 +327,13 @@ const CreatePost = () => {
       
         <div className="flex flex-row-reverse gap-4">
           <button
-          className='text-xs font-medium w-fit bg-gray-white py-3 px-3 rounded-full'
+          onClick={handleCreatePostClick}
+          className={`text-[13px] font-medium w-fit py-3 px-4 rounded-full ${!isValid ? 'bg-gray-white text-gray-400' : 'bg-blue-800 text-white'}`}
+          disabled={!isValid}
           >Post</button>
           <button
-          className='text-xs font-medium w-fit bg-gray-white py-3 px-3 rounded-full'
+          className={`text-[13px] font-medium w-fit py-3 px-4 rounded-full ${!isValid ? 'bg-gray-white text-gray-400' : 'bg-blue-800 text-white'}`}
+          disabled={!isValid}
           >Save Draft</button>
         </div>
     </div>
