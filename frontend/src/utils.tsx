@@ -16,3 +16,10 @@ export function ProtectedRoutes(){
         <Navigate to='/login' state={{ from: location }} replace />
     )
 }
+
+export const isObjectEmpty = (obj: object | null | undefined) => {
+  if(!obj){
+    return true;
+  }
+  return Array.from(Object.keys(obj)).length === 0;
+}

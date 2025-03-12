@@ -5,13 +5,17 @@ import dotIcon from '../assets/icons/dot.png';
 import communityIcon from '../assets/icons/community.png';
 import exclamationIcon from '../assets/icons/exclamation-mark.png';
 import checkIcon from '../assets/icons/check.png';
-import { ChevronDown, CircleAlert, CloudUpload } from 'lucide-react';
+import { ChevronDown, CircleAlert } from 'lucide-react';
+import DragAndDropUpload from '../components/ui/DragAndDropUpload';
 
 type Post = {
   title: string,
   link: string,
   content: string,
-  community: string
+  community: null | undefined | {
+    id: string,
+    title: string
+  }
 }
 
 type ErrorState = {
@@ -20,14 +24,39 @@ type ErrorState = {
   content: string
 }
 
-const communities = ["React", "Django", "Next.js", "Node.js", "Python", "JavaScript", "React", "Django", "Next.js", "Node.js", "Python", "JavaScript"];
+const communities = [
+  {
+    id: '1',
+    title: "React"
+  },
+  {
+    id: '2',
+    title: "Javascript"
+  },
+  {
+    id: '3',
+    title: "Python"
+  },
+  {
+    id: '4',
+    title: "C++"
+  },
+  {
+    id: '5',
+    title: "Clojure"
+  },
+  {
+    id: '6',
+    title: "How to train a dragon"
+  },
+]
 
 const CreatePost = () => {
   const [post, setPost] = useState<Post>({
     title: '',
     link: '',
     content: '',
-    community: ''
+    community: null
   }) 
 
   const [selectedLink, setSelectedLink] = useState<'TEXT' | 'IMAGE' | 'LINK'>('TEXT')
@@ -38,10 +67,14 @@ const CreatePost = () => {
   })
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [selectedCommunityId, setSelectedCommunityId] = useState('');
+  const selectedCommunity = communities.find((community) => community.id.toString() === selectedCommunityId);
 
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const filteredCommunities = communities.filter((community) => community.toLowerCase().includes(search.toLowerCase()))
+  const filteredCommunities = communities.filter((community) => community.title.toLowerCase().includes(search.toLowerCase()))
 
 
   // Handlers
@@ -64,12 +97,24 @@ const CreatePost = () => {
     setError((prev) => ({...prev, [field]: value ? '' : 'Please enter a value for this field. It is required.'}))
   }
 
-  const handleCommunityClick = () => {
-
+  const handleCommunityClick = (communityId: string | number) => {
+    setSelectedCommunityId(communityId.toString());
+    const selectedCommunity = communities.find((community) => community.id.toString() === communityId.toString());
+    setIsSearchDropdownOpen(false);
+    setPost((prev) => ({...prev, community: selectedCommunity}))
   }
 
   const handleCreatePostClick = () => {
     console.log(post);
+  }
+
+  const handleAddMediaClick = (e: React.MouseEvent) => {
+    fileInputRef.current?.click();
+  }
+
+  const handleUploadComplete = (files: File[]) => {
+    console.log("Upload complete!");
+    console.log(files);
   }
 
   // Effects
@@ -86,7 +131,7 @@ const CreatePost = () => {
 
   }, [])
 
-  const isValid = post.title && post.content;
+  const isValid = selectedCommunityId !== "" && post.title.trim() !== "" && post.content.trim() !== "";
 
   return (
     <div className="grid grid-cols-1 py-5 px-4 gap-y-5">
@@ -102,7 +147,11 @@ const CreatePost = () => {
           onClick={() => setIsSearchDropdownOpen(true)}
           >
           <img src={communityIcon} alt="" className='w-10 h-10'/>
+          {selectedCommunityId ? (
+            <span>{"r/" + selectedCommunity?.title}</span>
+          ) : (
           <span>Select a community</span>
+          )}
           <ChevronDown size={17} strokeWidth={2.5}/>
         </div>
       ) : (
@@ -136,10 +185,11 @@ const CreatePost = () => {
           )} */}
           </div>
           <ul 
-            className='absolute top-[50px] left-[30px] z-10 flex flex-col gap-y-4 bg-white w-[68vw] p-4 shadow-2xl max-h-[75vw] overflow-y-auto rounded-lg'
+            className='absolute top-[62px] left-[30px] z-10 flex flex-col gap-y-4 bg-white w-[68vw] p-4 shadow-[0_0_10px_2px_rgba(0,0,0,0.2)] max-h-[75vw] overflow-y-auto rounded-lg'
             >
             {filteredCommunities.map((community, idx) => (
-              <li 
+              <li
+                onClick={() => handleCommunityClick(community.id)} 
                 key={idx}
                 className='flex items-center py-0.5'
                 >
@@ -147,7 +197,7 @@ const CreatePost = () => {
                     <img src={redditIcon} alt="" className='w-full h-full'/>
                   </div>
                   <div className='flex flex-col ms-2'>
-                    <span className='font-medium'>{community}</span>
+                    <span className='font-medium'>{"r/" + community.title}</span>
                     <div className='flex items-center text-xs text-slate-500'>
                       <span className=''>999,999 Members</span>
                       <img className='w-2 h-2 mx-0.5 mt-0.5' src={dotIcon} alt="" />
@@ -245,14 +295,9 @@ const CreatePost = () => {
       )}
 
       {selectedLink === 'IMAGE' && (
-        <div className='border border-dashed border-gray-300 flex items-center justify-center py-6 rounded-2xl'>
-          <div className='flex items-center justify-center gap-2'>
-            <span>Drag and Drop or upload media</span>
-            <span className='bg-gray-white p-1.5 rounded-full flex items-center justify-center'>
-              <CloudUpload size={18}/>
-            </span>
-          </div>
-        </div>
+        <DragAndDropUpload
+          onUploadComplete={handleUploadComplete}
+        />
       )}
 
       {selectedLink === 'LINK' && (

@@ -6,10 +6,6 @@ import downVote from '../assets/icons/downvote.png';
 import caretDownIcon from '../assets/icons/caret-down.png';
 import columnsIcon from '../assets/icons/columns.png';
 
-// Components
-import { useEffect, useState } from 'react';
-
-
 const Home: React.FC = () => {
 
   return (
