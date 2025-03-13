@@ -76,7 +76,6 @@ const CreatePost = () => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const filteredCommunities = communities.filter((community) => community.title.toLowerCase().includes(search.toLowerCase()))
 
-
   // Handlers
   const handlePostInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if(e.target.name === 'title' && e.target.value.length > 300){

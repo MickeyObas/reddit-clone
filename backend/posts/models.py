@@ -22,8 +22,9 @@ class PostMedia(TimeStampedModel):
         LINK = "LINK", "Link"
 
     post = models.ForeignKey('Post', on_delete=models.CASCADE)
-    type = models.CharField(max_length=5, default=MEDIA_TYPES.IMAGE)
+    type = models.CharField(max_length=5, default=MEDIA_TYPES.IMAGE, blank=True)
+    file = models.FileField(upload_to='post_media/')
     url = models.URLField()
 
     def __str__(self):
-        return self.type
+        return f"Post-{self.post.id} ({self.type})"
