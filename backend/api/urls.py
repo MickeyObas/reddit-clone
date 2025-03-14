@@ -12,5 +12,6 @@ urlpatterns = [
     path('token/', views.login),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('posts/', include('posts.urls'))
+    path('posts/', include('posts.urls')),
+    path('communities/', include('communities.urls'))
 ]

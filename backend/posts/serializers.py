@@ -26,6 +26,12 @@ class PostSerializer(serializers.ModelSerializer):
             'body', 
         ]
     
+    def validate_community(self, community):
+        user = self.context.get('request').user
+        if user.id not in community.members.values_list('id', flat=True):
+            raise serializers.ValidationError('You are not a member of this community.')
+        return community
+
     def create(self, validated_data):
         media_files = self.context['request'].FILES.getlist('media')
         post = Post.objects.create(**validated_data)
@@ -43,7 +49,6 @@ class PostSerializer(serializers.ModelSerializer):
                 post=post,
                 type=media_type,
                 file=media_file,
-                url=media_file.temporary_file_path()
             )
 
         return post

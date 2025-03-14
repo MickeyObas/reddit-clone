@@ -3,7 +3,6 @@ from django.db import models
 from api.models import TimeStampedModel
 
 
-
 class Post(TimeStampedModel):
     owner = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     community = models.ForeignKey('communities.Community', on_delete=models.CASCADE)
