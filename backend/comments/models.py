@@ -3,6 +3,7 @@ from django.db import models
 from api.models import TimeStampedModel
 
 class Comment(TimeStampedModel):
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='replies')
     owner = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     post = models.ForeignKey('posts.Post', on_delete=models.CASCADE)
     body = models.TextField()

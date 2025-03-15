@@ -13,5 +13,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path('posts/', include('posts.urls')),
-    path('communities/', include('communities.urls'))
+    path('communities/', include('communities.urls')),
+    path('votes/', include('votes.urls')),
+    path('comments/', include('comments.urls'))
 ]

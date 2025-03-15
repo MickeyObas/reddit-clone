@@ -9,13 +9,21 @@ class Vote(TimeStampedModel):
     ]
 
     owner = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
-    post = models.ForeignKey('posts.Post', on_delete=models.CASCADE)
-    comment = models.ForeignKey('comments.Comment', on_delete=models.CASCADE)
+    post = models.ForeignKey('posts.Post', on_delete=models.CASCADE, blank=True, null=True)
+    comment = models.ForeignKey('comments.Comment', on_delete=models.CASCADE, blank=True, null=True)
     type = models.SmallIntegerField(choices=VOTE_TYPE)
 
     class Meta:
         # Enforce either post/comment
-        unique_together = ['owner', 'post', 'comment']
+        unique_together = ['owner', 'post']
+
+    @property
+    def get_vote_type_name(self):
+        types = {}
+        for type in Vote.VOTE_TYPE:
+            types[type[0]] = type[1]
+        print(types)
+        return types[self.type]
 
     def __str__(self):
-        return f"{self.owner} -> {self.type.get_type_display()}"
+        return f"{self.owner} -> {self.post.id} -> {self.get_vote_type_name}"

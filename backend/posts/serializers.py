@@ -24,6 +24,7 @@ class PostSerializer(serializers.ModelSerializer):
             'community',
             'title',
             'body', 
+            'vote_count'
         ]
     
     def validate_community(self, community):
