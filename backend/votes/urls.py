@@ -4,5 +4,5 @@ from . import views
 
 
 urlpatterns = [
-    path('vote', views.post_vote)
+    path('vote', views.vote)
 ]

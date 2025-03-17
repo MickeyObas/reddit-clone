@@ -11,7 +11,11 @@ from django.contrib.auth import authenticate
 
 from .models import VerificationCode
 from accounts.models import User
-from accounts.serializers import UserRegistrationSerializer
+from accounts.serializers import (
+    UserRegistrationSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer
+)
 
 from .utils import (
     is_valid_email,
@@ -156,3 +160,20 @@ def login(request):
     else:
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
+
+@api_view(['POST'])
+def password_reset_request(request):
+    serializer = PasswordResetRequestSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.send_reset_email()
+        return Response({'message': 'A password reset link has been sent to your email.'})
+    return Response(serializer.errors, status=400)
+
+
+@api_view(['POST'])
+def password_reset_confirm(request):
+    serializer = PasswordResetConfirmSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'message': 'Password has been reset successfully.'})
+    return Response(serializer.errors, status=400)

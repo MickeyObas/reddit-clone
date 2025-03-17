@@ -9,7 +9,7 @@ from comments.models import Comment
 
 
 @api_view(['POST'])
-def post_vote(request):
+def vote(request):
     try:
         obj = request.query_params.get('obj')  
         user_id = request.query_params.get('user_id')  

@@ -21,9 +21,11 @@ class EmailOrUsernameModelBackend(ModelBackend):
                 return None
         else:
             try:
-                user = User.objects.get(username=username)
+                user = User.objects.get(username__iexact=username)
             except User.DoesNotExist:
                 return None
+
+
 
         # Check password
         if user and user.check_password(password):

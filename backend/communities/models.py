@@ -16,15 +16,10 @@ class Community(TimeStampedModel):
     description = models.TextField(blank=False, null=False)
     avatar = models.ImageField(upload_to='community-icons/', blank=True, null=True)
     banner = models.ImageField(upload_to='community-banners/', blank=True, null=True)
-    rules = models.JSONField(default=list)
+    rules = models.JSONField(default=list, blank=True)
 
     class Meta:
         verbose_name_plural = "Communities"
-
-    def save(self, *args, **kwargs):
-        if not self.pk or not self.name.startswith('r/'):
-            self.name = "r/" + self.name
-        return super().save(*args, **kwargs)
     
     @property
     def member_count(self):
