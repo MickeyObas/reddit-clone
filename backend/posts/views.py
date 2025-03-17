@@ -8,7 +8,8 @@ from .models import (
 )
 from communities.models import Community
 from .serializers import (
-    PostSerializer
+    PostSerializer,
+    PostDisplaySerializer
 )
 
 
@@ -19,6 +20,7 @@ def post_list_or_create(request):
         posts = Post.objects.all()
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status=200)
+    
     elif request.method == 'POST':
         data = request.data
         print(data)
@@ -27,7 +29,6 @@ def post_list_or_create(request):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
-
 
 
 @api_view(['GET', 'PATCH', 'DELETE'])
@@ -69,7 +70,7 @@ def user_post_feed(request):
         community__in=user_communities
     ).order_by('-created_at')
 
-    serializer = PostSerializer(posts, many=True)
+    serializer = PostDisplaySerializer(posts, many=True)
 
     return Response(serializer.data)
 

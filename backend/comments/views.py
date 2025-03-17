@@ -16,13 +16,38 @@ def all_comments(request):
     return Response(serializer.data)
 
 
+@api_view(['GET', 'PATCH', 'DELETE'])
+def comment_detail_update_delete(request, pk):
+    try:
+        comment = Comment.objects.get(id=pk)
+
+        if request.method == 'GET':
+            serializer = CommentSerializer(comment)
+            return Response(serializer.data)
+        
+        elif request.method == 'PATCH':
+            serializer = CommentSerializer(comment, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=400)
+        
+        elif request.method == 'DELETE':
+            comment.delete()
+            return Response(status=204)
+        
+    except Comment.DoesNotExist:
+        return Response({'error': 'Comment does not exist.'}, status=404)
+
+
 @api_view(['GET', 'POST'])
+@parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def comment_list_or_create(request, pk):
     try:
         post = Post.objects.get(id=pk)
 
         if request.method == 'GET':
-            comments = Comment.objects.all()
+            comments = post.comment_set.all()
             serializer = CommentSerializer(comments, many=True)
             return Response(serializer.data)
         

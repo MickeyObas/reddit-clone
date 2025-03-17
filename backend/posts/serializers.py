@@ -4,7 +4,9 @@ from .models import (
     Post,
     PostMedia
 )
-
+from comments.models import Comment
+from accounts.serializers import UserSerializer
+from comments.serializers import CommentSerializer
 
 class PostMediaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,6 +17,11 @@ class PostMediaSerializer(serializers.ModelSerializer):
         ]
 
 class PostSerializer(serializers.ModelSerializer):
+    media = serializers.SerializerMethodField()
+    owner = UserSerializer()
+    comments = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
+    community = serializers.CharField(source='community.name')
 
     class Meta:
         model = Post
@@ -24,7 +31,10 @@ class PostSerializer(serializers.ModelSerializer):
             'community',
             'title',
             'body', 
-            'vote_count'
+            'media',
+            'comments',
+            'vote_count',
+            'comment_count'
         ]
     
     def validate_community(self, community):
@@ -32,6 +42,26 @@ class PostSerializer(serializers.ModelSerializer):
         if user.id not in community.members.values_list('id', flat=True):
             raise serializers.ValidationError('You are not a member of this community.')
         return community
+
+    def get_media(self, obj):
+        media_files = obj.postmedia_set.all()
+        if media_files:
+            return [media_file.file.name for media_file in media_files]
+        return None
+    
+    def get_comments(self, obj):
+        comments = Comment.objects.filter(
+            post=obj,
+            parent__isnull=True
+        )
+        return CommentSerializer(comments, many=True).data
+    
+    def get_comment_count(self, obj):
+        return Comment.objects.filter(
+            post=obj,
+            parent__isnull=True
+            ).count()
+        
 
     def create(self, validated_data):
         media_files = self.context['request'].FILES.getlist('media')
@@ -53,3 +83,34 @@ class PostSerializer(serializers.ModelSerializer):
             )
 
         return post
+    
+
+class PostDisplaySerializer(serializers.ModelSerializer):
+
+    comment_count = serializers.SerializerMethodField()
+    thumbnail = serializers.SerializerMethodField()
+    community = serializers.CharField(source='community.name')
+
+    class Meta:
+        model = Post
+        fields = [
+            'id',
+            'community',
+            'title',
+            'vote_count',
+            'comment_count',
+            'thumbnail',
+            'created_at'
+        ]
+
+    def get_comment_count(self, obj):
+        return Comment.objects.filter(
+            post=obj,
+            parent__isnull=True
+            ).count()
+    
+    def get_thumbnail(self, obj):
+        media_files = obj.postmedia_set.all()
+        if media_files:
+            return media_files[0].file.name
+        return None

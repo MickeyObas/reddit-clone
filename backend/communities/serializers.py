@@ -25,3 +25,4 @@ class CommunitySerializer(serializers.ModelSerializer):
         validated_data['owner'] = user
 
         return super().create(validated_data)
+    

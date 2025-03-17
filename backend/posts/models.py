@@ -10,6 +10,9 @@ class Post(TimeStampedModel):
     body = models.TextField()
     flairs = models.ManyToManyField('tags.Flair')
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return f"{self.owner} - {self.title}"
     
@@ -17,6 +20,7 @@ class Post(TimeStampedModel):
     def vote_count(self):
         count_query = self.vote_set.all().aggregate(vote_count=models.Sum('type', default=0))
         return count_query['vote_count']
+
 
 class PostMedia(TimeStampedModel):
     class MEDIA_TYPES(models.TextChoices):
