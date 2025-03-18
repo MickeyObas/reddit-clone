@@ -5,6 +5,7 @@ from .models import (
     PostMedia
 )
 from comments.models import Comment
+from votes.models import Vote
 from accounts.serializers import UserSerializer
 from comments.serializers import CommentSerializer
 
@@ -90,6 +91,7 @@ class PostDisplaySerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
     community = serializers.CharField(source='community.name')
+    user_vote = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -100,7 +102,8 @@ class PostDisplaySerializer(serializers.ModelSerializer):
             'vote_count',
             'comment_count',
             'thumbnail',
-            'created_at'
+            'created_at',
+            'user_vote'
         ]
 
     def get_comment_count(self, obj):
@@ -113,4 +116,14 @@ class PostDisplaySerializer(serializers.ModelSerializer):
         media_files = obj.postmedia_set.all()
         if media_files:
             return media_files[0].file.name
+        return None
+    
+    def get_user_vote(self, obj):
+        user = self.context.get('request').user
+        vote = Vote.objects.filter(
+            post=obj,
+            owner=user
+        )
+        if vote.exists():
+            return vote.first().vote_type_name.lower()
         return None

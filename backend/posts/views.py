@@ -18,7 +18,7 @@ from .serializers import (
 def post_list_or_create(request):
     if request.method == 'GET':
         posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
+        serializer = PostDisplaySerializer(posts, many=True, context={"request": request})
         return Response(serializer.data, status=200)
     
     elif request.method == 'POST':

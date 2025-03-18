@@ -18,7 +18,7 @@ class Vote(TimeStampedModel):
         unique_together = ['owner', 'post']
 
     @property
-    def get_vote_type_name(self):
+    def vote_type_name(self):
         types = {}
         for type in Vote.VOTE_TYPE:
             types[type[0]] = type[1]
@@ -26,4 +26,4 @@ class Vote(TimeStampedModel):
         return types[self.type]
 
     def __str__(self):
-        return f"{self.owner} -> {self.post.id} -> {self.get_vote_type_name}"
+        return f"{self.owner} -> {self.post.id} -> {self.vote_type_name}"
