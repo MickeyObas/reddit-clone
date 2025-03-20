@@ -37,7 +37,7 @@ def post_detail_update_delete(request, pk):
         post = Post.objects.get(id=pk)
 
         if request.method == 'GET':
-            serializer = PostSerializer(post)
+            serializer = PostSerializer(post, context={"request": request})
             return Response(serializer.data, status=200)
         
         elif request.method == 'DELETE':
@@ -56,7 +56,7 @@ def post_detail_update_delete(request, pk):
             return Response(serializer.errors, status=400)
 
     except Post.DoesNotExist:
-        return Response({'error': f"Post with ID '{pk}' does not exist"}, status=400)
+        return Response({'error': f"Post with ID '{pk}' does not exist"}, status=404)
     
 
 @api_view(['GET'])

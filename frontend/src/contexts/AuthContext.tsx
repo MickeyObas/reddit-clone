@@ -1,20 +1,37 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 interface AuthContextType {
-  isVerified: boolean;
-  setIsVerified: (verified: boolean) => void;
-  isRegistered: boolean;
-  setIsRegistered: (registered: boolean) => void;
+  login: (data: LoginResponseData) => void,
+  user: LoginResponseData["user"] | null
+}
+
+interface LoginResponseData {
+  access: string,
+  refresh: string,
+  user: {
+    id: number,
+    username: string,
+    email: string
+  }
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isVerified, setIsVerified] = useState<boolean>(false);
-  const [isRegistered, setIsRegistered] = useState<boolean>(false);
+  const storedUser = localStorage.getItem('user')
+  const [user, setUser] = useState<LoginResponseData["user"] | null>(
+    storedUser ? JSON.parse(storedUser) : null
+  );
+
+  const login = (data: LoginResponseData) => {
+    localStorage.setItem('accessToken', data.access);
+    localStorage.setItem('refreshToken', data.refresh);
+    localStorage.setItem('user', JSON.stringify(data.user))
+    setUser(data.user);
+  }
 
   return (
-    <AuthContext.Provider value={{ isVerified, setIsVerified, isRegistered, setIsRegistered }}>
+    <AuthContext.Provider value={{ login, user }}>
       {children}
     </AuthContext.Provider>
   );

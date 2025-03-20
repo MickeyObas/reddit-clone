@@ -6,13 +6,16 @@ import { BrowserRouter } from 'react-router-dom';
 
 // Providers
 import { AuthProvider } from './contexts/AuthContext';
+import { CommunityProvider } from './contexts/CommunityContext.tsx';
 
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <CommunityProvider>
+          <App />
+        </CommunityProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

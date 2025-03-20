@@ -7,6 +7,7 @@ import googleIcon from '../assets/icons/google.png';
 import { BACKEND_URL } from "../config";
 import { FormInput } from "../components/ui/FormInput";
 import { Button } from "../components/ui/Button";
+import { useAuth } from "../contexts/AuthContext";
 
 // Types
 type ErrorState = {
@@ -18,6 +19,7 @@ type ErrorState = {
 
 const Login = (): JSX.Element => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -89,8 +91,7 @@ const Login = (): JSX.Element => {
         const data = await response.json();
         console.log("Login successful!");
         // Store credentials 
-        localStorage.setItem('accessToken', data.access);
-        localStorage.setItem('refreshToken', data.refresh);
+        login(data);
         navigate('/');
         
       }

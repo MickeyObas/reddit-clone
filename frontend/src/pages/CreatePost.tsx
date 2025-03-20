@@ -7,15 +7,19 @@ import exclamationIcon from '../assets/icons/exclamation-mark.png';
 import checkIcon from '../assets/icons/check.png';
 import { ChevronDown, CircleAlert } from 'lucide-react';
 import DragAndDropUpload from '../components/ui/DragAndDropUpload';
+import { useAuth } from '../contexts/AuthContext';
+import { useCommunities } from '../contexts/CommunityContext';
+import { Community } from '../types/community';
+import { fetchWithAuth } from '../utils';
+import { BACKEND_URL } from '../config';
+import { useNavigate } from 'react-router-dom';
 
 type Post = {
   title: string,
   link: string,
   content: string,
-  community: null | undefined | {
-    id: string,
-    title: string
-  }
+  community: string,
+  media: File[]
 }
 
 type ErrorState = {
@@ -24,40 +28,45 @@ type ErrorState = {
   content: string
 }
 
-const communities = [
-  {
-    id: '1',
-    title: "React"
-  },
-  {
-    id: '2',
-    title: "Javascript"
-  },
-  {
-    id: '3',
-    title: "Python"
-  },
-  {
-    id: '4',
-    title: "C++"
-  },
-  {
-    id: '5',
-    title: "Clojure"
-  },
-  {
-    id: '6',
-    title: "How to train a dragon"
-  },
-]
+// const communities = [
+//   {
+//     id: '1',
+//     title: "React"
+//   },
+//   {
+//     id: '2',
+//     title: "Javascript"
+//   },
+//   {
+//     id: '3',
+//     title: "Python"
+//   },
+//   {
+//     id: '4',
+//     title: "C++"
+//   },
+//   {
+//     id: '5',
+//     title: "Clojure"
+//   },
+//   {
+//     id: '6',
+//     title: "How to train a dragon"
+//   },
+// ]
 
 const CreatePost = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { communities } = useCommunities();
   const [post, setPost] = useState<Post>({
     title: '',
     link: '',
     content: '',
-    community: null
-  }) 
+    community: '',
+    media: []
+  })
+  const [postLoading, setPostLoading] = useState(false); 
 
   const [selectedLink, setSelectedLink] = useState<'TEXT' | 'IMAGE' | 'LINK'>('TEXT')
   const [error, setError] = useState<ErrorState>({
@@ -68,13 +77,13 @@ const CreatePost = () => {
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCommunityId, setSelectedCommunityId] = useState('');
-  const selectedCommunity = communities.find((community) => community.id.toString() === selectedCommunityId);
+  const selectedCommunity = communities?.find((community: Community) => community.id.toString() === selectedCommunityId);
 
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const filteredCommunities = communities.filter((community) => community.title.toLowerCase().includes(search.toLowerCase()))
+  const filteredCommunities = communities.filter((community: Community) => community?.name?.toLowerCase().includes(search.toLowerCase()))
 
   // Handlers
   const handlePostInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -100,25 +109,53 @@ const CreatePost = () => {
     setSelectedCommunityId(communityId.toString());
     const selectedCommunity = communities.find((community) => community.id.toString() === communityId.toString());
     setIsSearchDropdownOpen(false);
-    setPost((prev) => ({...prev, community: selectedCommunity}))
+    setPost((prev) => ({...prev, community: communityId}))
   }
 
-  const handleCreatePostClick = () => {
+  const handleCreatePostClick = async () => {
     console.log(post);
-  }
 
-  const handleAddMediaClick = (e: React.MouseEvent) => {
-    fileInputRef.current?.click();
+    const formData = new FormData();
+
+    if(post.media){
+      console.log(post.media);
+      post.media.forEach((file) => formData.append('media', file));
+    }
+    formData.append('title', post.title);
+    formData.append('body', post.content);
+    formData.append('community', post.community);
+
+    try{
+      setPostLoading(true);
+      const response = await fetchWithAuth(`${BACKEND_URL}/posts/`, {
+        method: 'POST',
+        body: formData
+      })
+      if(!response?.ok){
+        const error = await response?.json();
+        console.log(error);
+        console.error("Bad response.");
+      }else{
+        const data = await response.json();
+        console.log(data);
+        navigate("/");
+      }
+    }catch(err){
+      console.error(err);
+    }finally{
+      setPostLoading(false);
+    }
   }
 
   const handleUploadComplete = (files: File[]) => {
+    setPost((prev) => ({...prev, media: files}))
     console.log("Upload complete!");
     console.log(files);
   }
 
   // Effects
   useEffect(() => {
-    const handleOutsideClick = (e) => {
+    const handleOutsideClick = (e: MouseEvent) => {
       if(dropdownRef.current && !dropdownRef.current.contains(e.target)){
         setIsSearchDropdownOpen(false);
       }
@@ -142,12 +179,12 @@ const CreatePost = () => {
       {/* Searchable Dropdown */}
       {!isSearchDropdownOpen ? (
         <div 
-          className="flex items-center bg-gray-white font-medium w-fit ps-0.5 pe-2.5 rounded-full gap-x-1.5"
+          className="flex items-center bg-gray-white font-medium w-fit ps-0.5 pe-2.5 rounded-full gap-x-1.5 cursor-pointer"
           onClick={() => setIsSearchDropdownOpen(true)}
           >
           <img src={communityIcon} alt="" className='w-10 h-10'/>
           {selectedCommunityId ? (
-            <span>{"r/" + selectedCommunity?.title}</span>
+            <span>{"r/" + selectedCommunity?.name}</span>
           ) : (
           <span>Select a community</span>
           )}
@@ -156,7 +193,7 @@ const CreatePost = () => {
       ) : (
         <div
           ref={dropdownRef}
-          className='flex flex-col relative'
+          className='flex flex-col relative cursor-pointer'
         >
           <div 
           className='flex items-center bg-gray-white rounded-full max-w-[75vw] outline-2 outline-blue-600'
@@ -186,7 +223,7 @@ const CreatePost = () => {
           <ul 
             className='absolute top-[62px] left-[30px] z-10 flex flex-col gap-y-4 bg-white w-[68vw] p-4 shadow-[0_0_10px_2px_rgba(0,0,0,0.2)] max-h-[75vw] overflow-y-auto rounded-lg'
             >
-            {filteredCommunities.map((community, idx) => (
+            {filteredCommunities.map((community: Community, idx: number) => (
               <li
                 onClick={() => handleCommunityClick(community.id)} 
                 key={idx}
@@ -196,9 +233,9 @@ const CreatePost = () => {
                     <img src={redditIcon} alt="" className='w-full h-full'/>
                   </div>
                   <div className='flex flex-col ms-2'>
-                    <span className='font-medium'>{"r/" + community.title}</span>
+                    <span className='font-medium'>{"r/" + community.name}</span>
                     <div className='flex items-center text-xs text-slate-500'>
-                      <span className=''>999,999 Members</span>
+                      <span className=''>{community.member_count} Members</span>
                       <img className='w-2 h-2 mx-0.5 mt-0.5' src={dotIcon} alt="" />
                       <span>Subscribed</span>
                     </div>
@@ -345,7 +382,7 @@ const CreatePost = () => {
           onClick={handleCreatePostClick}
           className={`text-[13px] font-medium w-fit py-3 px-4 rounded-full ${!isValid ? 'bg-gray-white text-gray-400' : 'bg-blue-800 text-white'}`}
           disabled={!isValid}
-          >Post</button>
+          >{postLoading ? "Loading..." : "Post" }</button>
           <button
           className={`text-[13px] font-medium w-fit py-3 px-4 rounded-full ${!isValid ? 'bg-gray-white text-gray-400' : 'bg-blue-800 text-white'}`}
           disabled={!isValid}

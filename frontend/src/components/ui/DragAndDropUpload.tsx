@@ -49,7 +49,7 @@ const DragAndDropUpload: React.FC<UploadProps> = ({
         {...getRootProps()}
         className={`flex justify-center dropzone ${isDragActive ? 'active' : ''}`}
       >
-        <input {...getInputProps()} />
+        <input type='file' {...getInputProps()} multiple/>
         {isDragActive ? (
           <p>Drop the files here</p>
         ) : (

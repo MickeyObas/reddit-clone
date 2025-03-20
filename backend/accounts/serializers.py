@@ -68,14 +68,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         ).exists():
             raise serializers.ValidationError(f"An account with this email address already exists. Please use another one.")
         
-        email_verified = VerificationCode.objects.filter(
+        email_verification_code = VerificationCode.objects.filter(
             email=email,
             is_approved=True
-        ).exists()
+        )
 
-        if not email_verified:
+        if not email_verification_code.exists():
             raise serializers.ValidationError('Cannot create account. User email is not verified.')
-
+        
+        email_verification_code.delete()
+    
         return email
         
      

@@ -5,6 +5,7 @@ from .models import (
     PostMedia
 )
 from comments.models import Comment
+from communities.models import Community
 from votes.models import Vote
 from accounts.serializers import UserSerializer
 from comments.serializers import CommentSerializer
@@ -19,10 +20,10 @@ class PostMediaSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     media = serializers.SerializerMethodField()
-    owner = UserSerializer()
+    owner = UserSerializer(read_only=True)
     comments = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
-    community = serializers.CharField(source='community.name')
+    user_vote = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -34,6 +35,7 @@ class PostSerializer(serializers.ModelSerializer):
             'body', 
             'media',
             'comments',
+            'user_vote',
             'vote_count',
             'comment_count'
         ]
@@ -62,10 +64,24 @@ class PostSerializer(serializers.ModelSerializer):
             post=obj,
             parent__isnull=True
             ).count()
+    
+    def get_user_vote(self, obj):
+        user = self.context.get('request').user
+        vote = Vote.objects.filter(
+            post=obj,
+            owner=user
+        )
+        if vote.exists():
+            return vote.first().vote_type_name.lower()
+        return None
         
 
     def create(self, validated_data):
-        media_files = self.context['request'].FILES.getlist('media')
+        request = self.context['request']
+        media_files = request.FILES.getlist('media')
+        user = request.user
+        validated_data['owner'] = user
+        
         post = Post.objects.create(**validated_data)
 
         for media_file in media_files:

@@ -8,7 +8,7 @@ class Post(TimeStampedModel):
     community = models.ForeignKey('communities.Community', on_delete=models.CASCADE)
     title = models.CharField(max_length=300)
     body = models.TextField()
-    flairs = models.ManyToManyField('tags.Flair')
+    flairs = models.ManyToManyField('tags.Flair', blank=True)
 
     class Meta:
         ordering = ['-created_at']

@@ -11,25 +11,18 @@ import { BACKEND_URL } from '../config';
 import UpArrow from '../assets/svgs/UpArrow';
 import DownArrow from '../assets/svgs/DownArrow';
 
-type Post = {
-  id: number,
-  title: string,
-  community: string,
-  thumbnail: string,
-  vote_count: number,
-  comment_count: number,
-  created_at: string,
-  user_vote: string
-}
+import { Post } from '../types/post';
+import { useAuth } from '../contexts/AuthContext';
+
 
 type hoverState = {
   id: number,
   hovered: string
 }
 
-
 const Home: React.FC = () => {
 
+  const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isHovered, setIsHovered] = useState<hoverState | null>(null);
   const [votes, setVotes] = useState({})
@@ -46,7 +39,7 @@ const Home: React.FC = () => {
           const data = await response.json();
           setPosts(data);
           setVotes(
-            data.reduce((acc, post) => {
+            data.reduce((acc, post: Post) => {
               acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
               return acc;
             }, {})
@@ -61,35 +54,51 @@ const Home: React.FC = () => {
 
   // Handlers
   const handleVote = (postId: number, type: string) => {
-    setVotes((prevVotes) => {
-      const { count, userVote: prevVote } = prevVotes[postId];
+    
+    const postVote = async () => {
+      const dir = type === 'upvote' ? 1 : -1; 
 
-      let newCount = count;
-      let newVote = type;
+      const response = await fetchWithAuth(`${BACKEND_URL}/votes/vote?user_id=${user?.id}&obj_id=${postId}&dir=${dir}&obj=p`, {
+        method: 'POST'
+      });
+      if(!response?.ok){
+        console.log("Whoops, something went wrong during voting.");
+      }else{
+        const data = response?.json();
+        console.log(data);
 
-      if(type === 'upvote'){
-        if(prevVote === 'upvote'){
-          newCount -= 1;
-          newVote = null;
-        }else if(prevVote === 'downvote'){
-          newCount += 2;
-        }else{
-          newCount += 1;
-        }
-      }else if(type === 'downvote'){
-        if(prevVote === 'downvote'){
-          newCount += 1;
-          newVote = null;
-        }else if(prevVote === 'upvote'){
-          newCount -= 2;
-        }else{
-          newCount -= 1;
-        }
+        setVotes((prevVotes) => {
+          const { count, userVote: prevVote } = prevVotes[postId];
+    
+          let newCount = count;
+          let newVote = type;
+    
+          if(type === 'upvote'){
+            if(prevVote === 'upvote'){
+              newCount -= 1;
+              newVote = null;
+            }else if(prevVote === 'downvote'){
+              newCount += 2;
+            }else{
+              newCount += 1;
+            }
+          }else if(type === 'downvote'){
+            if(prevVote === 'downvote'){
+              newCount += 1;
+              newVote = null;
+            }else if(prevVote === 'upvote'){
+              newCount -= 2;
+            }else{
+              newCount -= 1;
+            }
+          }
+          console.log(newCount);
+          console.log(votes)
+          return {...prevVotes, [postId]: {count: newCount, userVote: newVote}}
+        })
       }
-      console.log(newCount);
-      console.log(votes)
-      return {...prevVotes, [postId]: {count: newCount, userVote: newVote}}
-    })
+    };
+    postVote();
   }
 
   return (
@@ -138,6 +147,8 @@ const Home: React.FC = () => {
                 `}>
                 <div className={`rounded-full h-full py-2 px-2 cursor-pointer ${!votes[post.id].userVote ? 'hover:bg-slate-300' : 'hover:bg-[rgba(0,0,0,0.2)]'}`}>
                   <UpArrow
+                    height="16px"
+                    width="16px"
                     color={`${votes[post.id].userVote === 'upvote' ? 'white' : ''}`}
                     onClick={() => handleVote(post.id, "upvote")}
                     onMouseEnter={() => setIsHovered({
@@ -155,6 +166,8 @@ const Home: React.FC = () => {
                 <span className='flex justify-center min-w-3'>{votes[post.id].count}</span>
                 <div className={`rounded-full h-full py-2 px-2 cursor-pointer  ${!votes[post.id].userVote ? 'hover:bg-slate-300' : 'hover:bg-[rgba(0,0,0,0.2)]'}`}>
                   <DownArrow
+                    height={"16px"}
+                    width={"16px"}
                     color={`${votes[post.id].userVote === 'downvote' ? 'white' : ''}`}
                     onClick={() => handleVote(post.id, "downvote")}
                     onMouseEnter={() => setIsHovered({

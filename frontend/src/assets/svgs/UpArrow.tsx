@@ -1,11 +1,13 @@
 const UpArrow = ({
   color= "",
   outlineColor= "white",
+  width,
+  height,
   ...props
 }) => (
   <svg
-    width="16px"
-    height="16px"
+    width={width}
+    height={height}
     viewBox="0 0 0.4 0.4"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
