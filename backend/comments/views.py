@@ -12,7 +12,7 @@ def all_comments(request):
     if not request.user.is_superuser:
         return Response({'error': 'YOU CANNOT PERFORM THIS ACTION'}, status=status.HTTP_403_FORBIDDEN)
     comments = Comment.objects.all()
-    serializer = CommentSerializer(comments, many=True)
+    serializer = CommentSerializer(comments, many=True, context={"request": request})
     return Response(serializer.data)
 
 
@@ -26,7 +26,7 @@ def comment_detail_update_delete(request, pk):
             return Response(serializer.data)
         
         elif request.method == 'PATCH':
-            serializer = CommentSerializer(comment, data=request.data, partial=True)
+            serializer = CommentSerializer(comment, data=request.data, partial=True, context={"request": request})
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -48,7 +48,7 @@ def comment_list_or_create(request, pk):
 
         if request.method == 'GET':
             comments = post.comment_set.all()
-            serializer = CommentSerializer(comments, many=True)
+            serializer = CommentSerializer(comments, many=True, context={"request": request})
             return Response(serializer.data)
         
         elif request.method == 'POST':

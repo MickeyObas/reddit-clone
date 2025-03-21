@@ -20,7 +20,7 @@ const VoteBar = ({
       ${vote === 'upvote' ? 'bg-deep-red text-white' :
         vote === 'downvote' ? 'bg-blue-600 text-white' : 'bg-slate-200' }
         `}>
-        <div className={`rounded-full h-full px-2 cursor-pointer ${!vote ? 'hover:bg-slate-300' : 'hover:bg-[rgba(0,0,0,0.2)]'}`}>
+        <div className={`rounded-full h-full px-2 py-2 cursor-pointer ${!vote ? 'hover:bg-slate-300' : 'hover:bg-[rgba(0,0,0,0.2)]'}`}>
           <UpArrow
             height={"18px"}
             width={"18px"}

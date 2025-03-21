@@ -57,7 +57,7 @@ class PostSerializer(serializers.ModelSerializer):
             post=obj,
             parent__isnull=True
         )
-        return CommentSerializer(comments, many=True).data
+        return CommentSerializer(comments, many=True, context={'request': self.context.get('request')}).data
     
     def get_comment_count(self, obj):
         return Comment.objects.filter(
