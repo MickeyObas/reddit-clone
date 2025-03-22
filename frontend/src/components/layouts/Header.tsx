@@ -24,7 +24,7 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
         <div className='flex items-center'>
           <img
             onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-            src={hamburgerIcon} alt="Menu icon" className='h-5 w-5'/>
+            src={hamburgerIcon} alt="Menu icon" className='h-5 w-5 cursor-pointer'/>
           <img 
             src={redditIcon}
             alt="Reddit icon" 

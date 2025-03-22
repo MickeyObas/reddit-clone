@@ -26,4 +26,7 @@ class Vote(TimeStampedModel):
         return types[self.type]
 
     def __str__(self):
-        return f"{self.owner} -> {self.post.id} -> {self.vote_type_name}"
+        if self.post:
+            return f"{self.owner} -> {self.post.id} -> {self.vote_type_name} [POST]"
+        elif self.comment:
+            return f"{self.owner} -> {self.comment.id} -> {self.vote_type_name} [COMMENT]"

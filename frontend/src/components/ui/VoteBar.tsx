@@ -7,6 +7,7 @@ interface VoteBarProps {
   onVote: (type: string) => void,
   initialCount: number | undefined
 }
+
 const VoteBar = ({
   vote,
   onVote,

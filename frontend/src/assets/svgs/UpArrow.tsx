@@ -1,10 +1,20 @@
+type UpArrowProps = {
+  color: string,
+  outlineColor: string,
+  width: string,
+  height: string,
+  onClick?: () => void,
+  onMouseEnter?: () => void,
+  onMouseLeave?: () => void,
+};
+
 const UpArrow = ({
   color= "",
   outlineColor= "white",
   width,
   height,
   ...props
-}) => (
+}: UpArrowProps) => (
   <svg
     width={width}
     height={height}

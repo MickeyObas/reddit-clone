@@ -48,11 +48,15 @@ def vote(request):
             similar_vote = Vote.objects.filter(
                 owner=user,
                 comment=comment,
-                type=dir
             )
 
             if similar_vote.exists():
-                similar_vote.delete()
+                similar_vote = similar_vote.first()
+                if similar_vote.type == dir:
+                    similar_vote.delete()
+                else:
+                    similar_vote.type = dir
+                    similar_vote.save()
             else:
                 Vote.objects.create(
                     owner=user,

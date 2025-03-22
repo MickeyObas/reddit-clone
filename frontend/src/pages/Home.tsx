@@ -20,12 +20,19 @@ type hoverState = {
   hovered: string
 }
 
+type PostVotes = {
+  [id: number]: {
+    count: number,
+    userVote: string | null
+  }
+}
+
 const Home: React.FC = () => {
 
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isHovered, setIsHovered] = useState<hoverState | null>(null);
-  const [votes, setVotes] = useState({})
+  const [votes, setVotes] = useState<PostVotes>({})
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -39,7 +46,7 @@ const Home: React.FC = () => {
           const data = await response.json();
           setPosts(data);
           setVotes(
-            data.reduce((acc, post: Post) => {
+            data.reduce((acc: PostVotes, post: Post) => {
               acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
               return acc;
             }, {})
@@ -71,7 +78,7 @@ const Home: React.FC = () => {
           const { count, userVote: prevVote } = prevVotes[postId];
     
           let newCount = count;
-          let newVote = type;
+          let newVote: string | null = type;
     
           if(type === 'upvote'){
             if(prevVote === 'upvote'){
