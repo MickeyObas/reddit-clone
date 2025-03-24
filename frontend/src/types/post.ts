@@ -1,4 +1,4 @@
-import { Comment } from "./comment"
+import { CommentType } from "./comment"
 
 export type Post = {
     id: number,
@@ -16,7 +16,7 @@ export type Post = {
     },
     thumbnail: string,
     vote_count: number,
-    comments: Comment[],
+    comments: CommentType[],
     comment_count: number,
     created_at: string,
     user_vote: string | null

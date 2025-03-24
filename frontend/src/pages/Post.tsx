@@ -2,17 +2,16 @@ import redditIcon from '../assets/icons/reddit.png';
 import ellipsisIcon from '../assets/icons/ellipsis.png';
 
 import type { Post } from '../types/post';
-import { Comment } from '../types/comment';
+import { CommentType } from '../types/comment';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchWithAuth, formatCommunity, formatUsername, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 
 import VoteBar from '../components/ui/VoteBar';
-import { AwardIcon, ChevronDown, Dot, Ellipsis, MessageCircle, ShareIcon } from 'lucide-react';
-import UpArrow from '../assets/svgs/UpArrow';
-import DownArrow from '../assets/svgs/DownArrow';
+import { AwardIcon, ChevronDown, MessageCircle, ShareIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import Comment from '../components/ui/Comment';
 
 type CommentHoverState = {
   id: number,
@@ -24,19 +23,11 @@ type PostVote = {
   userVote: string | null
 }
 
-type CommentVote = {
-  [id: number]: {
-    count: number,
-    userVote: string | null
-  }
-}
-
 const Post = () => {
 
   const { user } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
   const [postVote, setPostVote] = useState<PostVote>({count: 0, userVote: null});
-  const [commentVotes, setCommentVotes] = useState<CommentVote>({});
   const [postLoading, setPostLoading] = useState(true);
   const { postId } = useParams();
   const [isHovered, setIsHovered] = useState<CommentHoverState | null>(null);
@@ -52,12 +43,6 @@ const Post = () => {
           const data = await response.json();
           setPost(data);
           setPostVote({count: data.vote_count, userVote: data.user_vote});
-          setCommentVotes(
-            data['comments'].reduce((acc: CommentVote, comment: Comment) => {
-              acc[comment.id] = {count: comment.vote_count, userVote: comment.user_vote};
-              return acc;
-            }, {})
-          )
         }
       }catch(err){
         console.error(err);
@@ -113,49 +98,6 @@ const Post = () => {
       }
     };
     postVote();
-  }
-
-  const handleCommentVote = async (commentId: number, type: string) => {
-    const dir = type === "upvote" ? 1 : -1;
-    const response = await fetchWithAuth(`${BACKEND_URL}/votes/vote?user_id=${user?.id}&obj_id=${commentId}&dir=${dir}&obj=c`, {
-      method: 'POST'
-    });
-
-    if(!response?.ok){
-      console.error("Whoops, something went wrong.");
-    }else{
-      const data = await response.json();
-      console.log(data);
-
-      setCommentVotes((prevVotes) => {
-        const { count, userVote: prevVote } = prevVotes[commentId];
-        let newCount = count;
-        let newVote: string | null = type;
-        
-        if(type === "upvote"){
-          if(prevVote === "upvote"){
-            newCount -= 1;
-            newVote = null;
-          }else if(prevVote === "downvote"){
-            newCount += 2
-          }else{
-            newCount += 1;
-          }
-
-        }else if(type === "downvote"){
-          if(prevVote === "downvote"){
-            newCount += 1;
-            newVote = null;
-          }else if(prevVote === "upvote"){
-            newCount -= 2
-          }else{
-            newCount -= 1
-          }
-        };
-        console.log(newCount);
-        return {...prevVotes, [commentId]: {count: newCount, userVote: newVote}};
-      })
-    }
   }
 
   if(postLoading) return <h1>Loading...</h1>
@@ -215,54 +157,13 @@ const Post = () => {
 
       {/* Comments */}
       <div className='flex flex-col mt-4'>
-        {post?.comments && post.comments.map((comment: Comment, idx: number) => (
-          <div key={idx} className='flex flex-col py-1.5'>
-            <div className='flex items-center text-xs'>
-              <div className='w-6 h-6 flex items-center justify-center me-2'>
-                <img src={redditIcon} alt="" />
-              </div>
-              <span className='font-bold'>_Reddituzer_</span>
-              <Dot size={16} />
-              <span className='text-slate-500'>15h ago</span>
-            </div>
-            <div className='ps-10 flex flex-col'>
-              <p className='text-[13px]'>{comment.body}</p>
-              <div className='flex items-center text-slate-500 gap-x-2.5 mt-1 text-[13px] select-none'>
-                <div className='flex items-center gap-x-1'>
-                  <div
-                    onClick={() => handleCommentVote(comment.id, "upvote")} 
-                    className='rounded-full h-full py-2 px-2 cursor-pointer hover:bg-slate-300'>
-                    <UpArrow 
-                      height="16px" width="16px"
-                      color={commentVotes[comment.id].userVote === "upvote" ? "red" : ""}
-                      outlineColor={isHovered?.id === comment.id && isHovered.type === "up" ? 'red' : 'gray'}
-                      onMouseEnter={() => setIsHovered({id: comment.id, type: 'up'})}
-                      onMouseLeave={() => setIsHovered(null)}
-                      />
-                  </div>
-                  <span>{commentVotes[comment.id].count}</span>
-                  <div 
-                    onClick={() => handleCommentVote(comment.id, "downvote")}
-                    className='rounded-full h-full py-2 px-2 cursor-pointer hover:bg-slate-300'>
-                    <DownArrow 
-                      height="16px" width="16px" 
-                      color={commentVotes[comment.id].userVote === "downvote" ? "blue" : ""}
-                      outlineColor={isHovered?.id === comment.id && isHovered.type === "down" ? 'blue' : 'gray'}
-                      onMouseEnter={() => setIsHovered({id: comment.id, type: 'down'})}
-                      onMouseLeave={() => setIsHovered(null)}
-                      />
-                  </div>
-                </div>
-                <div className='flex items-center gap-x-1.5 px-2 py-2 hover:bg-slate-300 rounded-full cursor-pointer hover:text-black group'>
-                  <MessageCircle size={16} className='group-hover:text-black'/>
-                  <span>Reply</span>
-                </div>
-                <div className='flex items-center rounded-full py-2 px-2 hover:bg-slate-300 cursor-pointer group'>
-                  <Ellipsis size={16} className='group-hover:text-black'/>
-                </div>
-              </div>
-            </div>
-          </div>
+        {post?.comments && post.comments.map((comment: CommentType, idx: number) => (
+          <Comment 
+            key={idx}
+            comment={comment}
+            isHovered={isHovered}
+            setIsHovered={setIsHovered}
+          />
         ))}
       </div>
     </div>

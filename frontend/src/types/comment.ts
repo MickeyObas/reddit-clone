@@ -1,4 +1,4 @@
-export interface Comment {
+export interface CommentType {
     body: string,
     created_at: string,
     id: number,
@@ -6,6 +6,6 @@ export interface Comment {
     parent: null | number,
     user_vote: string,
     post: number,
-    replies: Comment[],
+    replies: CommentType[],
     vote_count: number
 }

@@ -53,6 +53,7 @@ def comment_list_or_create(request, pk):
         
         elif request.method == 'POST':
             data = request.data.copy()
+            print(data)
             data['post'] = pk
             serializer = CommentSerializer(data=data, context={'request': request})
             if serializer.is_valid():

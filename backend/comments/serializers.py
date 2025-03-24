@@ -4,6 +4,8 @@ from rest_framework import serializers
 
 from .models import Comment, CommentMedia
 from votes.models import Vote
+from accounts.serializers import UserSerializer
+from accounts.models import User
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -11,6 +13,7 @@ class CommentSerializer(serializers.ModelSerializer):
     media = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()
     user_vote = serializers.SerializerMethodField()
+    owner = UserSerializer(read_only=True)
 
     class Meta:
         model = Comment
@@ -47,6 +50,7 @@ class CommentSerializer(serializers.ModelSerializer):
         return None
     
     def create(self, validated_data):
+        validated_data['owner'] = self.context.get('request').user
         comment = Comment.objects.create(**validated_data)
         media_files = self.context['request'].FILES.getlist('media')
 
