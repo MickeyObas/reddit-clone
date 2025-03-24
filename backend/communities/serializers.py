@@ -27,3 +27,13 @@ class CommunitySerializer(serializers.ModelSerializer):
 
         return super().create(validated_data)
     
+
+class CommunityDisplaySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Community
+        fields = [
+            "id",
+            "avatar",
+            "name"
+        ]
+    

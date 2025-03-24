@@ -9,6 +9,7 @@ from communities.models import Community
 from votes.models import Vote
 from accounts.serializers import UserSerializer
 from comments.serializers import CommentSerializer
+from communities.serializers import CommunityDisplaySerializer
 
 class PostMediaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,6 +25,7 @@ class PostSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
     user_vote = serializers.SerializerMethodField()
+    community = CommunityDisplaySerializer()
 
     class Meta:
         model = Post
@@ -37,7 +39,8 @@ class PostSerializer(serializers.ModelSerializer):
             'comments',
             'user_vote',
             'vote_count',
-            'comment_count'
+            'comment_count',
+            'created_at'
         ]
     
     def validate_community(self, community):

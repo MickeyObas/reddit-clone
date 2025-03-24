@@ -5,7 +5,7 @@ import type { Post } from '../types/post';
 import { Comment } from '../types/comment';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchWithAuth } from '../utils';
+import { fetchWithAuth, formatCommunity, formatUsername, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 
 import VoteBar from '../components/ui/VoteBar';
@@ -168,15 +168,16 @@ const Post = () => {
         </div>
         <div className='flex flex-col gap-y-0.5'>
           <div className='flex'>
-            <span className='font-semibold me-2'>r/randomchannel</span>
-            <span className='opacity-70'>1 day ago</span>
+            {/* TODO: Find fixes for such TS errors */}
+            <span className='font-semibold me-2'>{post?.community.name && formatCommunity(post?.community.name)}</span>
+            <span className='opacity-70'>{timeAgo(post?.created_at)}</span>
           </div>
-          <a href='' className='text-blue-600 underline text-[11px]'>RandomUserIsMe</a>
+          <a href='' className='text-blue-600 underline text-[11px]'>{formatUsername(post?.owner.username ?? "Unknown User")}</a>
         </div>
         <img src={ellipsisIcon} alt="" className='w-6 h-6 ms-auto'/>
       </div>
-      <h1 className='font-semibold text-[17px] mt-1'>There's a bug in my system. A LITERAL BUG!</h1>
-      <p className='text-xs leading-5 mt-3'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat possimus ea laboriosam? Nam cupiditate assumenda culpa. Ipsa ducimus alias itaque adipisci et temporibus esse error voluptatum quasi blanditiis eum, minus quas amet, facere consequuntur fuga consectetur totam dignissimos explicabo aperiam tenetur excepturi vitae? Qui rerum inventore unde repellat. Laudantium iure, nostrum beatae eum facilis sit culpa. Dolor distinctio sint expedita tempore? Vero alias tempora error, quo doloribus illum impedit beatae.<br /><br />Sincerely, a concerned man.</p>
+      <h1 className='font-semibold text-[17px] mt-1'>{post?.title}</h1>
+      <p className='text-xs leading-5 mt-3'>{post?.body}</p>
       <div className='bg-black flex justify-center py-5 mt-3'>
         <img src={redditIcon} alt="" className='w-[75%]'/>
       </div>

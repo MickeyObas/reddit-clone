@@ -7,6 +7,7 @@ import columnsIcon from '../assets/icons/columns.png';
 import { useEffect, useState } from 'react';
 import { fetchWithAuth, formatCommunity, getImage, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
+import { Link } from 'react-router-dom';
 
 import UpArrow from '../assets/svgs/UpArrow';
 import DownArrow from '../assets/svgs/DownArrow';
@@ -124,29 +125,31 @@ const Home: React.FC = () => {
       <main className="homepage grid grid-cols-1">
         {posts && posts.map((post, idx) => (
           <article key={idx} className="feed grid grid-cols-1 px-5 py-3 border-b border-b-slate-200">
-            <div className='flex'>
-              <div className='left-of-panel flex text-xs items-center'>
-                <div className='w-4 h-4 rounded-full bg-green-700'></div>
-                <span className='ms-2 font-medium'>{formatCommunity(post?.community)}</span>
-                <img src={dotIcon} alt="" className='w-2.5 h-2.5 mx-1'/>
-                <span>{timeAgo(post?.created_at)}</span>
-              </div>
-              <a 
-                className='ms-auto bg-blue-900 text-white px-3 py-0.5 rounded-full self-center'
-              >Join</a>
-            </div>
-            <div className='flex justify-between py-1.5 min-h-16'>
-              <div className='w-[75%] font-semibold text-slate-800'>{post.title}</div>
-              {post.thumbnail && (
-                  <div className='w-20 h-16 rounded-xl overflow-hidden'>
-                  <img 
-                    src={getImage(post.thumbnail)} 
-                    alt="" 
-                    className='w-full h-full object-cover border-0 outline-0'
-                    />
+            <Link to={`post/${post.id}/`}>
+              <div className='flex'>
+                <div className='left-of-panel flex text-xs items-center'>
+                  <div className='w-4 h-4 rounded-full bg-green-700'></div>
+                  <span className='ms-2 font-medium'>{formatCommunity(post?.community)}</span>
+                  <img src={dotIcon} alt="" className='w-2.5 h-2.5 mx-1'/>
+                  <span>{timeAgo(post?.created_at)}</span>
                 </div>
-              )}
-            </div>
+                <button 
+                  className='ms-auto bg-blue-900 text-white px-3 py-0.5 rounded-full self-center'
+                >Join</button>
+              </div>
+              <div className='flex justify-between py-1.5 min-h-16'>
+                <div className='w-[75%] font-semibold text-slate-800'>{post.title}</div>
+                {post.thumbnail && (
+                    <div className='w-20 h-16 rounded-xl overflow-hidden'>
+                    <img 
+                      src={getImage(post.thumbnail)} 
+                      alt="" 
+                      className='w-full h-full object-cover border-0 outline-0'
+                      />
+                  </div>
+                )}
+              </div>
+            </Link>
             <div className='flex justify-between text-xs items-center select-none'>
               <div className={`items-center rounded-full flex justify-between text-black mt-1 overflow-hidden
               ${votes[post.id].userVote === 'upvote' ? 'bg-deep-red text-white' :
