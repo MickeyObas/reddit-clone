@@ -25,7 +25,7 @@ class PostSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
     user_vote = serializers.SerializerMethodField()
-    community = CommunityDisplaySerializer()
+    community = CommunityDisplaySerializer(read_only=True)
 
     class Meta:
         model = Post
@@ -84,6 +84,7 @@ class PostSerializer(serializers.ModelSerializer):
         media_files = request.FILES.getlist('media')
         user = request.user
         validated_data['owner'] = user
+        validated_data['community'] = Community.objects.get(id=request.data['community'])
         
         post = Post.objects.create(**validated_data)
 

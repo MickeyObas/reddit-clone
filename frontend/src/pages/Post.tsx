@@ -3,7 +3,7 @@ import ellipsisIcon from '../assets/icons/ellipsis.png';
 
 import type { Post } from '../types/post';
 import { CommentType } from '../types/comment';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchWithAuth, formatCommunity, formatUsername, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
@@ -25,8 +25,11 @@ type PostVote = {
 
 const Post = () => {
 
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
+  const [comment, setComment] = useState('');
+  const [showCommentBox, setShowCommentBox] = useState(false);
   const [postVote, setPostVote] = useState<PostVote>({count: 0, userVote: null});
   const [postLoading, setPostLoading] = useState(true);
   const { postId } = useParams();
@@ -100,6 +103,38 @@ const Post = () => {
     postVote();
   }
 
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setComment(e.target.value);
+    if(textAreaRef.current){
+      textAreaRef.current.style.height = 'auto';
+      textAreaRef.current.style.height = textAreaRef.current.scrollHeight + "px";
+    }
+  }
+
+  const handleCommentClick = async () => {
+    try {
+      const response = await fetchWithAuth(`${BACKEND_URL}/posts/${postId}/comments/`, {
+        method: 'POST',
+        body: JSON.stringify({
+          owner: user?.id,
+          body: comment
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if(!response?.ok) console.error("Whoops, something went wrong.");
+      else{
+        const data = await response.json();
+        console.log(data);
+        setPost((prev) => (prev ? {...prev, comments: [data, ...prev.comments]} : prev));
+        setShowCommentBox(false);
+      }
+    }catch(err){
+      console.error(err);
+    }
+  }
+
   if(postLoading) return <h1>Loading...</h1>
 
   return (
@@ -146,7 +181,33 @@ const Post = () => {
           </div>
         </div>
       </div>
-      <button className='border border-slate-400 p-2 rounded-full text-sm mt-2 font-semibold'>Join the conversation</button>
+      {!showCommentBox ? (
+        <button 
+          className='border border-slate-400 p-2 rounded-full text-sm mt-2 font-semibold'
+          onClick={() => setShowCommentBox(true)}
+          >Join the conversation</button>
+      ) : (
+        <div className='border border-slate-300 rounded-2xl px-2.5 py-2 mt-1.5'>
+          <textarea
+            ref={textAreaRef}
+            className='w-full outline-0 border-0 overflow-hidden resize-none' 
+            onChange={handleCommentChange}
+            placeholder='Join the conversation'
+            rows={4}
+            name="" 
+            id=""></textarea>
+          <div className='flex text-xs flex-row-reverse gap-x-2 font-medium pt-2'>
+            <button 
+              className='py-1.5 px-2 bg-blue-600 rounded-full text-white'
+              onClick={handleCommentClick}
+              >Comment</button>
+            <button 
+              className='py-1.5 px-2 bg-gray-white rounded-full'
+              onClick={() => setShowCommentBox(false)}
+              >Cancel</button>
+          </div>
+        </div>
+      )}
       <div className='flex gap-x-2.5 text-xs mt-5'>
         <span>Sort by:</span>
         <div className='flex items-center'> 
@@ -159,10 +220,12 @@ const Post = () => {
       <div className='flex flex-col mt-4'>
         {post?.comments && post.comments.map((comment: CommentType, idx: number) => (
           <Comment 
-            key={idx}
+            key={comment.id}
             comment={comment}
             isHovered={isHovered}
             setIsHovered={setIsHovered}
+            setPost={setPost}
+            parent={comment.id}
           />
         ))}
       </div>

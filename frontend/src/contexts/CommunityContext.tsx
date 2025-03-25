@@ -21,7 +21,6 @@ export function CommunityProvider({children}: {children: ReactNode}){
         }else{
           const data = await response.json();
           setCommunities(data);
-          console.log(data)
         }
       }catch(err){
         console.error(err);

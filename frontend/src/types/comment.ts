@@ -3,7 +3,7 @@ export interface CommentType {
     created_at: string,
     id: number,
     owner: number,
-    parent: null | number,
+    parent?: null | number,
     user_vote: string,
     post: number,
     replies: CommentType[],

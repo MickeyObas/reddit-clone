@@ -41,7 +41,7 @@ def comment_detail_update_delete(request, pk):
 
 
 @api_view(['GET', 'POST'])
-@parser_classes([parsers.FormParser, parsers.MultiPartParser])
+@parser_classes([parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser])
 def comment_list_or_create(request, pk):
     try:
         post = Post.objects.get(id=pk)
@@ -57,8 +57,8 @@ def comment_list_or_create(request, pk):
             data['post'] = pk
             serializer = CommentSerializer(data=data, context={'request': request})
             if serializer.is_valid():
-                serializer.save()
-                return Response({'message': 'Comment created successfully.'},  status=201)        
+                new_comment = serializer.save()
+                return Response(CommentSerializer(new_comment, context={'request': request}).data,  status=201)        
             return Response(serializer.errors, status=400)
         
     except Post.DoesNotExist:

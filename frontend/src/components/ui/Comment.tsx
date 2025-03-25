@@ -3,10 +3,12 @@ import { Dot, Ellipsis, MessageCircle, MinusCircle, PlusCircle } from 'lucide-re
 import UpArrow from '../../assets/svgs/UpArrow';
 import DownArrow from '../../assets/svgs/DownArrow';
 import { useAuth } from '../../contexts/AuthContext';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { fetchWithAuth, timeAgo } from '../../utils';
 import { BACKEND_URL } from '../../config';
 import { CommentType } from '../../types/comment';
+import { Post } from '../../types/post';
+import { useParams } from 'react-router-dom';
 
 
 type CommentHoverState = {
@@ -17,7 +19,9 @@ type CommentHoverState = {
 interface CommentProps {
   comment: CommentType,
   isHovered: CommentHoverState,
-  setIsHovered: React.Dispatch<React.SetStateAction<CommentHoverState>>
+  setIsHovered: React.Dispatch<React.SetStateAction<CommentHoverState>>,
+  setPost: React.Dispatch<React.SetStateAction<Post | null>>,
+  parent?: null | number
 }
 
 type CommentVote = {
@@ -26,10 +30,14 @@ type CommentVote = {
   }
 
 
-const Comment = ({comment, isHovered, setIsHovered}: CommentProps) => {
+const Comment = ({comment, isHovered, setIsHovered, setPost, parent}: CommentProps) => {
+  const { postId } = useParams();
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const [commentVote, setCommentVote] = useState<CommentVote>({count: comment.vote_count, userVote: comment.user_vote})
   const [showReplies, setShowReplies] = useState(false);
+  const [showReplyBox, setShowReplyBox] = useState(false);
+  const [reply, setReply] = useState('');
 
   const handleCommentVote = async (commentId: number, type: string) => {
       const dir = type === "upvote" ? 1 : -1;
@@ -74,6 +82,50 @@ const Comment = ({comment, isHovered, setIsHovered}: CommentProps) => {
       }
     }
 
+  const handleReplyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setReply(e.target.value);
+  }
+
+  const handleReplyCommentClick = async (parentId: number) => {
+    if(!parent) return; // If parent is null/undefined, something is clearly wrong somewhere lmao
+
+    const updateComments = (comments: CommentType[], parentID: number, newComment: CommentType): CommentType[] => {
+      return comments.map((comment) => {
+        if(comment.id === parentID){
+          return {...comment, replies: [...comment.replies, newComment]}
+        };
+        return {...comment, replies: updateComments(comment.replies, parentId, newComment)}
+      })
+    };
+
+    try {
+      const response = await fetchWithAuth(`${BACKEND_URL}/posts/${postId}/comments/`, {
+        method: 'POST',
+        body: JSON.stringify({
+          owner: user?.id,
+          body: reply,
+          parent: parentId
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if(!response?.ok){
+        const error = await response?.json();
+        console.error(error);
+      }else{
+        const data = await response.json();
+        console.log(data);
+        setPost((prev) => {
+          return {...prev, comments: updateComments(prev?.comments, parentId, data)}
+        })
+        setShowReplies(true);
+        setShowReplyBox(false);
+      }
+    }catch(err){
+      console.error(err);
+    }
+  } 
 
   return (
     <div className='flex flex-col py-1.5'>
@@ -87,7 +139,7 @@ const Comment = ({comment, isHovered, setIsHovered}: CommentProps) => {
       </div>
       <div className='border-l border-slate-300 ml-3 '>
         <div className='ps-7 flex flex-col'>
-          <p className='text-[13px]'>{comment.body}</p>
+          <p className='text-[13px] break-words whitespace-normal'>{comment.body}</p>
           <div className='flex items-center text-slate-500 gap-x-2.5 mt-1 text-[13px] select-none'>
             <div className='flex items-center gap-x-1'>
               <div
@@ -101,7 +153,7 @@ const Comment = ({comment, isHovered, setIsHovered}: CommentProps) => {
                   onMouseLeave={() => setIsHovered(null)}
                   />
               </div>
-              <span>{commentVote.count}</span>
+              <span className='text-xs'>{commentVote.userVote ? commentVote.count : 'Vote'}</span>
               <div 
                 onClick={() => handleCommentVote(comment.id, "downvote")}
                 className='rounded-full h-full py-2 px-2 cursor-pointer hover:bg-slate-300'>
@@ -114,7 +166,10 @@ const Comment = ({comment, isHovered, setIsHovered}: CommentProps) => {
                   />
               </div>
             </div>
-            <div className='flex items-center gap-x-1.5 px-2 py-2 hover:bg-slate-300 rounded-full cursor-pointer hover:text-black group'>
+            <div 
+              className='flex items-center gap-x-1.5 px-2 py-2 hover:bg-slate-300 rounded-full cursor-pointer hover:text-black group'
+              onClick={() => setShowReplyBox(true)}
+              >
               <MessageCircle size={16} className='group-hover:text-black'/>
               <span>Reply</span>
             </div>
@@ -122,6 +177,28 @@ const Comment = ({comment, isHovered, setIsHovered}: CommentProps) => {
               <Ellipsis size={16} className='group-hover:text-black'/>
             </div>
           </div>
+          {showReplyBox && (
+            <div className='border border-slate-300 rounded-2xl px-2.5 py-2 mt-1.5'>
+              <textarea
+                ref={textAreaRef}
+                className='w-full outline-0 border-0 overflow-hidden resize-none' 
+                onChange={handleReplyChange}
+                placeholder='Join the conversation'
+                rows={4}
+                name="" 
+                id=""></textarea>
+              <div className='flex text-xs flex-row-reverse gap-x-2 font-medium pt-2'>
+                <button 
+                  className='py-1.5 px-2 bg-blue-600 rounded-full text-white'
+                  onClick={() => handleReplyCommentClick(comment.id)}
+                  >Comment</button>
+                <button 
+                  className='py-1.5 px-2 bg-gray-white rounded-full'
+                  onClick={() => setShowReplyBox(false)}
+                  >Cancel</button>
+              </div>
+            </div>
+          )}
           {comment.replies.length > 0 && (
             <div 
               className='flex items-center ms-2 hover:underline w-fit'
@@ -137,7 +214,13 @@ const Comment = ({comment, isHovered, setIsHovered}: CommentProps) => {
         {(showReplies && comment.replies.length > 0) && (
           comment.replies.map((reply, idx) => (
             <div className='ml-8' key={idx}>
-              <Comment comment={reply} isHovered={isHovered} setIsHovered={setIsHovered} />
+              <Comment
+                parent={comment.id} 
+                comment={reply} 
+                isHovered={isHovered} 
+                setIsHovered={setIsHovered} 
+                setPost={setPost}
+                />
             </div>
           ))
         )}
