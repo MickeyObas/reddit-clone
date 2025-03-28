@@ -3,15 +3,19 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 
 from .models import Community
+from posts.models import Post
 from .serializers import CommunitySerializer
-
+from posts.serializers import (
+    PostDisplaySerializer, 
+    CommunityPostFeedSerializer
+)
 
 @api_view(['GET', 'POST'])
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def community_list_or_create(request):
     if request.method == 'GET':
         communities = Community.objects.all()
-        serializer = CommunitySerializer(communities, many=True)
+        serializer = CommunitySerializer(communities, many=True, context={'request': request})
         return Response(serializer.data, status=200)
     
     elif request.method == 'POST':
@@ -29,7 +33,7 @@ def community_detail_update_delete(request, pk):
         community = Community.objects.get(id=pk)
 
         if request.method == 'GET':
-            serializer = CommunitySerializer(community)
+            serializer = CommunitySerializer(community, context={'request': request})
             return Response(serializer.data, status=200)
         
         elif request.method == 'DELETE':
@@ -41,7 +45,7 @@ def community_detail_update_delete(request, pk):
         elif request.method == 'PATCH':
             if community.owner != request.user:
                 return Response({'error': 'You cannot update communities owned by another user!'}, status=status.HTTP_401_UNAUTHORIZED)
-            serializer = CommunitySerializer(community, data=request.data, partial=True)
+            serializer = CommunitySerializer(community, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=200)
@@ -50,6 +54,24 @@ def community_detail_update_delete(request, pk):
     except Community.DoesNotExist:
         return Response({'error': f"Community with ID '{pk}' does not exist"}, status=400)
     
+
+@api_view(['GET'])
+def community_post_feed(request, pk):
+    try:
+        community = Community.objects.get(id=pk)
+        posts = Post.objects.filter(
+            community=community
+        ).order_by('-created_at')
+        community_serializer = CommunitySerializer(community, context={"request": request})
+        post_serializer = CommunityPostFeedSerializer(posts, many=True, context={'request': request})
+        return Response({
+            "community": community_serializer.data,
+            "posts": post_serializer.data
+        })
+    
+    except Community.DoesNotExist:
+        return Response({'error': 'Community does not exist.'}, status=404)
+
 
 @api_view(['POST'])
 def community_join(request, pk):

@@ -17,9 +17,13 @@ import privacyPolicyIcon from '../../assets/icons/balance.png';
 import userAgreementIcon from '../../assets/icons/agreement.png';
 import caretDownIcon from '../../assets/icons/caret-down.png';
 import plusIcon from '../../assets/icons/plus.png';
+import { useCommunities } from '../../contexts/CommunityContext';
 
 
 const Sidebar: React.FC<{isSidebarOpen: boolean}> = ({isSidebarOpen}) => {
+
+  const { communities } = useCommunities();
+
   return (
     <div
     className={`border-t-0 z-50 overflow-y-scroll fixed top-[60px] left-0 h-[calc(100vh-61px)] w-[69%] bg-white shadow-lg transform ${
@@ -29,7 +33,7 @@ const Sidebar: React.FC<{isSidebarOpen: boolean}> = ({isSidebarOpen}) => {
     {/* Sidebar Content */}
     <nav className="mt-2 px-6 flex flex-col pb-3">
       <ul className="space-y-0 border-b border-b-gray-200 py-3">
-        <li className='flex items-center px-4 py-0.5 bg-gray-200'>
+        <li className='flex items-center px-4 py-0.5'>
           <img className="w-5 h-5" src={homeIcon} alt="Home Icon" />
           <a href="#" className="ms-2.5 block p-2 hover:bg-gray-800">Home</a>
         </li>
@@ -73,12 +77,12 @@ const Sidebar: React.FC<{isSidebarOpen: boolean}> = ({isSidebarOpen}) => {
           </div>
           <span className='ms-2.5'>Create a community</span>
         </li>
-        {Array(20).fill('').map((_, idx) => (
+        {communities && communities.map((community, idx) => (
           <li key={idx} className='flex px-2 py-1 items-center justify-between'> 
             <div className='w-8 h-8'>
               <img src={redditIcon} alt="" className='w-full h-full'/>
             </div>
-            <span className='w-[65%] ms-3.5'>r/Skypeia</span>
+            <span className='w-[65%] ms-3.5'>r/{community.name}</span>
             <div className='w-[15%] flex justify-center items-center'>
               <img src={starIcon} alt="" className='w-4 h-4'/>
             </div>

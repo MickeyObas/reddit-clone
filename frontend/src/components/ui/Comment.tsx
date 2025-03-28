@@ -3,7 +3,7 @@ import { Dot, Ellipsis, MessageCircle, MinusCircle, PlusCircle } from 'lucide-re
 import UpArrow from '../../assets/svgs/UpArrow';
 import DownArrow from '../../assets/svgs/DownArrow';
 import { useAuth } from '../../contexts/AuthContext';
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { fetchWithAuth, timeAgo } from '../../utils';
 import { BACKEND_URL } from '../../config';
 import { CommentType } from '../../types/comment';
@@ -11,17 +11,9 @@ import { Post } from '../../types/post';
 import { useParams } from 'react-router-dom';
 
 
-type CommentHoverState = {
-  id: number,
-  type: string
-} | null;
-
 interface CommentProps {
   comment: CommentType,
-  isHovered: CommentHoverState,
-  setIsHovered: React.Dispatch<React.SetStateAction<CommentHoverState>>,
   setPost: React.Dispatch<React.SetStateAction<Post | null>>,
-  parent?: null | number
 }
 
 type CommentVote = {
@@ -30,15 +22,17 @@ type CommentVote = {
   }
 
 
-const Comment = ({comment, isHovered, setIsHovered, setPost, parent}: CommentProps) => {
+const Comment = ({comment, setPost}: CommentProps) => {
   const { postId } = useParams();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const [commentVote, setCommentVote] = useState<CommentVote>({count: comment.vote_count, userVote: comment.user_vote})
+  const [isHovered, setIsHovered] = useState<string | null>(null);
   const [showReplies, setShowReplies] = useState(false);
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [reply, setReply] = useState('');
-
+  const formattedTimeAgo = useMemo(() => timeAgo(comment.created_at), [comment.created_at])
+  
   const handleCommentVote = async (commentId: number, type: string) => {
       const dir = type === "upvote" ? 1 : -1;
       const response = await fetchWithAuth(`${BACKEND_URL}/votes/vote?user_id=${user?.id}&obj_id=${commentId}&dir=${dir}&obj=c`, {
@@ -135,7 +129,7 @@ const Comment = ({comment, isHovered, setIsHovered, setPost, parent}: CommentPro
         </div>
         <span className='font-bold'>{comment.owner.username}</span>
         <Dot size={16} />
-        <span className='text-slate-500'>{timeAgo(comment.created_at)}</span>
+        <span className='text-slate-500'>{formattedTimeAgo}</span>
       </div>
       <div className='border-l border-slate-300 ml-3 '>
         <div className='ps-7 flex flex-col'>
@@ -148,8 +142,8 @@ const Comment = ({comment, isHovered, setIsHovered, setPost, parent}: CommentPro
                 <UpArrow 
                   height="16px" width="16px"
                   color={commentVote.userVote === "upvote" ? "red" : ""}
-                  outlineColor={isHovered?.id === comment.id && isHovered.type === "up" ? 'red' : 'gray'}
-                  onMouseEnter={() => setIsHovered({id: comment.id, type: 'up'})}
+                  outlineColor={isHovered === "up" ? 'red' : 'gray'}
+                  onMouseEnter={() => setIsHovered('up')}
                   onMouseLeave={() => setIsHovered(null)}
                   />
               </div>
@@ -160,8 +154,8 @@ const Comment = ({comment, isHovered, setIsHovered, setPost, parent}: CommentPro
                 <DownArrow 
                   height="16px" width="16px" 
                   color={commentVote.userVote === "downvote" ? "blue" : ""}
-                  outlineColor={isHovered?.id === comment.id && isHovered.type === "down" ? 'blue' : 'gray'}
-                  onMouseEnter={() => setIsHovered({id: comment.id, type: 'down'})}
+                  outlineColor={isHovered === "down" ? 'blue' : 'gray'}
+                  onMouseEnter={() => setIsHovered('down')}
                   onMouseLeave={() => setIsHovered(null)}
                   />
               </div>
@@ -215,10 +209,7 @@ const Comment = ({comment, isHovered, setIsHovered, setPost, parent}: CommentPro
           comment.replies.map((reply, idx) => (
             <div className='ml-8' key={idx}>
               <Comment
-                parent={comment.id} 
                 comment={reply} 
-                isHovered={isHovered} 
-                setIsHovered={setIsHovered} 
                 setPost={setPost}
                 />
             </div>

@@ -4,6 +4,7 @@ from .models import Community
 
 
 class CommunitySerializer(serializers.ModelSerializer):
+    is_member = serializers.SerializerMethodField()
     
     class Meta:
         model = Community
@@ -17,8 +18,13 @@ class CommunitySerializer(serializers.ModelSerializer):
             'member_count',
             'moderators',
             'rules',
-            'created_at'
+            'created_at',
+            'is_member'
         ]
+
+    def get_is_member(self, obj):
+        user = self.context.get('request').user
+        return user.id in obj.members.values_list('id', flat=True)
 
     def create(self, validated_data):
         request = self.context.get('request')

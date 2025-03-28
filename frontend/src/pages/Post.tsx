@@ -222,10 +222,7 @@ const Post = () => {
           <Comment 
             key={comment.id}
             comment={comment}
-            isHovered={isHovered}
-            setIsHovered={setIsHovered}
             setPost={setPost}
-            parent={comment.id}
           />
         ))}
       </div>

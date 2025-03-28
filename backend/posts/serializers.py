@@ -42,12 +42,6 @@ class PostSerializer(serializers.ModelSerializer):
             'comment_count',
             'created_at'
         ]
-    
-    def validate_community(self, community):
-        user = self.context.get('request').user
-        if user.id not in community.members.values_list('id', flat=True):
-            raise serializers.ValidationError('You are not a member of this community.')
-        return community
 
     def get_media(self, obj):
         media_files = obj.postmedia_set.all()
@@ -81,8 +75,12 @@ class PostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context['request']
-        media_files = request.FILES.getlist('media')
         user = request.user
+        
+        if user.id not in validated_data["community"].members.values_list('id', flat=True):
+            raise serializers.ValidationError('You are not a member of this community.')
+        
+        media_files = request.FILES.getlist('media')
         validated_data['owner'] = user
         validated_data['community'] = Community.objects.get(id=request.data['community'])
         
@@ -112,6 +110,7 @@ class PostDisplaySerializer(serializers.ModelSerializer):
     thumbnail = serializers.SerializerMethodField()
     community = serializers.CharField(source='community.name')
     user_vote = serializers.SerializerMethodField()
+    is_member = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -123,7 +122,8 @@ class PostDisplaySerializer(serializers.ModelSerializer):
             'comment_count',
             'thumbnail',
             'created_at',
-            'user_vote'
+            'user_vote',
+            'is_member'
         ]
 
     def get_comment_count(self, obj):
@@ -147,3 +147,15 @@ class PostDisplaySerializer(serializers.ModelSerializer):
         if vote.exists():
             return vote.first().vote_type_name.lower()
         return None
+
+    def get_is_member(self, obj):
+        user = self.context.get('request').user
+        return user.id in obj.community.members.values_list('id', flat=True)
+    
+
+class CommunityPostFeedSerializer(PostDisplaySerializer):
+
+    owner = UserSerializer()
+
+    class Meta(PostDisplaySerializer.Meta):
+        fields = PostDisplaySerializer.Meta.fields + ['owner'] 

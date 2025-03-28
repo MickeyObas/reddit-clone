@@ -21,3 +21,16 @@ export type Post = {
     created_at: string,
     user_vote: string | null
 }
+
+export type PostDisplay = {
+    id: number,
+    title: string,
+    body: string,
+    community: string,
+    thumbnail: string,
+    vote_count: number,
+    comment_count: number,
+    created_at: string,
+    user_vote: string | null,
+    is_member: boolean
+}

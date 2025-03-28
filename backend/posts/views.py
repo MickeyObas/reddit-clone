@@ -11,6 +11,7 @@ from .serializers import (
     PostSerializer,
     PostDisplaySerializer
 )
+from communities.serializers import CommunitySerializer
 
 
 @api_view(['GET', 'POST'])
@@ -74,16 +75,3 @@ def user_post_feed(request):
 
     return Response(serializer.data)
 
-
-@api_view(['GET'])
-def community_post_feed(request, pk):
-    try:
-        community = Community.objects.get(id=pk)
-        posts = Post.objects.filter(
-            community=community
-        ).order_by('-created_at')
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data)
-    
-    except Community.DoesNotExist:
-        return Response({'error': 'Community does not exist.'}, status=404)
