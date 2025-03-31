@@ -24,8 +24,8 @@ class CommunitySerializer(serializers.ModelSerializer):
 
     def get_is_member(self, obj):
         user = self.context.get('request').user
-        return user.id in obj.members.values_list('id', flat=True)
-
+        return obj.members.filter(id=user.id).exists()
+    
     def create(self, validated_data):
         request = self.context.get('request')
         user = request.user

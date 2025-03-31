@@ -4,13 +4,14 @@ import dotIcon from '../assets/icons/dot.png';
 import UpArrow from '../assets/svgs/UpArrow';
 import DownArrow from '../assets/svgs/DownArrow';
 import ellipsisIcon from '../assets/icons/ellipsis.png';
-import { ChevronDown, Ellipsis, Pin, PlusIcon } from 'lucide-react';
+import { CakeIcon, CakeSlice, ChevronDown, Ellipsis, Globe, Mail, Pin, PlusIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { fetchWithAuth, formatCommunity, formatUsername, getImage, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 import { PostDisplay} from '../types/post';
 import { useAuth } from '../contexts/AuthContext';
+import defaultRedditProfileIcon from '../assets/icons/reddit-profile.png';
 
 type PostVotes = {
   [id: number]: {
@@ -31,6 +32,8 @@ const Community = () => {
   const [isHovered, setIsHovered] = useState<hoverState | null>(null);
   const [votes, setVotes] = useState<PostVotes>({})
   const { communityId } = useParams();
+  const [isMember, setIsMember] = useState(false);
+  const [selectedLink, setSelectedLink] = useState("feed");
 
   useEffect(() => {
     const fetchCommunityPosts = async () => {
@@ -44,6 +47,7 @@ const Community = () => {
           console.log(data);
           setPosts(data.posts);
           setCommunity(data.community);
+          setIsMember(data.community.is_member)
           setVotes(
             data.posts.reduce((acc: PostVotes, post: Post) => {
               acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
@@ -106,8 +110,26 @@ const Community = () => {
       postVote();
     }
 
+    const handleJoin = async () => {
+      try{
+        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/join/`, {
+          method: 'POST'
+        });
+        if(!response?.ok){
+          console.error("Whoops, something went wrong.");
+        }else{
+          const data = await response.json();
+          console.log(data);
+          setIsMember(true);
+        }
+      }catch(err){
+        console.error(err);
+      }
+    };
+
   return (
-    <div>
+    <div className='pb-5'>
+      {/* Community Header */}
       <div
         className="bg-gray-white p-5"
       >Banner</div>
@@ -132,12 +154,14 @@ const Community = () => {
             <span><PlusIcon size={20}/></span>
             <span>Create Post</span>
           </button>
-          {community?.is_member ? (
-            <button className='flex items-center justify-center text-xs py-2 border px-3  rounded-full bg-gray-white text-white'>
+          {isMember ? (
+            <button className='flex items-center justify-center text-xs py-2 border px-3  rounded-full cursor-pointer'>
             <span>Joined</span>
           </button>
           ): (
-            <button className='flex items-center justify-center text-xs py-2 border px-3  rounded-full bg-blue-700 text-white'>
+            <button 
+              onClick={handleJoin}
+              className='flex items-center justify-center text-xs py-2 border px-3  rounded-full bg-blue-700 text-white cursor-pointer'>
             <span>Join</span>
           </button>
           )}
@@ -162,6 +186,7 @@ const Community = () => {
             </div>
           </div>
         </div>
+
         <div className='flex mt-5 items-center justify-between px-4.5'>
           <div className='flex items-center gap-x-2'>
             <Pin size={18} transform='rotate(45)' color='gray'/>
@@ -173,7 +198,7 @@ const Community = () => {
         {/* Feed */}
         {posts.length > 0 && posts.map((post) => (
           <article key={post.id} className="feed grid grid-cols-1 px-5 py-3 border-b border-b-slate-200">
-          <Link to={`post/${post.id}/`}>
+          <Link to={`/post/${post.id}/`}>
             <div className='flex justify-between'>
               <div className='flex flex-col'>
                 <div className='left-of-panel flex text-xs items-center'>
@@ -247,7 +272,204 @@ const Community = () => {
           </div>
         </article>
         ))}
-        
+      </div>
+      {/* About */}
+      <div>
+        <div className='bg-slate-50 flex flex-col'>
+          <div className='px-3 py-3 border-b border-b-slate-300'>
+            <h3 className='uppercase font-semibold'>About Community</h3>
+            <h3 className='font-bold mt-5'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti, odit?</h3>
+            <p className='mt-1 leading-6 mb-2.5'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores blanditiis pariatur libero, consequuntur explicabo dolores tempora quaerat, saepe iusto dicta itaque, aliquid quis officia quam voluptate consectetur ea corporis? Modi quos, ullam corporis animi aliquam odio possimus suscipit adipisci facere optio natus quo laborum hic excepturi qui perspiciatis minus? Magnam.</p>
+            <div className='text-sm flex gap-x-1.5 mb-2'>
+              <CakeSlice transform='scale(-1 1)' size={22} strokeWidth={1} />
+              <span>Created Apr 30, 2011</span>
+            </div>
+            <div className='text-sm flex gap-x-1.5'>
+              <Globe size={22} strokeWidth={1} />
+              <span>Public</span>
+            </div>
+          </div>
+        </div>
+
+        <div className='bg-slate-50 flex flex-col'>
+          <div className='px-3 py-6 border-b border-b-slate-300'>
+            <h3 className='uppercase font-semibold mb-3'>User Flair</h3>
+            <div className='flex items-center gap-x-2.5'>
+              <div className='rounded-full overflow-hidden w-8 h-8'>
+                <img src={defaultRedditProfileIcon} alt="" />
+              </div>
+              <h3>Reddituser</h3>
+            </div>            
+          </div>
+        </div>
+
+        <div className='bg-slate-50 flex flex-col'>
+          <div className='px-3 py-6 border-b border-b-slate-300'>
+            <h3 className='uppercase font-semibold mb-3'>Community Bookmarks</h3>
+            <div className='flex flex-col gap-y-2.5'>
+              <Link to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
+              <Link to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
+              <Link to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
+              <Link to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
+              <Link to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
+            </div>            
+          </div>
+        </div>
+
+        <div className='bg-slate-50 flex flex-col'>
+          <div className='px-3 py-6 border-b border-b-slate-300'>
+            <h3 className='uppercase font-semibold mb-3'>Rules</h3>
+            <ol className='list-decimal ps-7 flex flex-col gap-y-7'>
+              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
+              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
+              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
+              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
+              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
+              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
+              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
+              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
+            </ol>     
+          </div>
+        </div>
+
+        <div className='bg-slate-50 flex flex-col'>
+          <div className='px-3 py-6 border-b border-b-slate-300'>
+            <h3 className='uppercase font-semibold mb-3'>Moderators</h3>
+            <div className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline flex justify-center gap-x-2 items-center mb-4'>
+              <Mail size={20} />
+              <span>Message Mods</span>
+            </div>
+            <div className='flex flex-col gap-y-2.5'>
+              <div className='flex items-center gap-x-2'>
+                <div className='h-8 w-8'>
+                  <img src={redditIcon} alt="" />
+                </div>
+                <div className='flex flex-col'>
+                  <div className='flex gap-x-2'>
+                    <h2>u/redditmod_</h2>
+                    <div className='bg-black text-white rounded-full px-1.5 '>
+                      CREATOR
+                    </div>
+                  </div>
+                  <p className='text-slate-400'>IamZeeMod</p>
+                </div>
+              </div>
+              <div className='flex items-center gap-x-2'>
+                <div className='h-8 w-8'>
+                  <img src={redditIcon} alt="" />
+                </div>
+                <div className='flex flex-col'>
+                  <div className='flex gap-x-2'>
+                    <h2>u/redditmod_</h2>
+                    <div className='bg-black text-white rounded-full px-1.5 '>
+                      CREATOR
+                    </div>
+                  </div>
+                  <p className='text-slate-400'>IamZeeMod</p>
+                </div>
+              </div>
+              <div className='flex items-center gap-x-2'>
+                <div className='h-8 w-8'>
+                  <img src={redditIcon} alt="" />
+                </div>
+                <div className='flex flex-col'>
+                  <div className='flex gap-x-2'>
+                    <h2>u/redditmod_</h2>
+                    <div className='bg-black text-white rounded-full px-1.5 '>
+                      CREATOR
+                    </div>
+                  </div>
+                  <p className='text-slate-400'>IamZeeMod</p>
+                </div>
+              </div>
+              <div className='flex items-center gap-x-2'>
+                <div className='h-8 w-8'>
+                  <img src={redditIcon} alt="" />
+                </div>
+                <div className='flex flex-col'>
+                  <div className='flex gap-x-2'>
+                    <h2>u/redditmod_</h2>
+                    <div className='bg-black text-white rounded-full px-1.5 '>
+                      CREATOR
+                    </div>
+                  </div>
+                  <p className='text-slate-400'>IamZeeMod</p>
+                </div>
+              </div>
+              <div className='flex items-center gap-x-2'>
+                <div className='h-8 w-8'>
+                  <img src={redditIcon} alt="" />
+                </div>
+                <div className='flex flex-col'>
+                  <div className='flex gap-x-2'>
+                    <h2>u/redditmod_</h2>
+                    <div className='bg-black text-white rounded-full px-1.5 '>
+                      CREATOR
+                    </div>
+                  </div>
+                  <p className='text-slate-400'>IamZeeMod</p>
+                </div>
+              </div>
+              <div className='flex items-center gap-x-2'>
+                <div className='h-8 w-8'>
+                  <img src={redditIcon} alt="" />
+                </div>
+                <div className='flex flex-col'>
+                  <div className='flex gap-x-2'>
+                    <h2>u/redditmod_</h2>
+                    <div className='bg-black text-white rounded-full px-1.5 '>
+                      CREATOR
+                    </div>
+                  </div>
+                  <p className='text-slate-400'>IamZeeMod</p>
+                </div>
+              </div>
+              <div className='flex items-center gap-x-2'>
+                <div className='h-8 w-8'>
+                  <img src={redditIcon} alt="" />
+                </div>
+                <div className='flex flex-col'>
+                  <div className='flex gap-x-2'>
+                    <h2>u/redditmod_</h2>
+                    <div className='bg-black text-white rounded-full px-1.5 '>
+                      CREATOR
+                    </div>
+                  </div>
+                  <p className='text-slate-400'>IamZeeMod</p>
+                </div>
+              </div>
+              <div className='flex items-center gap-x-2'>
+                <div className='h-8 w-8'>
+                  <img src={redditIcon} alt="" />
+                </div>
+                <div className='flex flex-col'>
+                  <div className='flex gap-x-2'>
+                    <h2>u/redditmod_</h2>
+                    <div className='bg-black text-white rounded-full px-1.5 '>
+                      CREATOR
+                    </div>
+                  </div>
+                  <p className='text-slate-400'>IamZeeMod</p>
+                </div>
+              </div>
+              <div className='flex items-center gap-x-2'>
+                <div className='h-8 w-8'>
+                  <img src={redditIcon} alt="" />
+                </div>
+                <div className='flex flex-col'>
+                  <div className='flex gap-x-2'>
+                    <h2>u/redditmod_</h2>
+                    <div className='bg-black text-white rounded-full px-1.5 '>
+                      CREATOR
+                    </div>
+                  </div>
+                  <p className='text-slate-400'>IamZeeMod</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      
       </div>
     </div>
   )

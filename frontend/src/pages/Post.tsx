@@ -4,7 +4,7 @@ import ellipsisIcon from '../assets/icons/ellipsis.png';
 import type { Post } from '../types/post';
 import { CommentType } from '../types/comment';
 import { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { fetchWithAuth, formatCommunity, formatUsername, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 
@@ -146,7 +146,9 @@ const Post = () => {
         <div className='flex flex-col gap-y-0.5'>
           <div className='flex'>
             {/* TODO: Find fixes for such TS errors */}
-            <span className='font-semibold me-2'>{post?.community.name && formatCommunity(post?.community.name)}</span>
+            <Link 
+              to={`/community/${post?.community.id}/`}
+              className='font-semibold me-2'>{post?.community.name && formatCommunity(post?.community.name)}</Link>
             <span className='opacity-70'>{timeAgo(post?.created_at)}</span>
           </div>
           <a href='' className='text-blue-600 underline text-[11px]'>{formatUsername(post?.owner.username ?? "Unknown User")}</a>
