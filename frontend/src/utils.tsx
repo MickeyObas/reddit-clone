@@ -9,6 +9,19 @@ export const formatUsername = (username: string) => {
   return "u/" + username;
 }
 
+export const formatDate = (dateString: string):string => {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    throw new Error("Invalid date format");
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+}
+
 export const getImage = (imageURL: string) => {
   return 'http://localhost:8000/media/' + imageURL;
 }

@@ -12,6 +12,7 @@ class Community(TimeStampedModel):
     moderators = models.ManyToManyField('accounts.User', related_name='communities_modding', blank=True)
     members = models.ManyToManyField('accounts.User')
     name = models.CharField(max_length=24, unique=True)
+    subtitle = models.CharField(max_length=150, blank=True, null=True)
     type = models.CharField(choices=Type.choices, default=Type.PUBLIC)
     description = models.TextField(blank=False, null=False)
     avatar = models.ImageField(upload_to='community-icons/', blank=True, null=True)

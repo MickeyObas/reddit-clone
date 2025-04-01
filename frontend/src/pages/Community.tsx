@@ -4,10 +4,10 @@ import dotIcon from '../assets/icons/dot.png';
 import UpArrow from '../assets/svgs/UpArrow';
 import DownArrow from '../assets/svgs/DownArrow';
 import ellipsisIcon from '../assets/icons/ellipsis.png';
-import { CakeIcon, CakeSlice, ChevronDown, Ellipsis, Globe, Mail, Pin, PlusIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { fetchWithAuth, formatCommunity, formatUsername, getImage, timeAgo } from '../utils';
+import { CakeIcon, CakeSlice, ChevronDown, ChevronUp, Ellipsis, Globe, Mail, Pin, PlusIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams, useLocation } from 'react-router-dom';
+import { fetchWithAuth, formatCommunity, formatDate, formatUsername, getImage, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 import { PostDisplay} from '../types/post';
 import { useAuth } from '../contexts/AuthContext';
@@ -25,6 +25,30 @@ type hoverState = {
   hovered: string
 }
 
+const RuleItem = ({rule, idx}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <li
+      onClick={() => setIsExpanded(!isExpanded)} 
+      className='flex flex-col cursor-pointer py-3'>
+      <div className='flex justify-between'>
+        <div className='flex gap-x-4'>
+          <span>{idx+1}</span>
+          <span>{rule.title}</span>
+        </div>
+        {isExpanded ? (
+          <span><ChevronUp size={18} /></span>
+        ) : (
+          <span><ChevronDown size={18} /></span>
+        )}
+      </div>
+      <div className={`ms-4 mt-2 overflow-hidden transition-max-height duration-200 ease-in-out ${isExpanded ? 'max-h-40' : 'max-h-0'}`}>{rule.description}</div>
+    </li> 
+  )
+
+}
+
 const Community = () => {
   const { user } = useAuth();
   const [community, setCommunity] = useState();
@@ -33,7 +57,14 @@ const Community = () => {
   const [votes, setVotes] = useState<PostVotes>({})
   const { communityId } = useParams();
   const [isMember, setIsMember] = useState(false);
-  const [selectedLink, setSelectedLink] = useState("feed");
+  const location = useLocation();
+
+  const formattedDate = useMemo(() => {
+    const dateStr = community?.created_at;
+    if(!dateStr) return "N/A";
+    return formatDate(dateStr);
+  }, [community?.created_at])
+
 
   useEffect(() => {
     const fetchCommunityPosts = async () => {
@@ -127,6 +158,8 @@ const Community = () => {
       }
     };
 
+  if(!community) return <h1></h1>
+
   return (
     <div className='pb-5'>
       {/* Community Header */}
@@ -139,7 +172,7 @@ const Community = () => {
             <img src={redditIcon} alt="" />
           </div>
           <div className='flex flex-col'>
-            <h3 className='font-bold text-[16px]'>{formatCommunity(community?.name)}</h3>
+            <h3 className='font-bold text-[16px]'>{community.name}</h3>
             <div className='flex text-xs text-slate-500 items-center gap-x-1.5'>
               <span>146k members</span>
               <div className='flex items-center gap-x-1.5'>
@@ -171,9 +204,17 @@ const Community = () => {
           </button>
         </div>
         <div className='flex items-center text-xs font-medium mt-3 justify-between mx-4.5'>
-          <div className='flex items-center'>
-            <span className='bg-slate-300 py-2.5 px-3.5 rounded-full '>Feed</span>
-            <span className='py-2.5 px-3.5 rounded-full '>About</span>
+          <div className='flex items-center gap-x-2'>
+            <Link
+              to={`/community/${communityId}/`}
+              className={`py-2.5 px-3.5 rounded-full ${location.pathname === `/community/${communityId}/` ? 'bg-slate-300' : ''}`}>
+              Feed
+            </Link>
+            <Link
+              to={`/community/${communityId}/about/`}
+              className={`py-2.5 px-3.5 rounded-full ${location.pathname.includes('about') ? 'bg-slate-300' : ''}`}>
+              About
+            </Link>
           </div>
           <div className='flex items-center'>
             <div className='flex items-center gap-x-1'>
@@ -278,11 +319,13 @@ const Community = () => {
         <div className='bg-slate-50 flex flex-col'>
           <div className='px-3 py-3 border-b border-b-slate-300'>
             <h3 className='uppercase font-semibold'>About Community</h3>
-            <h3 className='font-bold mt-5'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti, odit?</h3>
-            <p className='mt-1 leading-6 mb-2.5'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores blanditiis pariatur libero, consequuntur explicabo dolores tempora quaerat, saepe iusto dicta itaque, aliquid quis officia quam voluptate consectetur ea corporis? Modi quos, ullam corporis animi aliquam odio possimus suscipit adipisci facere optio natus quo laborum hic excepturi qui perspiciatis minus? Magnam.</p>
+            {community?.subtitle && (
+              <h3 className='font-bold mt-5'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti, odit?</h3>
+            )}
+            <p className='mt-1 leading-6 mb-2.5'>{community?.description}</p>
             <div className='text-sm flex gap-x-1.5 mb-2'>
               <CakeSlice transform='scale(-1 1)' size={22} strokeWidth={1} />
-              <span>Created Apr 30, 2011</span>
+              <span>Created {formattedDate}</span>
             </div>
             <div className='text-sm flex gap-x-1.5'>
               <Globe size={22} strokeWidth={1} />
@@ -298,7 +341,7 @@ const Community = () => {
               <div className='rounded-full overflow-hidden w-8 h-8'>
                 <img src={defaultRedditProfileIcon} alt="" />
               </div>
-              <h3>Reddituser</h3>
+              <h3>{user?.username}</h3>
             </div>            
           </div>
         </div>
@@ -307,11 +350,9 @@ const Community = () => {
           <div className='px-3 py-6 border-b border-b-slate-300'>
             <h3 className='uppercase font-semibold mb-3'>Community Bookmarks</h3>
             <div className='flex flex-col gap-y-2.5'>
-              <Link to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
-              <Link to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
-              <Link to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
-              <Link to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
-              <Link to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
+              {Array.from({length: 5}).map((_, index) => (
+                <Link key={index} to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
+              ))}
             </div>            
           </div>
         </div>
@@ -319,16 +360,14 @@ const Community = () => {
         <div className='bg-slate-50 flex flex-col'>
           <div className='px-3 py-6 border-b border-b-slate-300'>
             <h3 className='uppercase font-semibold mb-3'>Rules</h3>
-            <ol className='list-decimal ps-7 flex flex-col gap-y-7'>
-              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
-              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
-              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
-              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
-              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
-              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
-              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
-              <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur, nulla?</li>  
-            </ol>     
+            {community.rules && (
+            <ol className='list-decimal px-7 flex flex-col'>
+              {community.rules.map((rule, idx) => (
+                <RuleItem key={idx} rule={rule} idx={idx}/>
+              ))}
+            </ol>                
+            )}
+   
           </div>
         </div>
 
@@ -339,134 +378,27 @@ const Community = () => {
               <Mail size={20} />
               <span>Message Mods</span>
             </div>
-            <div className='flex flex-col gap-y-2.5'>
-              <div className='flex items-center gap-x-2'>
-                <div className='h-8 w-8'>
-                  <img src={redditIcon} alt="" />
-                </div>
-                <div className='flex flex-col'>
-                  <div className='flex gap-x-2'>
-                    <h2>u/redditmod_</h2>
-                    <div className='bg-black text-white rounded-full px-1.5 '>
-                      CREATOR
+            {community.moderators.length > 0 ? (
+              <div className='flex flex-col gap-y-2.5'>
+                {community.moderators && community.moderators.map((moderator, idx) => (
+                  <div className='flex items-center gap-x-2'>
+                    <div className='h-8 w-8'>
+                      <img src={redditIcon} alt="" />
+                    </div>
+                    <div className='flex flex-col'>
+                      <div className='flex gap-x-2'>
+                        <h2>{formatUsername(moderator.username)}</h2>
+                        <div className='bg-black text-white rounded-full px-1.5 '>
+                          CREATOR
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <p className='text-slate-400'>IamZeeMod</p>
-                </div>
+                ))}
               </div>
-              <div className='flex items-center gap-x-2'>
-                <div className='h-8 w-8'>
-                  <img src={redditIcon} alt="" />
-                </div>
-                <div className='flex flex-col'>
-                  <div className='flex gap-x-2'>
-                    <h2>u/redditmod_</h2>
-                    <div className='bg-black text-white rounded-full px-1.5 '>
-                      CREATOR
-                    </div>
-                  </div>
-                  <p className='text-slate-400'>IamZeeMod</p>
-                </div>
-              </div>
-              <div className='flex items-center gap-x-2'>
-                <div className='h-8 w-8'>
-                  <img src={redditIcon} alt="" />
-                </div>
-                <div className='flex flex-col'>
-                  <div className='flex gap-x-2'>
-                    <h2>u/redditmod_</h2>
-                    <div className='bg-black text-white rounded-full px-1.5 '>
-                      CREATOR
-                    </div>
-                  </div>
-                  <p className='text-slate-400'>IamZeeMod</p>
-                </div>
-              </div>
-              <div className='flex items-center gap-x-2'>
-                <div className='h-8 w-8'>
-                  <img src={redditIcon} alt="" />
-                </div>
-                <div className='flex flex-col'>
-                  <div className='flex gap-x-2'>
-                    <h2>u/redditmod_</h2>
-                    <div className='bg-black text-white rounded-full px-1.5 '>
-                      CREATOR
-                    </div>
-                  </div>
-                  <p className='text-slate-400'>IamZeeMod</p>
-                </div>
-              </div>
-              <div className='flex items-center gap-x-2'>
-                <div className='h-8 w-8'>
-                  <img src={redditIcon} alt="" />
-                </div>
-                <div className='flex flex-col'>
-                  <div className='flex gap-x-2'>
-                    <h2>u/redditmod_</h2>
-                    <div className='bg-black text-white rounded-full px-1.5 '>
-                      CREATOR
-                    </div>
-                  </div>
-                  <p className='text-slate-400'>IamZeeMod</p>
-                </div>
-              </div>
-              <div className='flex items-center gap-x-2'>
-                <div className='h-8 w-8'>
-                  <img src={redditIcon} alt="" />
-                </div>
-                <div className='flex flex-col'>
-                  <div className='flex gap-x-2'>
-                    <h2>u/redditmod_</h2>
-                    <div className='bg-black text-white rounded-full px-1.5 '>
-                      CREATOR
-                    </div>
-                  </div>
-                  <p className='text-slate-400'>IamZeeMod</p>
-                </div>
-              </div>
-              <div className='flex items-center gap-x-2'>
-                <div className='h-8 w-8'>
-                  <img src={redditIcon} alt="" />
-                </div>
-                <div className='flex flex-col'>
-                  <div className='flex gap-x-2'>
-                    <h2>u/redditmod_</h2>
-                    <div className='bg-black text-white rounded-full px-1.5 '>
-                      CREATOR
-                    </div>
-                  </div>
-                  <p className='text-slate-400'>IamZeeMod</p>
-                </div>
-              </div>
-              <div className='flex items-center gap-x-2'>
-                <div className='h-8 w-8'>
-                  <img src={redditIcon} alt="" />
-                </div>
-                <div className='flex flex-col'>
-                  <div className='flex gap-x-2'>
-                    <h2>u/redditmod_</h2>
-                    <div className='bg-black text-white rounded-full px-1.5 '>
-                      CREATOR
-                    </div>
-                  </div>
-                  <p className='text-slate-400'>IamZeeMod</p>
-                </div>
-              </div>
-              <div className='flex items-center gap-x-2'>
-                <div className='h-8 w-8'>
-                  <img src={redditIcon} alt="" />
-                </div>
-                <div className='flex flex-col'>
-                  <div className='flex gap-x-2'>
-                    <h2>u/redditmod_</h2>
-                    <div className='bg-black text-white rounded-full px-1.5 '>
-                      CREATOR
-                    </div>
-                  </div>
-                  <p className='text-slate-400'>IamZeeMod</p>
-                </div>
-              </div>
-            </div>
+            ) : (
+              <h1>No moderators.</h1>
+            )}
           </div>
         </div>
       

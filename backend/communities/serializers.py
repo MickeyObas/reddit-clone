@@ -1,10 +1,11 @@
 from rest_framework import serializers
 
 from .models import Community
-
+from accounts.serializers import UserSerializer
 
 class CommunitySerializer(serializers.ModelSerializer):
     is_member = serializers.SerializerMethodField()
+    moderators = UserSerializer(many=True)
     
     class Meta:
         model = Community
@@ -13,6 +14,7 @@ class CommunitySerializer(serializers.ModelSerializer):
             'name',
             'type',
             'description',
+            'subtitle',
             'avatar',
             'banner',
             'member_count',
