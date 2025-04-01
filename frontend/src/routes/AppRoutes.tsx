@@ -9,6 +9,7 @@ import MainLayout from "../components/layouts/MainLayout";
 import CreatePost from "../pages/CreatePost";
 import Post from "../pages/Post";
 import Community from "../pages/Community";
+import { AboutCommunity } from "../pages/AboutCommunity";
 
 
 const AppRoutes = () => {
@@ -28,6 +29,7 @@ const AppRoutes = () => {
           <Route index path="create-post/" element={<CreatePost />} />
           <Route path="post/:postId/" element={<Post />} />
           <Route path="community/:communityId/" element={<Community />} />
+          <Route path="community/:communityId/about/" element={<AboutCommunity />} />
         </Route>
       </Route>
   
