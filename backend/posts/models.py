@@ -10,9 +10,6 @@ class Post(TimeStampedModel):
     body = models.TextField()
     flairs = models.ManyToManyField('tags.Flair', blank=True)
 
-    class Meta:
-        ordering = ['-created_at']
-
     def __str__(self):
         return f"{self.owner} - {self.title}"
     

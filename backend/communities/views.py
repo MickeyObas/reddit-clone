@@ -9,6 +9,8 @@ from posts.serializers import (
     PostDisplaySerializer, 
     CommunityPostFeedSerializer
 )
+from django.db.models.functions import Coalesce
+from django.db.models import Sum, Value
 
 @api_view(['GET', 'POST'])
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
@@ -54,14 +56,24 @@ def community_detail_update_delete(request, pk):
     except Community.DoesNotExist:
         return Response({'error': f"Community with ID '{pk}' does not exist"}, status=400)
     
-
+    
+# TODO: Review
 @api_view(['GET'])
 def community_post_feed(request, pk):
+    sort = request.GET.get('sort')
     try:
         community = Community.objects.get(id=pk)
         posts = Post.objects.filter(
             community=community
-        ).order_by('-created_at')
+        )
+
+        if sort == "latest":
+            posts = posts.order_by('-created_at')
+        elif sort == "best":
+            posts = posts.annotate(
+                vote_total=Coalesce(Sum('vote__type'), Value(0))
+            ).order_by('-vote_total')
+
         community_serializer = CommunitySerializer(community, context={"request": request})
         post_serializer = CommunityPostFeedSerializer(posts, many=True, context={'request': request})
         return Response({

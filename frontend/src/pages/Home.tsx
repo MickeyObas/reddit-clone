@@ -7,7 +7,7 @@ import columnsIcon from '../assets/icons/columns.png';
 import { useEffect, useState } from 'react';
 import { fetchWithAuth, formatCommunity, getImage, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import UpArrow from '../assets/svgs/UpArrow';
 import DownArrow from '../assets/svgs/DownArrow';
@@ -34,6 +34,7 @@ const Home: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isHovered, setIsHovered] = useState<hoverState | null>(null);
   const [votes, setVotes] = useState<PostVotes>({})
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -109,6 +110,25 @@ const Home: React.FC = () => {
     postVote();
   }
 
+  const handleJoinCommunity = (communityId) => {
+    const joinCommunity = async () => {
+      try {
+        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/join/`, {
+          method: 'POST'
+        });
+        if(!response.ok){
+          console.error("Whoops, bad response.");
+        }else{
+          const data = await response?.json();
+          console.log(data);
+        }
+      }catch(err){
+        console.error(err);
+      }
+    };
+    joinCommunity();
+  }
+
   return (
     <>
       <header className='flex text-[13px] px-5 py-3 border-b border-b-slate-200'>
@@ -125,17 +145,30 @@ const Home: React.FC = () => {
       <main className="homepage grid grid-cols-1">
         {posts && posts.map((post, idx) => (
           <article key={idx} className="feed grid grid-cols-1 px-5 py-3 border-b border-b-slate-200">
-            <Link to={`post/${post.id}/`}>
+            {/* sfldfh */}
+            <div className="cursor-pointer" onClick={() => navigate(`post/${post.id}/`)}>
               <div className='flex'>
                 <div className='left-of-panel flex text-xs items-center'>
                   <div className='w-4 h-4 rounded-full bg-green-700'></div>
-                  <span className='ms-2 font-medium'>{formatCommunity(post?.community)}</span>
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/community/${post.community.id}/`)
+                    }}
+                    className='ms-2 font-medium cursor-pointer hover:underline'
+                    >{formatCommunity(post?.community.name)}</span>
                   <img src={dotIcon} alt="" className='w-2.5 h-2.5 mx-1'/>
                   <span>{timeAgo(post?.created_at)}</span>
                 </div>
-                <button 
-                  className='ms-auto bg-blue-900 text-white px-3 py-0.5 rounded-full self-center'
+                {!post.is_member && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleJoinCommunity(post.community.id);
+                    }}
+                    className='ms-auto bg-blue-900 text-white px-3 py-0.5 rounded-full self-center cursor-pointer'
                 >Join</button>
+                )}
               </div>
               <div className='flex justify-between py-1.5 min-h-16'>
                 <div className='w-[75%] font-semibold text-slate-800'>{post.title}</div>
@@ -149,7 +182,8 @@ const Home: React.FC = () => {
                   </div>
                 )}
               </div>
-            </Link>
+            </div>
+            {/* sfldfh */}
             <div className='flex justify-between text-xs items-center select-none'>
               <div className={`items-center rounded-full flex justify-between text-black mt-1 overflow-hidden
               ${votes[post.id].userVote === 'upvote' ? 'bg-deep-red text-white' :

@@ -12,7 +12,7 @@ import { useCommunities } from '../contexts/CommunityContext';
 import { Community } from '../types/community';
 import { fetchWithAuth } from '../utils';
 import { BACKEND_URL } from '../config';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 type Post = {
   title: string,
@@ -28,36 +28,12 @@ type ErrorState = {
   content: string
 }
 
-// const communities = [
-//   {
-//     id: '1',
-//     title: "React"
-//   },
-//   {
-//     id: '2',
-//     title: "Javascript"
-//   },
-//   {
-//     id: '3',
-//     title: "Python"
-//   },
-//   {
-//     id: '4',
-//     title: "C++"
-//   },
-//   {
-//     id: '5',
-//     title: "Clojure"
-//   },
-//   {
-//     id: '6',
-//     title: "How to train a dragon"
-//   },
-// ]
 
 const CreatePost = () => {
+  const { communityId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const location = useLocation();
+  const from = location.state?.from || '/';
   const { communities } = useCommunities();
   const [post, setPost] = useState<Post>({
     title: '',
@@ -76,8 +52,11 @@ const CreatePost = () => {
   })
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [selectedCommunityId, setSelectedCommunityId] = useState('');
-  const selectedCommunity = communities?.find((community: Community) => community.id.toString() === selectedCommunityId);
+  console.log(communityId);
+  const [selectedCommunityId, setSelectedCommunityId] = useState(
+    communityId ? communityId : ''
+  );
+  const selectedCommunity = communities?.find((community: Community) => community.id.toString() === selectedCommunityId.toString());
 
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -107,7 +86,6 @@ const CreatePost = () => {
 
   const handleCommunityClick = (communityId: string | number) => {
     setSelectedCommunityId(communityId.toString());
-    const selectedCommunity = communities.find((community) => community.id.toString() === communityId.toString());
     setIsSearchDropdownOpen(false);
     setPost((prev) => ({...prev, community: communityId}))
   }
@@ -123,7 +101,8 @@ const CreatePost = () => {
     }
     formData.append('title', post.title);
     formData.append('body', post.content);
-    formData.append('community', post.community);
+    formData.append('community_id', post.community || communityId);
+    console.log(formData);
 
     try{
       setPostLoading(true);
@@ -138,7 +117,7 @@ const CreatePost = () => {
       }else{
         const data = await response.json();
         console.log(data);
-        navigate("/");
+        navigate(from);
       }
     }catch(err){
       console.error(err);

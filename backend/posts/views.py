@@ -18,7 +18,7 @@ from communities.serializers import CommunitySerializer
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def post_list_or_create(request):
     if request.method == 'GET':
-        posts = Post.objects.all()
+        posts = Post.objects.order_by('-created_at')
         serializer = PostDisplaySerializer(posts, many=True, context={"request": request})
         return Response(serializer.data, status=200)
     

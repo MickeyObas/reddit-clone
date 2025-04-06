@@ -29,7 +29,11 @@ const AppRoutes = () => {
           <Route index path="create-post/" element={<CreatePost />} />
           <Route path="post/:postId/" element={<Post />} />
           <Route path="community/:communityId/" element={<Community />} />
+          <Route path="community/:communityId/best/" element={<Community sort={'best'}/>} />
+          <Route path="community/:communityId/hot/" element={<Community sort={'hot'}/>} />
+          <Route path="community/:communityId/latest/" element={<Community sort={'latest'}/>} />
           <Route path="community/:communityId/about/" element={<AboutCommunity />} />
+          <Route path="community/:communityId/create-post/" element={<CreatePost />} />
         </Route>
       </Route>
   

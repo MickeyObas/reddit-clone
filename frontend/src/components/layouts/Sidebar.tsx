@@ -18,9 +18,11 @@ import userAgreementIcon from '../../assets/icons/agreement.png';
 import caretDownIcon from '../../assets/icons/caret-down.png';
 import plusIcon from '../../assets/icons/plus.png';
 import { useCommunities } from '../../contexts/CommunityContext';
+import { Link } from 'react-router-dom';
+import { SetStateAction } from 'react';
 
 
-const Sidebar: React.FC<{isSidebarOpen: boolean}> = ({isSidebarOpen}) => {
+const Sidebar: React.FC<{isSidebarOpen: boolean, setIsSidebarOpen: React.Dispatch<SetStateAction<boolean>>}> = ({isSidebarOpen, setIsSidebarOpen}) => {
 
   const { communities } = useCommunities();
 
@@ -78,15 +80,17 @@ const Sidebar: React.FC<{isSidebarOpen: boolean}> = ({isSidebarOpen}) => {
           <span className='ms-2.5'>Create a community</span>
         </li>
         {communities && communities.map((community, idx) => (
-          <li key={idx} className='flex px-2 py-1 items-center justify-between'> 
-            <div className='w-8 h-8'>
-              <img src={redditIcon} alt="" className='w-full h-full'/>
-            </div>
-            <span className='w-[65%] ms-3.5'>r/{community.name}</span>
-            <div className='w-[15%] flex justify-center items-center'>
-              <img src={starIcon} alt="" className='w-4 h-4'/>
-            </div>
-          </li>
+          <Link to={`community/${community.id}/`} onClick={() => setIsSidebarOpen(false)}>
+            <li key={idx} className='flex px-2 py-1 items-center justify-between'> 
+              <div className='w-8 h-8'>
+                <img src={redditIcon} alt="" className='w-full h-full'/>
+              </div>
+              <span className='w-[65%] ms-3.5'>r/{community.name}</span>
+              <div className='w-[15%] flex justify-center items-center'>
+                <img src={starIcon} alt="" className='w-4 h-4'/>
+              </div>
+            </li>
+          </Link>
         ))}
       </ul>
       <ul className="space-y-0 border-b border-b-gray-200 py-3">

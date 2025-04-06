@@ -32,6 +32,7 @@ const MainLayout = () => {
       )}
       <Sidebar 
         isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
       />
       <Outlet />
     </>

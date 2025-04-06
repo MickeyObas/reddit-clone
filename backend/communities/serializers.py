@@ -6,6 +6,7 @@ from accounts.serializers import UserSerializer
 class CommunitySerializer(serializers.ModelSerializer):
     is_member = serializers.SerializerMethodField()
     moderators = UserSerializer(many=True)
+    avatar = serializers.SerializerMethodField()
     
     class Meta:
         model = Community
@@ -28,6 +29,11 @@ class CommunitySerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         return obj.members.filter(id=user.id).exists()
     
+    def get_avatar(self, obj):
+        if obj.avatar:
+            return self.context['request'].build_absolute_uri(obj.avatar.url)
+        return "http://localhost:8000/static/community.png"
+
     def create(self, validated_data):
         request = self.context.get('request')
         user = request.user

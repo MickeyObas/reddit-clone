@@ -11,6 +11,7 @@ import { fetchWithAuth,  formatDate, formatUsername, getImage, timeAgo } from '.
 import { BACKEND_URL } from '../config';
 import { PostDisplay} from '../types/post';
 import { useAuth } from '../contexts/AuthContext';
+import { CommunityHeader } from './AboutCommunity';
 
 type PostVotes = {
   [id: number]: {
@@ -24,7 +25,7 @@ type hoverState = {
   hovered: string
 }
 
-const Community = () => {
+const Community = ({sort='latest'}) => {
   const { user } = useAuth();
   const [community, setCommunity] = useState();
   const [posts, setPosts] = useState<PostDisplay[]>([]);
@@ -40,11 +41,38 @@ const Community = () => {
     return formatDate(dateStr);
   }, [community?.created_at])
 
+  useEffect(() => {
+    console.log(`Hey, new sort --> ${sort}`);
+    const fetchPosts = async () => {
+      try{
+        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/posts/?sort=${sort}`, {
+          method: 'GET'
+        });
+        if(!response?.ok) console.error("Whoopps, something went wrong.");
+        else{
+          const data = await response?.json();
+          console.log(data);
+          setPosts(data.posts);
+          setVotes(
+            data.posts.reduce((acc: PostVotes, post: Post) => {
+              acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
+              return acc;
+            }, {})
+          )}
+      }catch(err){
+        console.error(err);
+      };
+    };
+
+    fetchPosts();
+    
+  }, [sort])
+
 
   useEffect(() => {
     const fetchCommunityPosts = async () => {
       try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/posts/`, {
+        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/posts/?sort=${sort}`, {
           method: 'GET'
         });
         if(!response?.ok) console.error("Whoopps, something went wrong.");
@@ -139,70 +167,10 @@ const Community = () => {
     <div className='pb-5'>
       {/* Community Header */}
       <div
-        className="bg-gray-white p-5"
-      >Banner</div>
+        className="bg-gray-white h-16 w-full overflow-hidden"
+      ><img src={community?.banner} alt="" className="object-cover w-full h-full" /></div>
       <div className="grid grid-cols-1">
-        <div className="flex gap-x-6 mx-4.5 py-5">
-          <div className='h-8 w-8'>
-            <img src={redditIcon} alt="" />
-          </div>
-          <div className='flex flex-col'>
-            <h3 className='font-bold text-[16px]'>{community.name}</h3>
-            <div className='flex text-xs text-slate-500 items-center gap-x-1.5'>
-              <span>146k members</span>
-              <div className='flex items-center gap-x-1.5'>
-                <span className='bg-green-500 w-2 h-2 rounded-full'></span>
-                <span>20 online</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className='flex gap-x-2 items-center mt-1 mx-4.5'>
-          <button className='flex items-center text-xs py-1 border ps-1.5 pe-2.5 gap-x-1 rounded-full'>
-            <span><PlusIcon size={20}/></span>
-            <span>Create Post</span>
-          </button>
-          {isMember ? (
-            <button className='flex items-center justify-center text-xs py-2 border px-3  rounded-full cursor-pointer'>
-            <span>Joined</span>
-          </button>
-          ): (
-            <button 
-              onClick={handleJoin}
-              className='flex items-center justify-center text-xs py-2 border px-3  rounded-full bg-blue-700 text-white cursor-pointer'>
-            <span>Join</span>
-          </button>
-          )}
-          
-          <button className='flex items-center justify-center text-xs border p-1.5 rounded-full'>
-            <span className='flex items-center justify-center'><Ellipsis size={16}/></span>
-          </button>
-        </div>
-        <div className='flex items-center text-xs font-medium mt-3 justify-between mx-4.5'>
-          <div className='flex items-center gap-x-2'>
-            <Link
-              to={`/community/${communityId}/`}
-              className={`py-2.5 px-3.5 rounded-full ${location.pathname === `/community/${communityId}/` ? 'bg-slate-300' : ''}`}>
-              Feed
-            </Link>
-            <Link
-              to={`/community/${communityId}/about/`}
-              className={`py-2.5 px-3.5 rounded-full ${location.pathname.includes('about') ? 'bg-slate-300' : ''}`}>
-              About
-            </Link>
-          </div>
-          <div className='flex items-center'>
-            <div className='flex items-center gap-x-1'>
-              <span>Best</span>
-              <span><ChevronDown size={14}/></span>
-            </div>
-            <div className='flex items-center ms-4'>
-              <img src={columnsIcon} className='w-6 h-6 ms-0.5' />
-              <span><ChevronDown size={14}/></span>
-            </div>
-          </div>
-        </div>
-
+        <CommunityHeader community={community} />
         <div className='flex mt-5 items-center justify-between px-4.5'>
           <div className='flex items-center gap-x-2'>
             <Pin size={18} transform='rotate(45)' color='gray'/>

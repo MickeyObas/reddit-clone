@@ -25,7 +25,9 @@ class PostSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
     user_vote = serializers.SerializerMethodField()
-    community = CommunityDisplaySerializer(read_only=True)
+    community = serializers.SerializerMethodField()
+    community_id = serializers.CharField(write_only=True)
+    
 
     class Meta:
         model = Post
@@ -33,6 +35,7 @@ class PostSerializer(serializers.ModelSerializer):
             'id',
             'owner',
             'community',
+            'community_id',
             'title',
             'body', 
             'media',
@@ -77,12 +80,15 @@ class PostSerializer(serializers.ModelSerializer):
         request = self.context['request']
         user = request.user
         
-        if user.id not in validated_data["community"].members.values_list('id', flat=True):
+        community_id = validated_data.pop('community_id')
+        community = Community.objects.get(id=community_id)
+
+        if user.id not in community.members.values_list('id', flat=True):
             raise serializers.ValidationError('You are not a member of this community.')
         
         media_files = request.FILES.getlist('media')
         validated_data['owner'] = user
-        validated_data['community'] = Community.objects.get(id=request.data['community'])
+        validated_data['community'] = community
         
         post = Post.objects.create(**validated_data)
 
@@ -104,11 +110,15 @@ class PostSerializer(serializers.ModelSerializer):
         return post
     
 
+    def get_community(self, obj):
+        return CommunityDisplaySerializer(obj.community).data
+    
+
 class PostDisplaySerializer(serializers.ModelSerializer):
 
     comment_count = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
-    community = serializers.CharField(source='community.name')
+    community = CommunityDisplaySerializer()
     user_vote = serializers.SerializerMethodField()
     is_member = serializers.SerializerMethodField()
 
