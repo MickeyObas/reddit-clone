@@ -3,11 +3,13 @@ import { Outlet } from "react-router-dom";
 
 import Header from "./Header"
 import Sidebar from "./Sidebar"
+import CreateCommunityModal from "../ui/CreateCommunityModal";
 
 
 const MainLayout = () => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
 
   useEffect(() => {
     if(isSidebarOpen){
@@ -20,6 +22,9 @@ const MainLayout = () => {
 
   return (
     <>
+      {isCommunityModalOpen && (
+        <CreateCommunityModal />
+      )}
       <Header 
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
@@ -33,6 +38,7 @@ const MainLayout = () => {
       <Sidebar 
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
+        setIsCommunityModalOpen={setIsCommunityModalOpen}
       />
       <Outlet />
     </>

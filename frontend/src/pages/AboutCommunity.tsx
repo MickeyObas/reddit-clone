@@ -269,11 +269,12 @@ export const AboutCommunity = () => {
         <div className='bg-slate-50 flex flex-col'>
           <div className='px-3 py-6 border-b border-b-slate-300'>
             <h3 className='uppercase font-semibold mb-3'>Community Bookmarks</h3>
-            <div className='flex flex-col gap-y-2.5'>
+            {/* <div className='flex flex-col gap-y-2.5'>
               {Array.from({length: 5}).map((_, index) => (
                 <Link key={index} to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
               ))}
-            </div>            
+            </div> */}
+            <p>No bookmarks configured.</p>
           </div>
         </div>
 

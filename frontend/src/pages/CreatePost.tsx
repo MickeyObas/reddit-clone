@@ -306,7 +306,6 @@ const CreatePost = () => {
           )}
           </div>
         </div>
-
       )}
 
       {selectedLink === 'IMAGE' && (
