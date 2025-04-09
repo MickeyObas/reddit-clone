@@ -19,5 +19,6 @@ urlpatterns = [
     path('profiles/', include('profiles.urls')),
     path('communities/', include('communities.urls')),
     path('votes/', include('votes.urls')),
-    path('comments/', include('comments.urls'))
+    path('comments/', include('comments.urls')),
+    path('topics/', include('topics.urls'))
 ]

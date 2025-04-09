@@ -5,8 +5,8 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string,
   containerClassName?: string,
   value?: string,
-  error?: string,
   isValid: boolean,
+  error?: string,
 }
 
 export const FormInput: React.FC<FormInputProps> = ({

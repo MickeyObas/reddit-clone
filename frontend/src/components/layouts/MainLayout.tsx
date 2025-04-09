@@ -23,7 +23,9 @@ const MainLayout = () => {
   return (
     <>
       {isCommunityModalOpen && (
-        <CreateCommunityModal />
+        <CreateCommunityModal 
+          setIsCommunityModalOpen={setIsCommunityModalOpen}
+        />
       )}
       <Header 
         isSidebarOpen={isSidebarOpen}

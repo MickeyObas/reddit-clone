@@ -117,3 +117,15 @@ def community_leave(request, pk):
     
     except Community.DoesNotExist:
         return Response({'error': f'Community with ID: {pk} does not exist. '})
+
+
+
+@api_view(['POST'])
+def community_name_legal(request):
+    community_name = request.data.get('community_name')
+    if Community.objects.filter(name__iexact=community_name).exists():
+        return Response({'error': f'"{community_name}" is already taken'}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({'message': 'Valid.'})
+    
+

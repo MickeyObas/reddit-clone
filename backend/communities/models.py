@@ -2,6 +2,7 @@ from django.db import models
 
 from api.models import TimeStampedModel
 
+
 class Community(TimeStampedModel):
     class Type(models.TextChoices):
         PUBLIC = "PUBLIC" , "Public"

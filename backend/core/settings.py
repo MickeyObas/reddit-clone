@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'posts.apps.PostsConfig',
     'profiles.apps.ProfilesConfig',
     'tags.apps.TagsConfig',
+    'topics.apps.TopicsConfig',
     'votes.apps.VotesConfig',
 
     # External apps 
