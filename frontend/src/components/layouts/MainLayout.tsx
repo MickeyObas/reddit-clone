@@ -10,6 +10,17 @@ const MainLayout = () => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
+  const [communityData, setCommunityData] = useState({
+    name: '',
+    description: '',
+    bannerFile: null,
+    iconFile: null,
+    topics: [],
+    bannerPreview: '',
+    iconPreview: '',
+    type: 'public',
+    isForMature: false
+  })
 
   useEffect(() => {
     if(isSidebarOpen){
@@ -25,6 +36,8 @@ const MainLayout = () => {
       {isCommunityModalOpen && (
         <CreateCommunityModal 
           setIsCommunityModalOpen={setIsCommunityModalOpen}
+          formData={communityData}
+          setFormData={setCommunityData}
         />
       )}
       <Header 
@@ -33,7 +46,7 @@ const MainLayout = () => {
       />
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-50 z-40"
+          className="fixed inset-0 bg-black opacity-50 z-30"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}

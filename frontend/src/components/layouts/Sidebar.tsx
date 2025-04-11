@@ -29,7 +29,7 @@ const Sidebar: React.FC<{isSidebarOpen: boolean, setIsSidebarOpen: React.Dispatc
 
   return (
     <div
-    className={`border-t-0 z-40 overflow-y-scroll fixed top-[60px] left-0 h-[calc(100vh-61px)] w-[69%] bg-white shadow-lg transform ${
+    className={`border-t-0 z-30 overflow-y-scroll fixed top-[60px] left-0 h-[calc(100vh-61px)] w-[69%] bg-white shadow-lg transform ${
       isSidebarOpen ? "translate-x-0" : "-translate-x-full"
     } transition-transform duration-300 ease-in-out`}
     >
@@ -83,8 +83,8 @@ const Sidebar: React.FC<{isSidebarOpen: boolean, setIsSidebarOpen: React.Dispatc
           <span className='ms-2.5'>Create a community</span>
         </li>
         {communities && communities.map((community, idx) => (
-          <Link to={`community/${community.id}/`} onClick={() => setIsSidebarOpen(false)}>
-            <li key={idx} className='flex px-2 py-1 items-center justify-between'> 
+          <Link key={idx} to={`community/${community.id}/`} onClick={() => setIsSidebarOpen(false)}>
+            <li className='flex px-2 py-1 items-center justify-between'> 
               <div className='w-8 h-8 rounded-full overflow-hidden'>
                 <img src={community.avatar} alt="" className='w-full h-full object-cover'/>
               </div>

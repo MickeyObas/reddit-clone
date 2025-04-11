@@ -18,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
   const navigate = useNavigate();
   return (
     <header
-    className='z-[60] sticky top-0 flex items-center py-3 ps-6 pe-4.5 border-b border-b-slate-300 bg-white shadow'
+    className='z-40 sticky top-0 flex items-center py-3 ps-6 pe-4.5 border-b border-b-slate-300 bg-white shadow'
     >
       <div className='flex w-full justify-between'>
         <div className='flex items-center'>
