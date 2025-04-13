@@ -13,10 +13,6 @@ import { AwardIcon, ChevronDown, MessageCircle, ShareIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Comment from '../components/ui/Comment';
 
-type CommentHoverState = {
-  id: number,
-  type: string
-}
 
 type PostVote = {
   count: number,
@@ -33,7 +29,6 @@ const Post = () => {
   const [postVote, setPostVote] = useState<PostVote>({count: 0, userVote: null});
   const [postLoading, setPostLoading] = useState(true);
   const { postId } = useParams();
-  const [isHovered, setIsHovered] = useState<CommentHoverState | null>(null);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -66,9 +61,6 @@ const Post = () => {
       if(!response?.ok){
         console.error("Whoops, something went wrong.")
       }else{
-        const data = await response.json();
-        console.log(data);
-
         setPostVote((prev) => {
           const { count, userVote: prevVote } = prev;
           let newCount = count;
@@ -93,8 +85,6 @@ const Post = () => {
               newCount -= 1;
             }
           };
-
-          console.log(newVote, newCount)
 
           return {count: newCount, userVote: newVote}
         })
@@ -126,7 +116,6 @@ const Post = () => {
       if(!response?.ok) console.error("Whoops, something went wrong.");
       else{
         const data = await response.json();
-        console.log(data);
         setPost((prev) => (prev ? {...prev, comments: [data, ...prev.comments]} : prev));
         setShowCommentBox(false);
       }
@@ -220,7 +209,7 @@ const Post = () => {
 
       {/* Comments */}
       <div className='flex flex-col mt-4'>
-        {post?.comments && post.comments.map((comment: CommentType, idx: number) => (
+        {post?.comments && post.comments.map((comment: CommentType) => (
           <Comment 
             key={comment.id}
             comment={comment}

@@ -26,7 +26,7 @@ const AppRoutes = () => {
       <Route element={<ProtectedRoutes />}>
         <Route path="/" element={<MainLayout />}>
           <Route index path="" element={<Home />} />
-          <Route index path="create-post/" element={<CreatePost />} />
+          <Route path="create-post/" element={<CreatePost />} />
           <Route path="post/:postId/" element={<Post />} />
           <Route path="community/:communityId/" element={<Community />} />
           <Route path="community/:communityId/best/" element={<Community sort={'best'}/>} />

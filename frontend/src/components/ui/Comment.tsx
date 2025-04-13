@@ -1,14 +1,16 @@
+// Assets 
 import redditIcon from '../../assets/icons/reddit.png';
-import { Dot, Ellipsis, MessageCircle, MinusCircle, PlusCircle } from 'lucide-react';
 import UpArrow from '../../assets/svgs/UpArrow';
 import DownArrow from '../../assets/svgs/DownArrow';
-import { useAuth } from '../../contexts/AuthContext';
+import { Dot, Ellipsis, MessageCircle, MinusCircle, PlusCircle } from 'lucide-react';
+
 import { useState, useRef, useMemo } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { fetchWithAuth, timeAgo } from '../../utils';
-import { BACKEND_URL } from '../../config';
 import { CommentType } from '../../types/comment';
 import { Post } from '../../types/post';
 import { useParams } from 'react-router-dom';
+import { BACKEND_URL } from '../../config';
 
 
 interface CommentProps {
@@ -42,9 +44,6 @@ const Comment = ({comment, setPost}: CommentProps) => {
       if(!response?.ok){
         console.error("Whoops, something went wrong.");
       }else{
-        const data = await response.json();
-        console.log(data);
-  
         setCommentVote((prev) => {
           const { count, userVote: prevVote } = prev;
           let newCount = count;
@@ -70,7 +69,6 @@ const Comment = ({comment, setPost}: CommentProps) => {
               newCount -= 1
             }
           };
-          console.log(newCount);
           return {...prev, count: newCount, userVote: newVote};
         })
       }
@@ -109,8 +107,8 @@ const Comment = ({comment, setPost}: CommentProps) => {
         console.error(error);
       }else{
         const data = await response.json();
-        console.log(data);
         setPost((prev) => {
+          if(!prev) return prev;
           return {...prev, comments: updateComments(prev?.comments, parentId, data)}
         })
         setShowReplies(true);

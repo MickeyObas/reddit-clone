@@ -46,7 +46,6 @@ const Register: React.FC = () => {
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     console.log(e);
 
-    // Send confirmation code
     try{
       const response = await fetch(`${BACKEND_URL}/send-confirmation-email/`, {
         method: 'POST',
@@ -65,8 +64,6 @@ const Register: React.FC = () => {
           setError(error.error);
         }
       }else{
-        const data = await response.json();
-        console.log("Email sent", data);
         setStep(2);
       }
 

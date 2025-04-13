@@ -24,7 +24,6 @@ def post_list_or_create(request):
     
     elif request.method == 'POST':
         data = request.data
-        print(data)
         serializer = PostSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()

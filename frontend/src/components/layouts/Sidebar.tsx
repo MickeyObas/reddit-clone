@@ -1,10 +1,10 @@
 // Assets
-import redditIcon from '../../assets/icons/reddit.png';
 import homeIcon from '../../assets/icons/home.png';
 import popularIcon from '../../assets/icons/popular.png';
 import exploreIcon from '../../assets/icons/explore.png';
 import allIcon from '../../assets/icons/chart-up.png';
 import chatIcon from '../../assets/icons/chat.png';
+import communityIcon from '../../assets/icons/community.png';
 import starIcon from '../../assets/icons/star.png';
 import redditOutlineIcon from '../../assets/icons/reddit-outline.png';
 import advertiseIcon from '../../assets/icons/advertise.png';
@@ -17,12 +17,23 @@ import privacyPolicyIcon from '../../assets/icons/balance.png';
 import userAgreementIcon from '../../assets/icons/agreement.png';
 import caretDownIcon from '../../assets/icons/caret-down.png';
 import plusIcon from '../../assets/icons/plus.png';
-import { useCommunities } from '../../contexts/CommunityContext';
+
+import { SetStateAction } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { SetStateAction, useState } from 'react';
+import { useCommunities } from '../../contexts/CommunityContext';
 
 
-const Sidebar: React.FC<{isSidebarOpen: boolean, setIsSidebarOpen: React.Dispatch<SetStateAction<boolean>>}> = ({isSidebarOpen, setIsSidebarOpen, setIsCommunityModalOpen}) => {
+type SidebarProps = {
+  isSidebarOpen: boolean,
+  setIsSidebarOpen: React.Dispatch<SetStateAction<boolean>>,
+  setIsCommunityModalOpen: React.Dispatch<SetStateAction<boolean>>
+}
+
+const Sidebar: React.FC<SidebarProps> = ({
+  isSidebarOpen,
+  setIsSidebarOpen,
+  setIsCommunityModalOpen
+}) => {
 
   const { communities } = useCommunities();
   const location = useLocation();
@@ -86,7 +97,7 @@ const Sidebar: React.FC<{isSidebarOpen: boolean, setIsSidebarOpen: React.Dispatc
           <Link key={idx} to={`community/${community.id}/`} onClick={() => setIsSidebarOpen(false)}>
             <li className='flex px-2 py-1 items-center justify-between'> 
               <div className='w-8 h-8 rounded-full overflow-hidden'>
-                <img src={community.avatar} alt="" className='w-full h-full object-cover'/>
+                <img src={community.avatar ?? communityIcon} alt="" className='w-full h-full object-cover'/>
               </div>
               <span className='w-[65%] ms-3.5'>r/{community.name}</span>
               <div className='w-[15%] flex justify-center items-center'>

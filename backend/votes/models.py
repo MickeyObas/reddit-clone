@@ -22,7 +22,6 @@ class Vote(TimeStampedModel):
         types = {}
         for type in Vote.VOTE_TYPE:
             types[type[0]] = type[1]
-        print(types)
         return types[self.type]
 
     def __str__(self):

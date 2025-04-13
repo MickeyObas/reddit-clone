@@ -1,18 +1,22 @@
-import { CakeSlice, Globe, ChevronUp, ChevronDown, Mail, PlusIcon, Ellipsis, Columns3, Columns2} from "lucide-react"
-import { fetchWithAuth, formatDate, formatUsername } from "../utils"
-import { useMemo, useState, useEffect} from "react"
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import defaultRedditProfileIcon from '../assets/icons/reddit-profile.png';
-import { useAuth } from "../contexts/AuthContext";
+// Assets
 import redditIcon from '../assets/icons/reddit.png';
 import columnsIcon from '../assets/icons/columns.png';
+import communityIcon from '../assets/icons/community.png';
+import defaultRedditProfileIcon from '../assets/icons/reddit-profile.png';
+import { CakeSlice, Globe, ChevronUp, ChevronDown, Mail, PlusIcon, Ellipsis, Columns3, Columns2} from "lucide-react"
+
 import { BACKEND_URL } from "../config";
+import { useAuth } from "../contexts/AuthContext";
+import { useMemo, useState, useEffect} from "react"
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { fetchWithAuth, formatDate, formatUsername } from "../utils"
+import { Community, CommunityRule } from '../types/community';
 
 
-export const CommunityHeader = ({community}) => {
+export const CommunityHeader = ({community}: {community: Community | null}) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMember, setIsMember] = useState(community.is_member);
+  const [isMember, setIsMember] = useState(community?.is_member);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const toggleDropdown = (option: string) => {
@@ -20,19 +24,17 @@ export const CommunityHeader = ({community}) => {
   }
 
   const handleChangeFilter = (newFilter: string) => {
-    navigate(`/community/${community.id}/${newFilter}/`);
+    navigate(`/community/${community?.id}/${newFilter}/`);
   }
 
   const handleJoin = async () => {
     try{
-      const response = await fetchWithAuth(`${BACKEND_URL}/communities/${community.id}/join/`, {
+      const response = await fetchWithAuth(`${BACKEND_URL}/communities/${community?.id}/join/`, {
         method: 'POST'
       });
       if(!response?.ok){
         console.error("Whoops, something went wrong.");
       }else{
-        const data = await response.json();
-        console.log(data);
         setIsMember(true);
       }
     }catch(err){
@@ -46,7 +48,7 @@ export const CommunityHeader = ({community}) => {
     <>
       <div className="flex gap-x-6 mx-4.5 py-5">
         <div className='h-10 w-10 rounded-full overflow-hidden'>
-          <img src={community.avatar} alt="" className="w-full h-full object-cover"/>
+          <img src={community.avatar ?? communityIcon} alt="" className="w-full h-full object-cover"/>
         </div>
         <div className='flex flex-col'>
           <h3 className='font-bold text-[16px]'>{community.name}</h3>
@@ -148,7 +150,7 @@ export const CommunityHeader = ({community}) => {
 }
 
 
-const RuleItem = ({rule, idx}) => {
+const RuleItem = ({rule, idx}: {rule: CommunityRule, idx: number}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -174,10 +176,9 @@ const RuleItem = ({rule, idx}) => {
 
 export const AboutCommunity = () => {
 
-  const [community, setCommunity] = useState();
+  const [community, setCommunity] = useState<Community | null>(null);
   const { communityId } = useParams();
   const [loading, setLoading] = useState(true);
-  const [isMember, setIsMember] = useState(false);
 
 
    useEffect(() => {
@@ -190,9 +191,7 @@ export const AboutCommunity = () => {
           if(!response?.ok) console.error("Whoopps, something went wrong.");
           else{
             const data = await response?.json();
-            console.log(data);
             setCommunity(data);
-            setIsMember(data.is_member);
           }
         }catch(err){
           console.error(err);
@@ -210,30 +209,15 @@ export const AboutCommunity = () => {
       return formatDate(dateStr);
     }, [community?.created_at])
 
-    const handleJoin = async () => {
-      try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/join/`, {
-          method: 'POST'
-        });
-        if(!response?.ok){
-          console.error("Whoops, something went wrong.");
-        }else{
-          const data = await response.json();
-          console.log(data);
-          setIsMember(true);
-        }
-      }catch(err){
-        console.error(err);
-      }
-    };
-
   if(loading) return <h1>Loading...</h1>
 
   return (
     <div>
       <div
         className="bg-gray-white h-16 w-full overflow-hidden"
-      ><img src={community?.banner} alt="" className="object-cover w-full h-full" /></div>
+      >
+        {community?.banner && <img src={community?.banner} alt="" className="object-cover w-full h-full" />}
+      </div>
       <div className="grid grid-cols-1">
         <CommunityHeader community={community}/>
         <div className='bg-slate-50 flex flex-col mt-10'>
@@ -298,7 +282,7 @@ export const AboutCommunity = () => {
               <Mail size={20} />
               <span>Message Mods</span>
             </div>
-            {community?.moderators?.length > 0 ? (
+            {community?.moderators && community?.moderators?.length > 0 ? (
               <div className='flex flex-col gap-y-2.5'>
                 {community?.moderators && community?.moderators.map((moderator, idx) => (
                   <div key={idx} className='flex items-center gap-x-2'>

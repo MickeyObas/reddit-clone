@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { validateEmail } from "../utils";
-import { BACKEND_URL } from "../config";
-
 // Assets
 import { FormInput } from "../components/ui/FormInput";
 import { Button } from "../components/ui/Button";
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { BACKEND_URL } from "../config";
 
 
 type ErrorState = {
@@ -26,8 +25,6 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
   const [isPassword1Valid, setIsPassword1Valid] = useState(false);
   const [isPassword2Valid, setIsPassword2Valid] = useState(false);
 
-  // Password 1 handlers
-
   const handlePassword1Change = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword1(e.target.value);
     setIsPassword1Valid(!!e.target.value);
@@ -45,9 +42,6 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
   const handlePassword1Focus = () => {
     setError((prev) => ({...prev, password1: ''}));
   };
-
-
-  // Password 2 handlers
 
   const handlePassword2Change = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword2(e.target.value);
@@ -67,10 +61,8 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
     setError((prev) => ({...prev, password2: ''}));
   };
 
-  const handleClick = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    console.log(e);
+  const handleClick = async () => {
 
-    // Hit Register endpoint
     try{
       const response = await fetch(`${BACKEND_URL}/register/`, {
         method: 'POST',
@@ -91,11 +83,8 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
           setError((prev) => ({...prev, password1: error.password[0]}))
         }
       }else{
-        const data = await response.json();
-        console.log(data);
         alert("Registration complete!");
         navigate('/login')
-        // setIsRegistered(true);
       }
 
     }catch(err){

@@ -122,7 +122,6 @@ const RegisterNoVerify = (): JSX.Element => {
         <button
           disabled={!isFormValid} 
           className={`mt-auto text-center w-full bg-[#2A3236] py-3.5 rounded-full ${!isFormValid ? 'opacity-40' : 'bg-deep-red'}`}
-          onClick={() => console.log("Clicked")}
           >Continue</button>
       </div>            
     </div>

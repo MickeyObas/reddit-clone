@@ -89,7 +89,6 @@ const Login = (): JSX.Element => {
         console.log(error);
       }else{
         const data = await response.json();
-        console.log("Login successful!");
         // Store credentials 
         login(data);
         navigate('/');

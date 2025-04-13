@@ -1,20 +1,49 @@
+// Assets
 import redditIcon from '../../assets/icons/reddit.png';
-import { AwardIcon, Check, CircleAlert, Dot, DotIcon, Eye, Globe, Image, Lock, LucideXCircle, Search, X, XCircle } from "lucide-react";
+import { Check, Dot, Eye, Globe, Image, Lock, LucideXCircle, Search, X } from "lucide-react";
+
 import { FormInput } from "./FormInput";
-import { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { fetchWithAuth } from "../../utils";
 import { BACKEND_URL } from "../../config";
+import { CommunityFormData, CommunityFormError } from '../../types/community';
+import { TopicCategory } from '../../types/topic';
 
 
-const CreateCommunityModal = ({setIsCommunityModalOpen, formData, setFormData}) => {
+interface CreateCommunityModalProps {
+  setIsCommunityModalOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  formData: CommunityFormData,
+  setFormData: React.Dispatch<React.SetStateAction<CommunityFormData>>
+}
+
+interface StepSettingsProps extends CreateCommunityModalProps {
+  updateStepValidity: (stepIndex: number, isValid: boolean) => void
+}
+
+interface StepBasicProps extends StepSettingsProps {
+  error: CommunityFormError,
+  setError: React.Dispatch<React.SetStateAction<CommunityFormError>>
+}
+
+const CreateCommunityModal = ({
+  setIsCommunityModalOpen,
+  formData,
+  setFormData
+}: CreateCommunityModalProps) => {
   
-  const [error, setError] = useState({
+  const steps = ["basic", "style", "topics", "settings"];
+  const [step, setStep] = useState(0);
+  const [stepValidity, setStepValidity] = useState<{[key: number]: boolean}>({
+    0: false,
+    1: true,
+    2: false,
+    3: true
+  });
+  const [error, setError] = useState<CommunityFormError>({
     name:'',
     description: ''
   });
-  const steps = ["basic", "style", "topics", "settings"];
-  const [step, setStep] = useState(0);
-
+  
   const nextStep = () => {
     if((step < steps.length - 1) && stepValidity[step]) setStep((prev) => prev + 1);
   }
@@ -23,14 +52,7 @@ const CreateCommunityModal = ({setIsCommunityModalOpen, formData, setFormData}) 
     if(step > 0) setStep((prev) => prev - 1);
   }
 
-  const [stepValidity, setStepValidity] = useState({
-    0: false,
-    1: true,
-    2: false,
-    3: true
-  });
-
-  const updateStepValidity = useCallback((stepIndex, isValid) => {
+  const updateStepValidity = useCallback((stepIndex: number, isValid: boolean) => {
     setStepValidity((prev) => ({
       ...prev,
       [stepIndex]: isValid
@@ -126,12 +148,10 @@ const StepBasic = ({
   setError, 
   setIsCommunityModalOpen,
   updateStepValidity
-}) => {
-
-  
+}: StepBasicProps) => {
 
    // Handlers
-   const handleFormInputChange = (e) => {
+  const handleFormInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if(e.target.name === "name" && e.target.value.length > 15){
       return;
     };
@@ -153,8 +173,6 @@ const StepBasic = ({
         setError((prev) => ({...prev, name: error.error}));
         return false;
       }else{
-        const data = await response?.json();
-        console.log(data);
         return true;
       }
 
@@ -164,7 +182,7 @@ const StepBasic = ({
     }
   }
 
-  const handleNameBlur = async (e) => {
+  const handleNameBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
     const name = e.target.value.trim();
     if(name.length < 3){
       setError((prev) => ({...prev, name: "Please lengthen the text to 3 characters or more"}));
@@ -179,7 +197,7 @@ const StepBasic = ({
   useEffect(() => {
     const isValid = formData?.name.length >= 3 && !error.name && !error.description;
     updateStepValidity(0, isValid);
-  }, [formData.name, formData.description, error.name, error.description])
+  }, [formData.name, formData.description, error.name, error.description, updateStepValidity])
 
   return (
     <>
@@ -221,7 +239,7 @@ const StepBasic = ({
         placeholder='Description*'
         rows={3}></textarea>
         <div className='flex justify-between text-xs px-3 mt-1 min-h-5'>
-          {error.content && (
+          {/* {error.content && (
             <div className='error flex items-center'>
               <CircleAlert 
                 size={18}
@@ -229,17 +247,21 @@ const StepBasic = ({
               />
               <span className='ms-1'>Please fill out this field. Content is required.</span>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </>
   )
 };
 
-const StepStyle = ({formData, setFormData, setIsCommunityModalOpen}) => {
+const StepStyle = ({
+  formData, 
+  setFormData, 
+  setIsCommunityModalOpen
+}: CreateCommunityModalProps) => {
 
-  const bannerFileRef = useRef(null);
-  const iconFileRef = useRef(null);
+  const bannerFileRef = useRef<HTMLInputElement>(null);
+  const iconFileRef = useRef<HTMLInputElement>(null);
 
   // Handlers
   const handleBannerAddClick = () => {
@@ -254,16 +276,16 @@ const StepStyle = ({formData, setFormData, setIsCommunityModalOpen}) => {
     }
   }
 
-  const handleBannerChange = (e) => {
-    const file = e.target.files[0];
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if(file && file.type.startsWith("image/")){
       const bannerPreview = URL.createObjectURL(file);
       setFormData((prev) => ({...prev, bannerFile: file, bannerPreview: bannerPreview}));
     }
   }
 
-  const handleIconChange = (e) => {
-    const file = e.target.files[0];
+  const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if(file && file.type.startsWith("image/")){
       const iconPreview = URL.createObjectURL(file);
       setFormData((prev) => ({...prev, iconFile: file, iconPreview: iconPreview}));
@@ -352,9 +374,14 @@ const StepStyle = ({formData, setFormData, setIsCommunityModalOpen}) => {
   )
 }
 
-const StepTopics = ({formData, setFormData, setIsCommunityModalOpen, updateStepValidity}) => {
+const StepTopics = ({
+  formData, 
+  setFormData, 
+  setIsCommunityModalOpen, 
+  updateStepValidity
+}: StepSettingsProps) => {
 
-  const [topicCategories, setTopicCategories] = useState(null);
+  const [topicCategories, setTopicCategories] = useState<TopicCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -362,12 +389,12 @@ const StepTopics = ({formData, setFormData, setIsCommunityModalOpen, updateStepV
     updateStepValidity(2, isValid);
   }, [formData.topics, updateStepValidity])
 
-  const filterCategoriesByTopic = (categories, searchQuery) => {
+  const filterCategoriesByTopic = (categories: TopicCategory[], searchQuery: string): TopicCategory[] => {
     if(!searchQuery.trim()) return categories;
 
     const lowerQuery = searchQuery.toLowerCase();
 
-    return categories.map((category) => {
+    return categories.map((category: TopicCategory) => {
       const matchingTopics = category.topics.filter((topic) => topic.name.toLowerCase().includes(lowerQuery));
 
       if(matchingTopics.length === 0) return null;
@@ -376,21 +403,20 @@ const StepTopics = ({formData, setFormData, setIsCommunityModalOpen, updateStepV
         ...category,
         topics: matchingTopics
       }
-    }).filter(Boolean);
+    }).filter((category): category is TopicCategory => category !== null);
   }
 
-  const getEmojiFromCodePoint = (codePoint) => {
+  const getEmojiFromCodePoint = (codePoint: string) => {
     return String.fromCodePoint(parseInt(codePoint, 10));
   };
 
-  const handleTopicClick = (topicId) => {
+  const handleTopicClick = (topicId: number) => {
     if(formData.topics.length >= 3) return;
     if(formData.topics.includes(topicId)) return;
     setFormData((prev) => ({...prev, topics: [...prev.topics, topicId]}));
   }
 
-  const findTopicById = (topicId) => {
-    console.log(topicId);
+  const findTopicById = (topicId: number) => {
     if(!topicCategories) return;
     for(const cat of topicCategories){
       const match = cat.topics.find((t) => t.id === topicId);
@@ -406,11 +432,11 @@ const StepTopics = ({formData, setFormData, setIsCommunityModalOpen, updateStepV
     }))
   }
 
-  const handleSearchQueryChange = (e) => {
+  const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   }
 
-  const filteredCategories = filterCategoriesByTopic(topicCategories, searchQuery);
+  const filteredCategories = topicCategories ? filterCategoriesByTopic(topicCategories, searchQuery) : [];
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -455,12 +481,14 @@ const StepTopics = ({formData, setFormData, setIsCommunityModalOpen, updateStepV
         {formData?.topics.map((topicId, idx) => {
           const topic = findTopicById(topicId);
           return (
-            <div key={idx} className='border-2 border-gray-200 py-1 px-2 text-xs font-semibold flex gap-x-1.5 rounded-md'>
-              <span>{topic?.name}</span>
-              <LucideXCircle 
-                onClick={() => handleTopicCancel(topic.id)}
-                fill='black' stroke='#efebee' size={18}/>
-            </div>
+            topic && (
+              <div key={idx} className='border-2 border-gray-200 py-1 px-2 text-xs font-semibold flex gap-x-1.5 rounded-md'>
+                <span>{topic?.name}</span>
+                <LucideXCircle 
+                  onClick={() => handleTopicCancel(topic.id)}
+                  fill='black' stroke='#efebee' size={18}/>
+             </div>
+            )
           )
         })}
       </div>
@@ -498,9 +526,13 @@ const StepTopics = ({formData, setFormData, setIsCommunityModalOpen, updateStepV
   )
 }
 
-const StepSettings = ({setIsCommunityModalOpen, formData, setFormData}) => {
+const StepSettings = ({
+  setIsCommunityModalOpen, 
+  formData, 
+  setFormData
+}: StepSettingsProps) => {
 
-  const changeCommunityType = (newCommunityType: string) => {
+  const changeCommunityType = (newCommunityType: 'public' | 'private' | 'restricted') => {
     if(newCommunityType === formData.type) return;
     setFormData((prev) => ({...prev, type: newCommunityType}));
   }

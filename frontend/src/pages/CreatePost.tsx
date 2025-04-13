@@ -1,24 +1,24 @@
-import React, { useState, useRef, useEffect} from 'react';
-
+// Assets
 import redditIcon from '../assets/icons/reddit.png';
 import dotIcon from '../assets/icons/dot.png';
 import communityIcon from '../assets/icons/community.png';
 import exclamationIcon from '../assets/icons/exclamation-mark.png';
 import checkIcon from '../assets/icons/check.png';
-import { ChevronDown, CircleAlert } from 'lucide-react';
-import DragAndDropUpload from '../components/ui/DragAndDropUpload';
-import { useAuth } from '../contexts/AuthContext';
-import { useCommunities } from '../contexts/CommunityContext';
-import { Community } from '../types/community';
-import { fetchWithAuth } from '../utils';
+import React, { useState, useRef, useEffect} from 'react';
+
 import { BACKEND_URL } from '../config';
+import { fetchWithAuth } from '../utils';
+import { Community } from '../types/community';
+import { ChevronDown, CircleAlert } from 'lucide-react';
+import { useCommunities } from '../contexts/CommunityContext';
+import DragAndDropUpload from '../components/ui/DragAndDropUpload';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 type Post = {
   title: string,
   link: string,
   content: string,
-  community: string,
+  community: number | null,
   media: File[]
 }
 
@@ -39,11 +39,10 @@ const CreatePost = () => {
     title: '',
     link: '',
     content: '',
-    community: '',
+    community: null,
     media: []
   })
   const [postLoading, setPostLoading] = useState(false); 
-
   const [selectedLink, setSelectedLink] = useState<'TEXT' | 'IMAGE' | 'LINK'>('TEXT')
   const [error, setError] = useState<ErrorState>({
     title: '',
@@ -52,14 +51,10 @@ const CreatePost = () => {
   })
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [search, setSearch] = useState('');
-  console.log(communityId);
-  const [selectedCommunityId, setSelectedCommunityId] = useState(
-    communityId ? communityId : ''
+  const [selectedCommunityId, setSelectedCommunityId] = useState<number | null>(
+    communityId ? parseInt(communityId) : null
   );
-  const selectedCommunity = communities?.find((community: Community) => community.id.toString() === selectedCommunityId.toString());
-
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectedCommunity = communities?.find((community: Community) => community.id.toString() === selectedCommunityId?.toString());
   const dropdownRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const filteredCommunities = communities.filter((community: Community) => community?.name?.toLowerCase().includes(search.toLowerCase()))
@@ -84,25 +79,23 @@ const CreatePost = () => {
     setError((prev) => ({...prev, [field]: value ? '' : 'Please enter a value for this field. It is required.'}))
   }
 
-  const handleCommunityClick = (communityId: string | number) => {
-    setSelectedCommunityId(communityId.toString());
+  const handleCommunityClick = (communityId: number) => {
+    setSelectedCommunityId(communityId);
     setIsSearchDropdownOpen(false);
     setPost((prev) => ({...prev, community: communityId}))
   }
 
   const handleCreatePostClick = async () => {
-    console.log(post);
+    if(!communityId || !post.community) return;
 
     const formData = new FormData();
 
     if(post.media){
-      console.log(post.media);
       post.media.forEach((file) => formData.append('media', file));
     }
     formData.append('title', post.title);
     formData.append('body', post.content);
-    formData.append('community_id', post.community || communityId);
-    console.log(formData);
+    formData.append('community_id', communityId ?? post.community);
 
     try{
       setPostLoading(true);
@@ -115,8 +108,6 @@ const CreatePost = () => {
         console.log(error);
         console.error("Bad response.");
       }else{
-        const data = await response.json();
-        console.log(data);
         navigate(from);
       }
     }catch(err){
@@ -128,14 +119,12 @@ const CreatePost = () => {
 
   const handleUploadComplete = (files: File[]) => {
     setPost((prev) => ({...prev, media: files}))
-    console.log("Upload complete!");
-    console.log(files);
   }
 
   // Effects
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if(dropdownRef.current && !dropdownRef.current.contains(e.target)){
+      if(dropdownRef.current && !dropdownRef.current.contains(e.target as Node)){
         setIsSearchDropdownOpen(false);
       }
     }
@@ -146,7 +135,7 @@ const CreatePost = () => {
 
   }, [])
 
-  const isValid = selectedCommunityId !== "" && post.title.trim() !== "" && post.content.trim() !== "";
+  const isValid = selectedCommunityId && post.title.trim() !== "" && post.content.trim() !== "";
 
   return (
     <div className="grid grid-cols-1 py-5 px-4 gap-y-5">

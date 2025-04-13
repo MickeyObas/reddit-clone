@@ -6,7 +6,7 @@ const communities = ["React", "Django", "Next.js", "Node.js", "Python", "JavaScr
 export default function SearchableDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState<string|null>(null);
 
   const filteredCommunities = communities.filter((c) =>
     c.toLowerCase().includes(search.toLowerCase())

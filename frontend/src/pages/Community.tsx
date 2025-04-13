@@ -1,17 +1,19 @@
-import redditIcon from '../assets/icons/reddit.png';
-import columnsIcon from '../assets/icons/columns.png';
+// Assets
 import dotIcon from '../assets/icons/dot.png';
 import UpArrow from '../assets/svgs/UpArrow';
 import DownArrow from '../assets/svgs/DownArrow';
 import ellipsisIcon from '../assets/icons/ellipsis.png';
-import { ChevronDown, Ellipsis, Pin, PlusIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams, useLocation } from 'react-router-dom';
-import { fetchWithAuth,  formatDate, formatUsername, getImage, timeAgo } from '../utils';
+
+import { ChevronDown, Pin } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { fetchWithAuth, formatUsername, getImage, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
-import { PostDisplay} from '../types/post';
+import { Post, PostDisplay} from '../types/post';
 import { useAuth } from '../contexts/AuthContext';
 import { CommunityHeader } from './AboutCommunity';
+import type { Community } from '../types/community';
+
 
 type PostVotes = {
   [id: number]: {
@@ -25,24 +27,16 @@ type hoverState = {
   hovered: string
 }
 
+
 const Community = ({sort='latest'}) => {
   const { user } = useAuth();
-  const [community, setCommunity] = useState();
+  const [community, setCommunity] = useState<Community | null>(null);
   const [posts, setPosts] = useState<PostDisplay[]>([]);
   const [isHovered, setIsHovered] = useState<hoverState | null>(null);
   const [votes, setVotes] = useState<PostVotes>({})
   const { communityId } = useParams();
-  const [isMember, setIsMember] = useState(false);
-  const location = useLocation();
-
-  const formattedDate = useMemo(() => {
-    const dateStr = community?.created_at;
-    if(!dateStr) return "N/A";
-    return formatDate(dateStr);
-  }, [community?.created_at])
 
   useEffect(() => {
-    console.log(`Hey, new sort --> ${sort}`);
     const fetchPosts = async () => {
       try{
         const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/posts/?sort=${sort}`, {
@@ -51,7 +45,6 @@ const Community = ({sort='latest'}) => {
         if(!response?.ok) console.error("Whoopps, something went wrong.");
         else{
           const data = await response?.json();
-          console.log(data);
           setPosts(data.posts);
           setVotes(
             data.posts.reduce((acc: PostVotes, post: Post) => {
@@ -66,7 +59,7 @@ const Community = ({sort='latest'}) => {
 
     fetchPosts();
     
-  }, [sort])
+  }, [sort, communityId])
 
 
   useEffect(() => {
@@ -78,10 +71,8 @@ const Community = ({sort='latest'}) => {
         if(!response?.ok) console.error("Whoopps, something went wrong.");
         else{
           const data = await response?.json();
-          console.log(data);
           setPosts(data.posts);
           setCommunity(data.community);
-          setIsMember(data.community.is_member);
           setVotes(
             data.posts.reduce((acc: PostVotes, post: Post) => {
               acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
@@ -93,11 +84,12 @@ const Community = ({sort='latest'}) => {
       };
     };
     fetchCommunityPosts();
-  }, [communityId])
+  }, [sort, communityId])
 
     // Handlers
     const handleVote = (postId: number, type: string) => {
-    
+      
+      // TODO: Change this. Much cleaner/proper way to do this per component (Post)
       const postVote = async () => {
         const dir = type === 'upvote' ? 1 : -1; 
   
@@ -107,9 +99,6 @@ const Community = ({sort='latest'}) => {
         if(!response?.ok){
           console.log("Whoops, something went wrong during voting.");
         }else{
-          const data = await response?.json();
-          console.log(data);
-  
           setVotes((prevVotes) => {
             const { count, userVote: prevVote } = prevVotes[postId];
       
@@ -135,8 +124,6 @@ const Community = ({sort='latest'}) => {
                 newCount -= 1;
               }
             }
-            console.log(newCount);
-            console.log(votes)
             return {...prevVotes, [postId]: {count: newCount, userVote: newVote}}
           })
         }
@@ -144,31 +131,15 @@ const Community = ({sort='latest'}) => {
       postVote();
     }
 
-    const handleJoin = async () => {
-      try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/join/`, {
-          method: 'POST'
-        });
-        if(!response?.ok){
-          console.error("Whoops, something went wrong.");
-        }else{
-          const data = await response.json();
-          console.log(data);
-          setIsMember(true);
-        }
-      }catch(err){
-        console.error(err);
-      }
-    };
-
   if(!community) return <h1></h1>
 
   return (
     <div className='pb-5'>
       {/* Community Header */}
       <div
-        className="bg-gray-white h-16 w-full overflow-hidden"
-      ><img src={community?.banner} alt="" className="object-cover w-full h-full" /></div>
+        className="bg-gray-white h-16 w-full overflow-hidden">
+        {community?.banner && (<img src={community?.banner} alt="" className="object-cover w-full h-full" />)}
+      </div>
       <div className="grid grid-cols-1">
         <CommunityHeader community={community} />
         <div className='flex mt-5 items-center justify-between px-4.5'>

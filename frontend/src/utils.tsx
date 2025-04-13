@@ -1,5 +1,4 @@
 import { Outlet, Navigate, useLocation } from "react-router-dom";
-import { BACKEND_URL } from "./config";
 
 export const formatCommunity = (community: string) => {
   return "r/" + community;
@@ -49,7 +48,7 @@ export const isObjectEmpty = (obj: object | null | undefined) => {
   return Array.from(Object.keys(obj)).length === 0;
 }
 
-export const fetchWithAuth = async (url: string, options = {}) => {
+export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   // Retrieve the access and refresh tokens
   const accessToken = localStorage.getItem('accessToken');
   const refreshToken = localStorage.getItem('refreshToken');
@@ -98,7 +97,7 @@ export const fetchWithAuth = async (url: string, options = {}) => {
   return response;
 };
 
-export function timeAgo(isoDateString) {
+export function timeAgo(isoDateString: string) {
   const date = new Date(isoDateString); // Parse the ISO string into a Date object
   const now = new Date(); // Current date and time
   const seconds = Math.floor((now - date) / 1000); // Difference in seconds

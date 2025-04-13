@@ -10,7 +10,35 @@ export type Community = {
   avatar: string | null,
   banner: string | null,
   member_count: number,
-  moderators: number[],
-  rules: object[],
-  created_at: string
+  moderators: {
+    id: number,
+    email: string,
+    username: string
+  }[],
+  rules: CommunityRule[],
+  created_at: string,
+  is_member: boolean,
+  subtitle: string | null
+}
+
+export type CommunityFormData = {
+  name: string,
+  description: string,
+  bannerFile: File | null,
+  iconFile: File | null,
+  topics: number[],
+  bannerPreview: string,
+  iconPreview: string,
+  type: 'public' | 'private' | 'restricted',
+  isForMature: boolean
+}
+
+export type CommunityFormError = {
+  name: string,
+  description: string
+}
+
+export type CommunityRule = {
+    title: string,
+    description: string
 }

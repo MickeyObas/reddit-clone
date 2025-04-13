@@ -4,13 +4,14 @@ import { Outlet } from "react-router-dom";
 import Header from "./Header"
 import Sidebar from "./Sidebar"
 import CreateCommunityModal from "../ui/CreateCommunityModal";
+import { CommunityFormData } from "../../types/community";
 
 
 const MainLayout = () => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
-  const [communityData, setCommunityData] = useState({
+  const [communityData, setCommunityData] = useState<CommunityFormData>({
     name: '',
     description: '',
     bannerFile: null,

@@ -7,7 +7,7 @@ import columnsIcon from '../assets/icons/columns.png';
 import { useEffect, useState } from 'react';
 import { fetchWithAuth, formatCommunity, getImage, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import UpArrow from '../assets/svgs/UpArrow';
 import DownArrow from '../assets/svgs/DownArrow';
@@ -73,9 +73,6 @@ const Home: React.FC = () => {
       if(!response?.ok){
         console.log("Whoops, something went wrong during voting.");
       }else{
-        const data = response?.json();
-        console.log(data);
-
         setVotes((prevVotes) => {
           const { count, userVote: prevVote } = prevVotes[postId];
     
@@ -101,8 +98,7 @@ const Home: React.FC = () => {
               newCount -= 1;
             }
           }
-          console.log(newCount);
-          console.log(votes)
+
           return {...prevVotes, [postId]: {count: newCount, userVote: newVote}}
         })
       }
@@ -110,13 +106,13 @@ const Home: React.FC = () => {
     postVote();
   }
 
-  const handleJoinCommunity = (communityId) => {
+  const handleJoinCommunity = (communityId: number) => {
     const joinCommunity = async () => {
       try {
         const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/join/`, {
           method: 'POST'
         });
-        if(!response.ok){
+        if(!response?.ok){
           console.error("Whoops, bad response.");
         }else{
           const data = await response?.json();

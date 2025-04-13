@@ -19,7 +19,8 @@ export type Post = {
     comments: CommentType[],
     comment_count: number,
     created_at: string,
-    user_vote: string | null
+    user_vote: string | null,
+    is_member: boolean
 }
 
 export type PostDisplay = {
@@ -32,5 +33,10 @@ export type PostDisplay = {
     comment_count: number,
     created_at: string,
     user_vote: string | null,
-    is_member: boolean
+    is_member: boolean,
+    owner: {
+        id: number,
+        email: string,
+        username: string
+    },
 }
