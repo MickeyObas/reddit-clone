@@ -1,6 +1,14 @@
 import redditIcon from '../assets/icons/reddit.png';
 import ellipsisIcon from '../assets/icons/ellipsis.png';
 
+import { Swiper, SwiperSlide } from 'swiper/react';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/virtual'
+
+import { Navigation, Virtual } from 'swiper/modules';
+
 import type { Post } from '../types/post';
 import { CommentType } from '../types/comment';
 import { useEffect, useState, useRef } from 'react';
@@ -129,8 +137,8 @@ const Post = () => {
   return (
     <div className="py-4 px-4 grid grid-cols-1 mb-60">
       <div className="flex items-center text-xs">
-        <div className='w-8 h-8 me-2'>
-          <img src={redditIcon} alt="" />
+        <div className='w-8 h-8 me-2 overflow-hidden rounded-full'>
+          <img src={post?.community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
         </div>
         <div className='flex flex-col gap-y-0.5'>
           <div className='flex'>
@@ -146,9 +154,26 @@ const Post = () => {
       </div>
       <h1 className='font-semibold text-[17px] mt-1'>{post?.title}</h1>
       <p className='text-xs leading-5 mt-3'>{post?.body}</p>
-      <div className='bg-black flex justify-center py-5 mt-3'>
-        <img src={redditIcon} alt="" className='w-[75%]'/>
-      </div>
+      <p>{post?.id}</p>
+      {post?.media && post.media.length > 0 && (
+        <div className='bg-blue-300 aspect-[4/3]'>
+          <Swiper
+            modules={[Navigation, Virtual]}
+            className='w-full h-full object-contain'
+            navigation={true}
+            spaceBetween={50}
+            slidesPerView={1}
+            onSlideChange={() => console.log('slide change')}
+            onSwiper={(swiper) => console.log(swiper)}
+          >
+            {post.media.map((mediaItem, idx) => (
+              <SwiperSlide key={idx}>
+                <img src={mediaItem} alt="" className='w-full h-full object-cover' />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      )}
       <div className='flex items-center mt-2 gap-x-2.5 py-2'>
         <VoteBar 
           vote={postVote.userVote}

@@ -86,7 +86,7 @@ const CreatePost = () => {
   }
 
   const handleCreatePostClick = async () => {
-    if(!communityId || !post.community) return;
+    if(!communityId && !post.community) return;
 
     const formData = new FormData();
 
@@ -95,7 +95,12 @@ const CreatePost = () => {
     }
     formData.append('title', post.title);
     formData.append('body', post.content);
-    formData.append('community_id', communityId ?? post.community);
+    if (communityId) {
+      formData.append('community_id', String(communityId));
+    } else if (post.community) {
+      formData.append('community_id', String(post.community));
+    }
+    
 
     try{
       setPostLoading(true);

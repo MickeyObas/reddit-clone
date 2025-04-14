@@ -11,7 +11,7 @@ class Post(TimeStampedModel):
     flairs = models.ManyToManyField('tags.Flair', blank=True)
 
     def __str__(self):
-        return f"{self.owner} - {self.title}"
+        return f"{self.id} - {self.owner} - {self.title}"
     
     @property
     def vote_count(self):

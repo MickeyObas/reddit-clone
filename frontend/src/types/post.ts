@@ -20,7 +20,8 @@ export type Post = {
     comment_count: number,
     created_at: string,
     user_vote: string | null,
-    is_member: boolean
+    is_member: boolean,
+    media: string[]
 }
 
 export type PostDisplay = {

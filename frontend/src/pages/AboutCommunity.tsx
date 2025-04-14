@@ -53,10 +53,10 @@ export const CommunityHeader = ({community}: {community: Community | null}) => {
         <div className='flex flex-col'>
           <h3 className='font-bold text-[16px]'>{community.name}</h3>
           <div className='flex text-xs text-slate-500 items-center gap-x-1.5'>
-            <span>146k members</span>
+            <span>{community.member_count} members</span>
             <div className='flex items-center gap-x-1.5'>
               <span className='bg-green-500 w-2 h-2 rounded-full'></span>
-              <span>20 online</span>
+              <span>1 online</span>
             </div>
           </div>
         </div>

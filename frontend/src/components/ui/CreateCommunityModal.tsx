@@ -60,8 +60,43 @@ const CreateCommunityModal = ({
   }, []
   )
 
-  const handleCreateCommunity = () => {
-    alert("Pretend some processing is actually being done lmao. I haven't integrated this one endpoint yet");
+  const handleCreateCommunity = async () => {
+    const communityFormData = new FormData();
+
+    if(formData.iconFile) communityFormData.append('avatar', formData.iconFile);
+    if(formData.bannerFile) communityFormData.append('banner', formData.bannerFile);
+    formData.topics.forEach((topic) => communityFormData.append('topic_ids', String(topic)));
+
+    communityFormData.append('name', formData.name);
+    communityFormData.append('type', formData.type);
+    communityFormData.append('description', formData.description);
+    communityFormData.append('is_mature', String(formData.isForMature));
+
+    const response = await fetchWithAuth(`${BACKEND_URL}/communities/`, {
+      method: 'POST',
+      body: communityFormData
+    });
+
+    if(!response?.ok){
+      console.log("Whoops, something went wrong");
+      const data = await response?.json();
+      console.log(data);
+    }else{
+      const data = await response?.json();
+      console.log(data);
+    }
+
+    setFormData({
+      name: '',
+      description: '',
+      bannerFile: null,
+      iconFile: null,
+      topics: [],
+      bannerPreview: '',
+      iconPreview: '',
+      type: 'public',
+      isForMature: false
+    });
     setIsCommunityModalOpen(false);
   }
 

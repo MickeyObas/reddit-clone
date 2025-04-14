@@ -12,6 +12,7 @@ from posts.serializers import (
 from django.db.models.functions import Coalesce
 from django.db.models import Sum, Value
 
+
 @api_view(['GET', 'POST'])
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def community_list_or_create(request):
@@ -22,6 +23,7 @@ def community_list_or_create(request):
     
     elif request.method == 'POST':
         data = request.data
+        print(data)
         serializer = CommunitySerializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -117,7 +119,6 @@ def community_leave(request, pk):
     
     except Community.DoesNotExist:
         return Response({'error': f'Community with ID: {pk} does not exist. '})
-
 
 
 @api_view(['POST'])
