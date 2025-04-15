@@ -10,6 +10,8 @@ import CreatePost from "../pages/CreatePost";
 import Post from "../pages/Post";
 import Community from "../pages/Community";
 import { AboutCommunity } from "../pages/AboutCommunity";
+import UserProfile from "../pages/UserProfile";
+import UserProfileLayout from "../components/layouts/UserProfileLayout";
 
 
 const AppRoutes = () => {
@@ -34,6 +36,13 @@ const AppRoutes = () => {
           <Route path="community/:communityId/latest/" element={<Community sort={'latest'}/>} />
           <Route path="community/:communityId/about/" element={<AboutCommunity />} />
           <Route path="community/:communityId/create-post/" element={<CreatePost />} />
+
+          <Route path="user/" element={<UserProfileLayout />}>
+            <Route index path=":userId/" element={<UserProfile />} />
+            <Route index path=":userId/submitted/" element={<UserProfile />} />
+            <Route index path=":userId/comments/" element={<UserProfile />} />
+          </Route>
+
         </Route>
       </Route>
   
