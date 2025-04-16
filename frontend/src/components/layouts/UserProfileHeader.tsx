@@ -1,4 +1,4 @@
-import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
+import { useParams, useLocation, Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { MessageCircleMore, Ellipsis, ChevronDown, Columns3, Columns2 } from "lucide-react";
 import columnsIcon from '../../assets/icons/columns.png';
@@ -7,8 +7,10 @@ import { useState } from "react";
 
 const UserProfileHeader = () => {
   const { userId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const sortFilter = searchParams.get('sort');
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -17,7 +19,8 @@ const UserProfileHeader = () => {
   }
 
   const handleChangeFilter = (newFilter: string) => {
-    navigate(`/user/${userId}/${newFilter}/`);
+    searchParams.set('sort', newFilter);
+    setSearchParams(searchParams);
   }
 
   return (
@@ -71,7 +74,7 @@ const UserProfileHeader = () => {
           onClick={() => toggleDropdown('sort')}>
           <div 
             className='flex items-center gap-x-1 rounded-full px-3 py-2 hover:bg-gray-white'>
-            <span>Sort by</span>
+            <span>{sortFilter ? sortFilter.charAt(0).toUpperCase() + sortFilter.slice(1) : 'Sort by'}</span>
             <span><ChevronDown size={14}/></span>
           </div>
           <div className={`cursor-pointer absolute bg-white z-50 top-10 flex-col shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] rounded-lg w-20 ${openDropdown === 'sort' ? 'flex' : 'hidden'}`}>
@@ -110,6 +113,7 @@ const UserProfileHeader = () => {
           </div>
         </div>
       </div>  
+      <hr className="mt-2.5 border-gray-200"/>
     </>
   )
 }

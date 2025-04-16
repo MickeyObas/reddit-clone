@@ -18,6 +18,8 @@ def vote(request):
 
         if not obj in ['c', 'p'] or not user_id or not obj_id or dir not in [1, -1]:
             return Response({'error': 'Invalid request.'}, status=400)
+        
+        new_vote_total = None
 
         user = User.objects.get(id=user_id)
 
@@ -41,6 +43,7 @@ def vote(request):
                     type=dir,
                     post=post, 
                 )
+            new_vote_total = post.vote_count
 
         elif obj == 'c':
             comment = Comment.objects.get(id=obj_id)
@@ -63,8 +66,13 @@ def vote(request):
                     type=dir,
                     comment=comment  
                 )
+            new_vote_total = comment.vote_count
 
-        return Response({'message': 'Vote administered successfully.'})
+        return Response({
+            'message': 'Vote administered successfully.',
+            'obj': obj,
+            "count": new_vote_total
+            })
     
     except User.DoesNotExist:
         return Response({'error': 'User does not exist'}, status=400)
