@@ -4,8 +4,10 @@ from rest_framework import serializers
 
 from .models import Comment, CommentMedia
 from votes.models import Vote
-from accounts.serializers import UserSerializer
+from posts.models import Post
 from accounts.models import User
+
+from accounts.serializers import UserSerializer
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -68,3 +70,45 @@ class CommentSerializer(serializers.ModelSerializer):
             )
         
         return comment
+    
+
+class ThinCommentSerializer(serializers.ModelSerializer):
+    owner = UserSerializer()
+
+    class Meta:
+        model = Comment
+        fields = [
+            'owner',
+        ]
+
+
+class FeedCommentSerializer(serializers.ModelSerializer):
+    user_vote = serializers.SerializerMethodField()
+    post = serializers.SerializerMethodField()
+    parent = ThinCommentSerializer()
+
+    class Meta:
+        model = Comment
+        fields = [
+            'parent', # owner, None
+            'post', # title, owner(is_creator?), channel
+            'body',
+            'created_at',
+            'vote_count',
+            'user_vote'
+        ]
+
+    def get_post(self, obj):
+        from posts.serializers import ThinPostSerializer
+        return ThinPostSerializer(obj.post).data
+
+    def get_user_vote(self, obj):
+        user = self.context.get('request').user
+        vote = Vote.objects.filter(
+            comment=obj,
+            owner=user
+        )
+        if vote.exists():
+            return vote.first().vote_type_name.lower()
+        
+        return None

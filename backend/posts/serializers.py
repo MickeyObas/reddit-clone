@@ -11,6 +11,7 @@ from accounts.serializers import UserSerializer
 from comments.serializers import CommentSerializer
 from communities.serializers import CommunityDisplaySerializer
 
+
 class PostMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostMedia
@@ -111,8 +112,7 @@ class PostSerializer(serializers.ModelSerializer):
     
 
     def get_community(self, obj):
-        return CommunityDisplaySerializer(obj.community).data
-    
+        return CommunityDisplaySerializer(obj.community).data 
 
 class PostDisplaySerializer(serializers.ModelSerializer):
 
@@ -162,10 +162,23 @@ class PostDisplaySerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         return user.id in obj.community.members.values_list('id', flat=True)
     
-
 class CommunityPostFeedSerializer(PostDisplaySerializer):
 
     owner = UserSerializer()
 
     class Meta(PostDisplaySerializer.Meta):
         fields = PostDisplaySerializer.Meta.fields + ['owner'] 
+
+class ThinPostSerializer(serializers.ModelSerializer):
+
+    owner = UserSerializer()
+    community = CommunityDisplaySerializer()
+
+    class Meta:
+        model = Post
+        fields = [
+            'id',
+            'title',
+            'owner',
+            'community'
+        ]

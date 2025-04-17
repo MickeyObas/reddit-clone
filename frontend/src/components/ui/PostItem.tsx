@@ -49,7 +49,7 @@ const PostItem = ({post, onVote}: PostItemProps) => {
 
   return (
     <>
-      <article className="feed grid grid-cols-1 px-5 py-3 border-b border-b-slate-200">
+      <article className="feed grid grid-cols-1 px-4 py-3 border-b border-b-slate-200">
         <div className="cursor-pointer" onClick={() => navigate(`/post/${post.id}/`)}>
           <div className='flex'>
             <div className='left-of-panel flex text-xs items-center'>
