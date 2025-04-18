@@ -17,7 +17,7 @@ from operator import attrgetter
 @api_view(['GET'])
 def profile_list(request):
     profiles = Profile.objects.all()
-    serializer = ProfileSerializer(profiles, many=True)
+    serializer = ProfileSerializer(profiles, many=True, context={'request': request})
     return Response(serializer.data)
 
 
@@ -25,14 +25,18 @@ def profile_list(request):
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def profile_detail_update(request, pk):
     try:
-        profile = Profile.objects.get(id=pk)
+        user = User.objects.get(id=pk)
+        profile = user.profile
 
         if request.method == 'GET':
-            serializer = ProfileSerializer(profile)
+            serializer = ProfileSerializer(profile, context={'request': request})
             return Response(serializer.data)
         
         elif request.method == 'PATCH':
-            serializer = ProfileSerializer(profile, data=request.data, partial=True)
+            if request.user.id != profile.user.id:
+                return Response({'error': 'You cannot perform this action'}, status=status.HTTP_403_FORBIDDEN)
+            
+            serializer = ProfileSerializer(profile, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
                 return Response({'message': 'Profile updated successfuly.'})
@@ -44,9 +48,9 @@ def profile_detail_update(request, pk):
 
 @api_view(['GET'])
 def profile_overview(request, pk):
-    # user = User.objects.get(id=pk)
+    user = User.objects.get(id=pk)
     # NOTE: This is temporary. Change back to request-scoping for user
-    user = request.user
+    # user = request.user
     posts = Post.objects.filter(owner=user)
     comments = Comment.objects.filter(owner=user)
 

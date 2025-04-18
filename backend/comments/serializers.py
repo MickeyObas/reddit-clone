@@ -90,6 +90,7 @@ class FeedCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = [
+            'id',
             'parent', # owner, None
             'post', # title, owner(is_creator?), channel
             'body',

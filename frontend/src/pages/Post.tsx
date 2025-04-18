@@ -12,7 +12,7 @@ import { Navigation, Virtual } from 'swiper/modules';
 import type { Post } from '../types/post';
 import { CommentType } from '../types/comment';
 import { useEffect, useState, useRef } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { fetchWithAuth, formatCommunity, formatUsername, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 
@@ -28,7 +28,7 @@ type PostVote = {
 }
 
 const Post = () => {
-
+  const naviagate = useNavigate();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
@@ -148,7 +148,12 @@ const Post = () => {
               className='font-semibold me-2'>{post?.community.name && formatCommunity(post?.community.name)}</Link>
             <span className='opacity-70'>{timeAgo(post?.created_at)}</span>
           </div>
-          <a href='' className='text-blue-600 underline text-[11px]'>{formatUsername(post?.owner.username ?? "Unknown User")}</a>
+          <span 
+            onClick={(e) => {
+              e.stopPropagation();
+              naviagate(`/user/${user?.id}/`)
+            }}
+            className='text-blue-600 underline text-[11px] cursor-pointer'>{formatUsername(post?.owner.username ?? "Unknown User")}</span>
         </div>
         <img src={ellipsisIcon} alt="" className='w-6 h-6 ms-auto'/>
       </div>

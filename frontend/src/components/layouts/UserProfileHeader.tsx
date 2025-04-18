@@ -5,7 +5,7 @@ import columnsIcon from '../../assets/icons/columns.png';
 import { useState } from "react";
 
 
-const UserProfileHeader = () => {
+const UserProfileHeader = ({profile}) => {
   const { userId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
@@ -26,15 +26,17 @@ const UserProfileHeader = () => {
   return (
     <>
       <div className="bg-green-300 h-20">
-        <h1>Banner</h1>   
+        {profile?.banner && (<img src={profile?.banner} alt="" className="object-cover w-full h-full" />)}
       </div>
       <div className="p-4">
         <div className="flex relative mb-3">
           <div className="flex flex-col">
-            <div className="flex bg-red-400 w-28 h-[150px] rounded-xl mb-2 absolute -top-11"></div>
+            <div className="flex bg-red-400 w-28 h-[150px] rounded-xl mb-2 absolute -top-11 overflow-hidden ring-1 ring-gray-300">
+              {profile?.avatar && (<img src={profile.avatar} alt="" className="w-full h-full object-cover"/>)}
+            </div>
             <div className="w-25 h-[105px] mb-2"></div>
-            <h1 className="font-bold text-2xl">Reddit5User</h1>
-            <p className="text-xs text-gray-500">u/Reddit5User</p>
+            <h1 className="font-bold text-2xl">{profile?.user.username}</h1>
+            <p className="text-xs text-gray-500">{"u/" + profile?.user.username}</p>
           </div>
           <div className="flex self-start gap-2 ms-auto">
             <button className="bg-blue-800 text-white py-2 px-2.5 rounded-full text-xs font-semibold">Follow</button>

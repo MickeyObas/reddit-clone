@@ -28,7 +28,7 @@ class PostSerializer(serializers.ModelSerializer):
     user_vote = serializers.SerializerMethodField()
     community = serializers.SerializerMethodField()
     community_id = serializers.CharField(write_only=True)
-    
+    is_member = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -44,7 +44,8 @@ class PostSerializer(serializers.ModelSerializer):
             'user_vote',
             'vote_count',
             'comment_count',
-            'created_at'
+            'created_at',
+            'is_member'
         ]
 
     def get_media(self, obj):
@@ -76,6 +77,9 @@ class PostSerializer(serializers.ModelSerializer):
             return vote.first().vote_type_name.lower()
         return None
         
+    def get_is_member(self, obj):
+        user = self.context.get('request').user
+        return user.id in obj.community.members.values_list('id', flat=True)
 
     def create(self, validated_data):
         request = self.context['request']
@@ -112,7 +116,7 @@ class PostSerializer(serializers.ModelSerializer):
     
 
     def get_community(self, obj):
-        return CommunityDisplaySerializer(obj.community).data 
+        return CommunityDisplaySerializer(obj.community, context={'request': self.context['request']}).data 
 
 class PostDisplaySerializer(serializers.ModelSerializer):
 

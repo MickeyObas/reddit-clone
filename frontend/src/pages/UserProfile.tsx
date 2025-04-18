@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Post } from '../types/post';
 import PostItem from '../components/ui/PostItem';
 import CommentItem from '../components/ui/CommentItem';
+import { useOutletContext, useParams } from 'react-router-dom';
 
 
 type PostVotes = {
@@ -24,12 +25,14 @@ const UserProfile = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [feed, setFeed] = useState([]);
   const { user } = useAuth();
+  const { userId } = useParams();
+  const profile = useOutletContext();
 
 
   useEffect(() => {
     const fetchOverview = async () => {
       try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/profiles/${user?.id}/overview/`, {
+        const response = await fetchWithAuth(`${BACKEND_URL}/profiles/${userId}/overview/`, {
           method: 'GET'
         });
         if(!response?.ok){
@@ -44,7 +47,7 @@ const UserProfile = () => {
       }
     };
     fetchOverview();
-  }, [user?.id])
+  }, [userId])
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -65,10 +68,10 @@ const UserProfile = () => {
     fetchPosts();
   }, [])
 
-  const handleVote = async (postId: number, voteType: "upvote" | "downvote" | null) => {
+  const handlePostVote = async (postId: number, voteType: "upvote" | "downvote" | null) => {
     const dir = voteType === 'upvote' ? 1 : -1;
-    const updatedPosts = [...posts];
-    const post = updatedPosts.find((p) => p.id === postId);
+    const updatedFeedItems = [...feed];
+    const post = updatedFeedItems.find((p) => p.id === postId);
 
     if(!post) return;
 
@@ -78,7 +81,7 @@ const UserProfile = () => {
     const { newVoteType, newVoteCount } = getOptimisticVoteUpdate(post, voteType);
     post.user_vote = newVoteType;
     post.vote_count = newVoteCount;
-    setPosts(updatedPosts);
+    setPosts(updatedFeedItems);
 
     try{
       const response = await fetchWithAuth(`${BACKEND_URL}/votes/vote?user_id=${user?.id}&obj_id=${post.id}&dir=${dir}&obj=p`, {
@@ -88,13 +91,13 @@ const UserProfile = () => {
       if(!response?.ok){
         post.user_vote = previousVoteType;
         post.vote_count = previousVoteCount;
-        setPosts([...updatedPosts]);
+        setPosts([...updatedFeedItems]);
         console.log("Something went wrong during voting.");
       }else{
         const data = await response?.json();
         console.log(data);
         post.vote_count = data.count;
-        setPosts([...updatedPosts]);
+        setPosts([...updatedFeedItems]);
       }
     }catch(err){
       console.error(err);
@@ -130,54 +133,89 @@ const UserProfile = () => {
 
   }
 
-  const handleCommentVote = async (commentId: number, type: string) => {
+  const getOptimisticCommentVoteUpdate = (comment: Comment, voteType: "upvote" | "downvote" | null) => {
+    const previousVoteType = comment.user_vote;
+    let newVoteType = voteType;
+    let newVoteCount = comment.vote_count;
+
+    if(voteType === 'upvote'){
+      if(previousVoteType === 'upvote'){
+        newVoteCount -= 1;
+        newVoteType = null;
+      }else if(previousVoteType === 'downvote'){
+        newVoteCount += 2;
+      }else{
+        newVoteCount += 1;
+      }
+    }else if(voteType === 'downvote'){
+      if(previousVoteType === 'downvote'){
+        newVoteCount += 1;
+        newVoteType = null;
+      }else if(previousVoteType === 'upvote'){
+        newVoteCount -= 2;
+      }else{
+        newVoteCount -= 1;
+      }
+    };
+
+    return {newVoteType, newVoteCount};
+
+  }
+
+  const handleCommentVote = async (commentId: number, type: "upvote" | "downvote" | null) => {
     const dir = type === "upvote" ? 1 : -1;
+    const updatedFeedItems = [...feed];
+    const comment = updatedFeedItems.find((c) => c.id === commentId);
+    
+    if(!comment) return;
+
+    const previousVoteType = comment?.user_vote;
+    const previousVoteCount = comment?.vote_count;
+
+    const { newVoteType, newVoteCount } = getOptimisticCommentVoteUpdate(comment, type);
+    comment.user_vote = newVoteType;
+    comment.vote_count = newVoteCount;
+    setFeed(updatedFeedItems);
+
     const response = await fetchWithAuth(`${BACKEND_URL}/votes/vote?user_id=${user?.id}&obj_id=${commentId}&dir=${dir}&obj=c`, {
       method: 'POST'
     });
 
-    if(!response?.ok){
-      console.error("Whoops, something went wrong.");
+    if(!response.ok){
+      comment.user_vote = previousVoteType;
+      comment.vote_count = previousVoteCount;
+      setFeed([...updatedFeedItems]);
+      console.log("Something went wrong during voting");
     }else{
-      /* 
-      setCommentVote((prev) => {
-        const { count, userVote: prevVote } = prev;
-        let newCount = count;
-        let newVote: string | null = type;
-        
-        if(type === "upvote"){
-          if(prevVote === "upvote"){
-            newCount -= 1;
-            newVote = null;
-          }else if(prevVote === "downvote"){
-            newCount += 2
-          }else{
-            newCount += 1;
-          }
-
-        }else if(type === "downvote"){
-          if(prevVote === "downvote"){
-            newCount += 1;
-            newVote = null;
-          }else if(prevVote === "upvote"){
-            newCount -= 2
-          }else{
-            newCount -= 1
-          }
-        };
-        return {...prev, count: newCount, userVote: newVote};
-      })
-      */
+      const data = await response?.json();
+      console.log(data);
+      comment.vote_count = data.count;
+      setFeed([...updatedFeedItems]);
     }
+
   }
 
   return (
     <div className="grid grid-cols-1">
       {feed && feed.map((feedItem, idx) => {
         if(feedItem.type === 'post'){
-          return <PostItem key={idx} post={feedItem} onVote={handleVote}/>
+          return (
+            <PostItem 
+              key={idx} 
+              post={feedItem} 
+              onVote={handlePostVote}
+              profile={profile}
+              />
+            )
         }else if(feedItem.type === 'comment'){
-          return <CommentItem comment={feedItem}/>
+          return (
+            <CommentItem 
+              key={idx} 
+              comment={feedItem} 
+              onVote={handleCommentVote}
+              profile={profile}
+              />
+            )
         }
       })}
     </div>

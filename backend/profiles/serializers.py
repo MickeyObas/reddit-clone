@@ -17,3 +17,5 @@ class ProfileSerializer(serializers.ModelSerializer):
             "avatar",
             "banner"
         ]
+
+    

@@ -47,7 +47,6 @@ class CommunitySerializer(serializers.ModelSerializer):
         return community
 
 class CommunityDisplaySerializer(serializers.ModelSerializer):
-    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = Community
@@ -57,6 +56,3 @@ class CommunityDisplaySerializer(serializers.ModelSerializer):
             "name"
         ]
     
-    def get_avatar(self, obj):
-        if obj.avatar:
-            return "http://localhost:8000" + obj.avatar.url

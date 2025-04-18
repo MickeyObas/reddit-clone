@@ -37,10 +37,10 @@ const AppRoutes = () => {
           <Route path="community/:communityId/about/" element={<AboutCommunity />} />
           <Route path="community/:communityId/create-post/" element={<CreatePost />} />
 
-          <Route path="user/" element={<UserProfileLayout />}>
-            <Route index path=":userId/" element={<UserProfile />} />
-            <Route index path=":userId/submitted/" element={<UserProfile />} />
-            <Route index path=":userId/comments/" element={<UserProfile />} />
+          <Route path="user/:userId/" element={<UserProfileLayout />}>
+            <Route index path="" element={<UserProfile />} />
+            <Route index path="submitted/" element={<UserProfile />} />
+            <Route index path="comments/" element={<UserProfile />} />
           </Route>
 
         </Route>

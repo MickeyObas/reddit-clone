@@ -3,77 +3,63 @@ import UpArrow from "../../assets/svgs/UpArrow"
 import DownArrow from "../../assets/svgs/DownArrow"
 import { fetchWithAuth, timeAgo } from "../../utils"
 import { useAuth } from "../../contexts/AuthContext"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useOutletContext, useParams } from "react-router-dom"
+import { useState } from "react"
 
 
-const CommentItem = ({comment}) => {
+const CommentItem = ({comment, onVote, profile}) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  const handleCommentVote = async (commentId: number, type: string) => {
-      const dir = type === "upvote" ? 1 : -1;
-      const response = await fetchWithAuth(`${BACKEND_URL}/votes/vote?user_id=${user?.id}&obj_id=${commentId}&dir=${dir}&obj=c`, {
-        method: 'POST'
-      });
-  
-      if(!response?.ok){
-        console.error("Whoops, something went wrong.");
-      }else{
-        /* 
-        setCommentVote((prev) => {
-          const { count, userVote: prevVote } = prev;
-          let newCount = count;
-          let newVote: string | null = type;
-          
-          if(type === "upvote"){
-            if(prevVote === "upvote"){
-              newCount -= 1;
-              newVote = null;
-            }else if(prevVote === "downvote"){
-              newCount += 2
-            }else{
-              newCount += 1;
-            }
-  
-          }else if(type === "downvote"){
-            if(prevVote === "downvote"){
-              newCount += 1;
-              newVote = null;
-            }else if(prevVote === "upvote"){
-              newCount -= 2
-            }else{
-              newCount -= 1
-            }
-          };
-          return {...prev, count: newCount, userVote: newVote};
-        })
-        */
-      }
-    }
+  const [isHovered, setIsHovered] = useState<string | null>(null);
+  const { userId } = useParams();
+  console.log(profile);
 
   return (
     <>
       <article className='grid grid-cols-1 px-4 py-3 border-b border-b-slate-200'>
-        <div className='flex flex-col gap-y-1.5'>
+        <div 
+          onClick={() => navigate(`/post/${comment.post.id}/`)}
+          className='cursor-pointer flex flex-col gap-y-1.5'>
           <div className='flex gap-x-2 items-center text-xs'>
             <div className="w-5 h-5">
               <div className='w-5 h-5 rounded-full bg-green-500 self-center'></div>
             </div>
             <div className="flex items-center flex-wrap gap-y-1.5">
-              <span className="font-semibold">{"r/" + comment.post.community.name}</span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/community/${comment.post.community.id}/`)
+                }} 
+                className="font-semibold cursor-pointer hover:text-blue-700">{"r/" + comment.post.community.name}</span>
               <Dot size={20}/>
-              <span className=''>{comment.post.title}</span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/post/${comment.post.id}/`)
+                }} 
+                className='hover:text-blue-700'>{comment.post.title}</span>
             </div>
           </div>
           <p className='text-xs flex gap-x-1 text-gray-500 ms-7 flex-wrap gap-y-1.5'>
-            <span className='font-bold text-black'>{user?.username}</span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/user/${user?.id}/`)
+              }} 
+              className='font-bold text-black cursor-pointer hover:text-blue-700'>{profile?.profile?.user?.username}</span>
             {comment.parent ? (
               <>
-                {comment.post.owner.id === user?.id && (
+                {comment.post.owner.id === profile.profile.user.id && (
                   <span className='text-blue-500 font-bold'>OP</span>
                 )}
                 <span>replied to{' '}
-                  <span className='font-bold text-black'>
+                  <span 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("Clicked other user")
+                      navigate(`/user/${comment.parent.owner.id}/`)
+                    }}
+                    className='font-bold text-black cursor-pointer hover:text-blue-700'>
                     {comment.parent.owner.username}
                   </span>
                 </span>
@@ -90,26 +76,26 @@ const CommentItem = ({comment}) => {
         <div className='ms-5 flex items-center text-slate-500 gap-x-1 text-xs select-none'>
           <div className='flex items-center gap-x-1'>
             <div
-              onClick={() => handleCommentVote(comment.id, "upvote")} 
+              onClick={() => onVote(comment.id, "upvote")} 
               className='rounded-full h-full py-2 px-2 cursor-pointer hover:bg-slate-300'>
               <UpArrow 
                 height="14px" width="14px"
-                color={""}
-                outlineColor={'gray'}
-                onMouseEnter={() => console.log("Entered")}
-                onMouseLeave={() => console.log("Left")}
+                color={comment.user_vote === "upvote" ? "red" : ""}
+                outlineColor={isHovered === "up" ? 'red' : 'gray'}
+                onMouseEnter={() => setIsHovered('up')}
+                onMouseLeave={() => setIsHovered(null)}
                 />
             </div>
             <span className='text-xs'>{comment.vote_count}</span>
             <div 
-              onClick={() => console.log("Voted")}
+              onClick={() => onVote(comment.id, "downvote")}
               className='rounded-full h-full py-2 px-2 cursor-pointer hover:bg-slate-300'>
               <DownArrow 
                 height="14px" width="14px" 
-                color={""}
-                outlineColor={'gray'}
-                onMouseEnter={() => console.log("Entered")}
-                onMouseLeave={() => console.log("Left")}
+                color={comment.user_vote === "downvote" ? "blue" : ""}
+                outlineColor={isHovered === "down" ? 'blue' : 'gray'}
+                onMouseEnter={() => setIsHovered('down')}
+                onMouseLeave={() => setIsHovered(null)}
                 />
             </div>
           </div>
