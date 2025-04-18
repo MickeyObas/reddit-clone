@@ -7,7 +7,7 @@ from accounts.models import User
 from posts.models import Post
 from comments.models import Comment
 from .serializers import ProfileSerializer
-from posts.serializers import PostSerializer
+from posts.serializers import PostSerializer, PostDisplaySerializer
 from comments.serializers import CommentSerializer, FeedCommentSerializer
 
 from itertools import chain
@@ -69,7 +69,7 @@ def profile_overview(request, pk):
 
     for item in combined:
         if item.content_type == 'post':
-            data = PostSerializer(item, context={'request': request}).data
+            data = PostDisplaySerializer(item, context={'request': request}).data
         else:
             data = FeedCommentSerializer(item, context={'request': request}).data
         data['type'] = item.content_type
@@ -80,9 +80,16 @@ def profile_overview(request, pk):
 
 
 @api_view(['GET'])
-def profile_posts(request):
-    pass
+def profile_posts(request, pk):
+    user = User.objects.get(id=pk)
+    posts = Post.objects.filter(owner=user).order_by('-created_at')
+    serializer = PostDisplaySerializer(posts, many=True, context={'request': request})
+    return Response(serializer.data)
+
 
 @api_view(['GET'])
-def profile_comments(request):
-    pass
+def profile_comments(request, pk):
+    user = User.objects.get(id=pk)
+    comments = Comment.objects.filter(owner=user).order_by('-created_at')
+    serializer = FeedCommentSerializer(comments, many=True, context={'request': request})
+    return Response(serializer.data)

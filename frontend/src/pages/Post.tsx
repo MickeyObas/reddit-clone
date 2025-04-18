@@ -1,4 +1,4 @@
-import redditIcon from '../assets/icons/reddit.png';
+import redditIcon from '../assets/icons/reddit-outline.png';
 import ellipsisIcon from '../assets/icons/ellipsis.png';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -151,7 +151,7 @@ const Post = () => {
           <span 
             onClick={(e) => {
               e.stopPropagation();
-              naviagate(`/user/${user?.id}/`)
+              naviagate(`/user/${post?.owner.id}/`)
             }}
             className='text-blue-600 underline text-[11px] cursor-pointer'>{formatUsername(post?.owner.username ?? "Unknown User")}</span>
         </div>

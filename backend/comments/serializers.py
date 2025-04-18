@@ -101,7 +101,7 @@ class FeedCommentSerializer(serializers.ModelSerializer):
 
     def get_post(self, obj):
         from posts.serializers import ThinPostSerializer
-        return ThinPostSerializer(obj.post).data
+        return ThinPostSerializer(obj.post, context={'request': self.context['request']}).data
 
     def get_user_vote(self, obj):
         user = self.context.get('request').user

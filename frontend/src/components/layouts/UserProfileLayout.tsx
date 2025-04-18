@@ -10,6 +10,10 @@ const UserProfileLayout = () => {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [userId]);
+
+  useEffect(() => {
     const fetchProfile = async () => {
       const response = await fetchWithAuth(`${BACKEND_URL}/profiles/${userId}/`, {
         method: 'GET'

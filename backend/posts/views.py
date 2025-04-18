@@ -70,7 +70,7 @@ def user_post_feed(request):
         community__in=user_communities
     ).order_by('-created_at')
 
-    serializer = PostDisplaySerializer(posts, many=True)
+    serializer = PostDisplaySerializer(posts, many=True, context={'request': request})
 
     return Response(serializer.data)
 

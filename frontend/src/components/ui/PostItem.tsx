@@ -3,6 +3,7 @@ import ellipsisIcon from '../../assets/icons/ellipsis.png';
 import dotIcon from '../../assets/icons/dot.png';
 import UpArrow from '../../assets/svgs/UpArrow';
 import DownArrow from '../../assets/svgs/DownArrow';
+import communityIcon from '../../assets/icons/community.png';
 
 import { useEffect, useState } from 'react';
 import { fetchWithAuth, formatCommunity, getImage, timeAgo } from '../../utils';
@@ -11,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Post } from '../../types/post';
 import { useAuth } from '../../contexts/AuthContext';
+import redditIcon from '../../assets/icons/reddit-outline.png';
 
 type hoverState = {
   id: number,
@@ -53,7 +55,17 @@ const PostItem = ({post, onVote}: PostItemProps) => {
         <div className="cursor-pointer" onClick={() => navigate(`/post/${post.id}/`)}>
           <div className='flex'>
             <div className='left-of-panel flex text-xs items-center'>
-              <div className='w-4 h-4 rounded-full bg-green-700'></div>
+              <div className='w-5 h-5 rounded-full overflow-hidden'>
+                {post?.community.avatar ? (
+                  <img 
+                  className='w-full h-full object-cover'
+                  src={post?.community.avatar}/>
+                ) : (
+                  <img 
+                  className='w-full h-full object-cover'
+                  src={redditIcon}/>
+                )}
+              </div>
               <span
                 onClick={(e) => {
                   e.stopPropagation();

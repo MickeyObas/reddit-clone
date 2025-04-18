@@ -4,25 +4,34 @@ import DownArrow from "../../assets/svgs/DownArrow"
 import { fetchWithAuth, timeAgo } from "../../utils"
 import { useAuth } from "../../contexts/AuthContext"
 import { useNavigate, useOutletContext, useParams } from "react-router-dom"
-import { useState } from "react"
-
+import { useMemo, useState } from "react"
+import redditIcon from '../../assets/icons/reddit-outline.png';
 
 const CommentItem = ({comment, onVote, profile}) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState<string | null>(null);
   const { userId } = useParams();
-  console.log(profile);
+  const formattedTimeAgo = useMemo(() => timeAgo(comment.created_at), [comment.created_at])
 
   return (
     <>
-      <article className='grid grid-cols-1 px-4 py-3 border-b border-b-slate-200'>
+      <article 
+        onClick={() => navigate(`/post/${comment.post.id}/`)}
+        className='grid grid-cols-1 px-4 py-3 border-b border-b-slate-200 cursor-pointer'>
         <div 
-          onClick={() => navigate(`/post/${comment.post.id}/`)}
-          className='cursor-pointer flex flex-col gap-y-1.5'>
+          className='flex flex-col gap-y-1.5'>
           <div className='flex gap-x-2 items-center text-xs'>
-            <div className="w-5 h-5">
-              <div className='w-5 h-5 rounded-full bg-green-500 self-center'></div>
+            <div className="w-6 h-6">
+              {comment.post.community.avatar ? (
+                <div className="w-6 h-6 rounded-full overflow-hidden">
+                  <img src={comment.post.community.avatar} alt="" className="w-full h-full object-cover"/>
+                </div>
+              ) : (
+                <div className="w-6 h-6 rounded-full overflow-hidden">
+                  <img src={redditIcon} alt="" className="w-full h-full object-cover"/>
+                </div>
+              )}
             </div>
             <div className="flex items-center flex-wrap gap-y-1.5">
               <span
@@ -37,7 +46,7 @@ const CommentItem = ({comment, onVote, profile}) => {
                   e.stopPropagation();
                   navigate(`/post/${comment.post.id}/`)
                 }} 
-                className='hover:text-blue-700'>{comment.post.title}</span>
+                className='w-[90%] hover:text-blue-700 whitespace-nowrap overflow-hidden text-ellipsis'>{comment.post.title}</span>
             </div>
           </div>
           <p className='text-xs flex gap-x-1 text-gray-500 ms-7 flex-wrap gap-y-1.5'>
@@ -67,7 +76,7 @@ const CommentItem = ({comment, onVote, profile}) => {
             ) : (
               <span>commented</span>
             )}
-              <span>{timeAgo(comment.created_at)}</span>
+              <span>{formattedTimeAgo}</span>
           </p>
         </div>
         <div className='text-sm mt-3 leading-5 ms-7'>
@@ -76,7 +85,10 @@ const CommentItem = ({comment, onVote, profile}) => {
         <div className='ms-5 flex items-center text-slate-500 gap-x-1 text-xs select-none'>
           <div className='flex items-center gap-x-1'>
             <div
-              onClick={() => onVote(comment.id, "upvote")} 
+              onClick={(e) => {
+                e.stopPropagation();
+                onVote(comment.id, "upvote")
+              }} 
               className='rounded-full h-full py-2 px-2 cursor-pointer hover:bg-slate-300'>
               <UpArrow 
                 height="14px" width="14px"
@@ -88,7 +100,10 @@ const CommentItem = ({comment, onVote, profile}) => {
             </div>
             <span className='text-xs'>{comment.vote_count}</span>
             <div 
-              onClick={() => onVote(comment.id, "downvote")}
+              onClick={(e) => {
+                e.stopPropagation();
+                onVote(comment.id, "downvote")
+              }}
               className='rounded-full h-full py-2 px-2 cursor-pointer hover:bg-slate-300'>
               <DownArrow 
                 height="14px" width="14px" 

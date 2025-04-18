@@ -12,6 +12,8 @@ import Community from "../pages/Community";
 import { AboutCommunity } from "../pages/AboutCommunity";
 import UserProfile from "../pages/UserProfile";
 import UserProfileLayout from "../components/layouts/UserProfileLayout";
+import UserPosts from "../pages/UserPosts";
+import UserComments from "../pages/UserComments";
 
 
 const AppRoutes = () => {
@@ -39,8 +41,8 @@ const AppRoutes = () => {
 
           <Route path="user/:userId/" element={<UserProfileLayout />}>
             <Route index path="" element={<UserProfile />} />
-            <Route index path="submitted/" element={<UserProfile />} />
-            <Route index path="comments/" element={<UserProfile />} />
+            <Route path="submitted/" element={<UserPosts />} />
+            <Route path="comments/" element={<UserComments />} />
           </Route>
 
         </Route>
