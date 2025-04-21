@@ -1,8 +1,9 @@
 import { useParams, useLocation, Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import { MessageCircleMore, Ellipsis, ChevronDown, Columns3, Columns2 } from "lucide-react";
+import { MessageCircleMore, Ellipsis, ChevronDown, Columns3, Columns2, Shirt, Shield, ScrollIcon } from "lucide-react";
 import columnsIcon from '../../assets/icons/columns.png';
 import { useState } from "react";
+import redditIcon from '../../assets/icons/reddit-outline.png';
 
 
 const UserProfileHeader = ({profile}) => {
@@ -10,7 +11,8 @@ const UserProfileHeader = ({profile}) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const sortFilter = searchParams.get('sort');
+  const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+  const sortFilter = searchParams.get('sort') || 'new';
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -29,16 +31,14 @@ const UserProfileHeader = ({profile}) => {
         {profile?.banner && (<img src={profile?.banner} alt="" className="object-cover w-full h-full" />)}
       </div>
       <div className="p-4">
-        <div className="flex relative mb-3">
+        <div className="flex relative justify-between mb-3">
           <div className="flex flex-col">
             <div className="flex bg-red-400 w-28 h-[150px] rounded-xl mb-2 absolute -top-11 overflow-hidden ring-1 ring-gray-300">
               {profile?.avatar && (<img src={profile.avatar} alt="" className="w-full h-full object-cover"/>)}
             </div>
-            <div className="w-25 h-[105px] mb-2"></div>
-            <h1 className="font-bold text-2xl">{profile?.user.username}</h1>
-            <p className="text-xs text-gray-500">{"u/" + profile?.user.username}</p>
+            <div className="w-28 h-[105px]"></div>
           </div>
-          <div className="flex self-start gap-2 ms-auto">
+          <div className="flex self-start gap-2">
             <button className="bg-blue-800 text-white py-2 px-2.5 rounded-full text-xs font-semibold">Follow</button>
             <button className="bg-gray-white py-2 px-2.5 rounded-full text-xs font-semibold">
               <MessageCircleMore size={18}/>
@@ -48,12 +48,82 @@ const UserProfileHeader = ({profile}) => {
             </button>
           </div>
         </div>
-        <div className="bg-gray-100 rounded-2xl text-gray-500 p-3 leading-5 mb-4">
+        <h1 className="font-bold text-2xl">{profile?.user.username}</h1>
+        <p className="text-xs text-gray-500">{"u/" + profile?.user.username}</p>
+        <div className="bg-gray-100 rounded-2xl text-gray-500 p-3 leading-5 mt-2.5 mb-4">
           <p>Who lives in a pineapple under the sea? Exactly. So never give up.</p>
         </div>
-        <div className="bg-gray-100 rounded-2xl text-gray-500 p-3 leading-5 mb-4 flex items-center justify-between">
-          <p>About</p>
-          <ChevronDown size={16} stroke="black"/>
+        <div className={`mb-4 rounded-2xl overflow-hidden transition-all duration-300 ${isAboutExpanded ? 'h-[565px]' : 'h-14'}`}>
+          <div
+            onClick={() => setIsAboutExpanded(!isAboutExpanded)}
+          >
+            <div className="bg-gray-100 text-gray-500 px-3 py-4.5 leading-5 flex items-center justify-between">
+              <p>About</p>
+              <ChevronDown size={16} stroke="black" className={`transition-all duration-200 ${isAboutExpanded ? 'rotate-180' : ''}`}/>
+            </div>
+          </div>
+          <div className="grid grid-cols-1  pt-4.5 px-3 bg-gray-100 rounded-b-2xl">
+            <div className="grid grid-cols-2 gap-y-5">
+              <div className="flex flex-col gap-y-1">
+                <h3 className="font-semibold">1</h3>
+                <span className="text-xs text-gray-500">Post karma</span>
+              </div>
+              <div className="flex flex-col gap-y-1">
+                <h3 className="font-semibold">0</h3>
+                <span className="text-xs text-gray-500">Comment karma</span>
+              </div>
+              <div className="flex flex-col gap-y-1">
+                <h3 className="font-semibold">Jan 24, 2024</h3>
+                <span className="text-xs text-gray-500">Cake day</span>
+              </div>
+              <div className="flex flex-col gap-y-1">
+                <h3 className="font-semibold">1</h3>
+                <span className="text-xs text-gray-500">Gold earned</span>
+              </div>
+            </div>
+            <hr className="border-gray-300 my-4"/>
+            <p className="uppercase mb-5">Settings</p>
+            <div className="grid grid-cols-1 ps-1.5">
+              <div className="flex items-center py-4">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                  <img src={redditIcon} alt="" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex flex-col ms-3">
+                  <span className="font-medium">Profile</span>
+                  <p className="text-xs text-gray-500">Customize your profile</p> 
+                </div>
+                <button className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Update</button>
+              </div>  
+              <div className="flex items-center py-4">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                  <Shirt strokeWidth={1.5}/>
+                </div>
+                <div className="flex flex-col ms-3">
+                  <span className="font-medium">Avatar</span>
+                  <p className="text-xs text-gray-500">Customize and style</p> 
+                </div>
+                <button className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Style Avatar</button>
+              </div>  
+              <div className="flex items-center py-4">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                  <Shield strokeWidth={1.5}/>
+                </div>
+                <div className="flex flex-col ms-3">
+                  <span className="font-medium">Avatar</span>
+                  <p className="text-xs text-gray-500">Customize and style</p> 
+                </div>
+                <button className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Update</button>
+              </div>  
+              <hr className="border-gray-300 mt-1 mb-4"/>
+              <p className="uppercase">Trophy case</p>
+              <div className="flex items-center py-4">
+                <div className="bg-blue-500 rounded-md w-8 h-8 flex justify-center items-center">
+                  <ScrollIcon fill="white" stroke="black"/>
+                </div>
+                <p className="ms-3 font-medium">One-Year Club</p> 
+              </div>  
+            </div> 
+          </div>
         </div>
         <div className="flex items-center gap-x-2">
           <Link
@@ -81,7 +151,7 @@ const UserProfileHeader = ({profile}) => {
           </div>
           <div className={`cursor-pointer absolute bg-white z-50 top-10 flex-col shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] rounded-lg w-20 ${openDropdown === 'sort' ? 'flex' : 'hidden'}`}>
             <span className="px-4 py-4">Sort by</span>
-            {['best', 'latest', 'hot'].map((opt, idx) => (
+            {['best', 'new', 'hot'].map((opt, idx) => (
               <span
                 onClick={(e) => {
                   e.stopPropagation();

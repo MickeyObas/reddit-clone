@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Post } from '../types/post';
 import PostItem from '../components/ui/PostItem';
 import CommentItem from '../components/ui/CommentItem';
-import { useOutletContext, useParams } from 'react-router-dom';
+import { useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 
 
 type PostVotes = {
@@ -27,12 +27,16 @@ const UserProfile = () => {
   const { user } = useAuth();
   const { userId } = useParams();
   const profile = useOutletContext();
+  const [searchParams] = useSearchParams();
+  const sortFilter = searchParams.get('sort') || 'new';
+
+  console.log(sortFilter);
 
 
   useEffect(() => {
     const fetchOverview = async () => {
       try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/profiles/${userId}/overview/`, {
+        const response = await fetchWithAuth(`${BACKEND_URL}/profiles/${userId}/overview/?sort=${sortFilter}`, {
           method: 'GET'
         });
         if(!response?.ok){
@@ -47,7 +51,7 @@ const UserProfile = () => {
       }
     };
     fetchOverview();
-  }, [userId])
+  }, [userId, sortFilter])
 
   useEffect(() => {
     const fetchPosts = async () => {

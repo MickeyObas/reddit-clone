@@ -1,6 +1,8 @@
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework import status, parsers
+from django.db.models import Sum, Value
+from django.db.models.functions import Coalesce
 
 from .models import Profile
 from accounts.models import User
@@ -48,6 +50,7 @@ def profile_detail_update(request, pk):
 
 @api_view(['GET'])
 def profile_overview(request, pk):
+    sort_filter = request.query_params.get('sort', 'new')
     user = User.objects.get(id=pk)
     # NOTE: This is temporary. Change back to request-scoping for user
     # user = request.user
@@ -59,9 +62,14 @@ def profile_overview(request, pk):
     for c in comments:
         c.content_type = 'comment'
 
+    if sort_filter == 'new':
+        key = attrgetter('created_at')
+    elif sort_filter == 'best' or sort_filter == 'hot':
+        key = attrgetter('vote_count')
+
     combined = sorted(
         chain(posts, comments),
-        key=attrgetter('created_at'),
+        key=key,
         reverse=True
     )
 
@@ -81,15 +89,34 @@ def profile_overview(request, pk):
 
 @api_view(['GET'])
 def profile_posts(request, pk):
+    sort = request.query_params.get('sort', 'new')
+    print(sort)
     user = User.objects.get(id=pk)
-    posts = Post.objects.filter(owner=user).order_by('-created_at')
+    posts = []
+
+    if sort == 'new':
+        posts = Post.objects.filter(owner=user).order_by('-created_at')
+    elif sort == 'best' or sort == 'hot':
+        posts = Post.objects.filter(owner=user).annotate(
+            vote_total=Coalesce(Sum('vote__type'), Value(0))
+        ).order_by('-vote_total')
+
     serializer = PostDisplaySerializer(posts, many=True, context={'request': request})
     return Response(serializer.data)
 
 
 @api_view(['GET'])
 def profile_comments(request, pk):
+    sort = request.query_params.get('sort', 'new')
     user = User.objects.get(id=pk)
-    comments = Comment.objects.filter(owner=user).order_by('-created_at')
+    comments = []
+
+    if sort == 'new':
+        comments = Comment.objects.filter(owner=user).order_by('created_at')
+    elif sort == 'best' or sort == 'hot':
+        comments = Comment.objects.filter(owner=user).annotate(
+            vote_total=Coalesce(Sum('vote__type'), Value(0))
+        ).order_by('-vote_total')
+
     serializer = FeedCommentSerializer(comments, many=True, context={'request': request})
     return Response(serializer.data)

@@ -14,6 +14,8 @@ import UserProfile from "../pages/UserProfile";
 import UserProfileLayout from "../components/layouts/UserProfileLayout";
 import UserPosts from "../pages/UserPosts";
 import UserComments from "../pages/UserComments";
+import SettingsLayout from "../components/layouts/SettingsLayout";
+import Settings from "../pages/Settings";
 
 
 const AppRoutes = () => {
@@ -43,6 +45,10 @@ const AppRoutes = () => {
             <Route index path="" element={<UserProfile />} />
             <Route path="submitted/" element={<UserPosts />} />
             <Route path="comments/" element={<UserComments />} />
+          </Route>
+
+          <Route path="settings/" element={<SettingsLayout />}>
+            <Route index path="" element={<Settings />} />
           </Route>
 
         </Route>

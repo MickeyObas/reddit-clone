@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { fetchWithAuth } from "../utils";
 import { BACKEND_URL } from "../config";
 import PostItem from "../components/ui/PostItem";
@@ -11,11 +11,13 @@ const UserPosts = () => {
   const { user } = useAuth()
   const { userId } = useParams();
   const profile = useOutletContext();
+  const [searchParams] = useSearchParams();
+  const sortFilter = searchParams.get('sort') || 'new';
 
   useEffect(() => {
     const fetchPosts = async () => {
       try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/profiles/${userId}/posts/`, {
+        const response = await fetchWithAuth(`${BACKEND_URL}/profiles/${userId}/posts/?sort=${sortFilter}`, {
           method: 'GET'
         });
         if(!response?.ok){
@@ -30,7 +32,7 @@ const UserPosts = () => {
       }
     };
     fetchPosts();
-  }, [userId])
+  }, [userId, sortFilter])
 
   const handleVote = async (postId, voteType) => {
     const dir = voteType === 'upvote' ? 1 : -1;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { fetchWithAuth } from "../utils";
 import { BACKEND_URL } from "../config";
 import CommentItem from "../components/ui/CommentItem";
@@ -10,11 +10,14 @@ const UserComments = () => {
   const { user } = useAuth()
   const { userId } = useParams();
   const profile = useOutletContext();
+  const [searchParams] = useSearchParams();
+  const sortFilter = searchParams.get('sort') || 'new';
+
 
   useEffect(() => {
     const fetchComments = async () => {
       try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/profiles/${userId}/comments/`, {
+        const response = await fetchWithAuth(`${BACKEND_URL}/profiles/${userId}/comments/?sort=${sortFilter}`, {
           method: 'GET'
         });
         if(!response?.ok){
@@ -29,7 +32,7 @@ const UserComments = () => {
       }
     };
     fetchComments();
-  }, [userId])
+  }, [userId, sortFilter])
 
   return (
     <div className="grid grid-cols-1">
