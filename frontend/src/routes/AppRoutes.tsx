@@ -15,7 +15,9 @@ import UserProfileLayout from "../components/layouts/UserProfileLayout";
 import UserPosts from "../pages/UserPosts";
 import UserComments from "../pages/UserComments";
 import SettingsLayout from "../components/layouts/SettingsLayout";
-import Settings from "../pages/Settings";
+import Settings from "../pages/SettingsAccount";
+import SettingsAccount from "../pages/SettingsAccount";
+import SettingsProfile from "../pages/SettingsProfile";
 
 
 const AppRoutes = () => {
@@ -48,7 +50,12 @@ const AppRoutes = () => {
           </Route>
 
           <Route path="settings/" element={<SettingsLayout />}>
-            <Route index path="" element={<Settings />} />
+            <Route index path="account/" element={<SettingsAccount />} />
+            <Route index path="profile/" element={<SettingsProfile />} />
+            <Route index path="privacy/" element={<Settings />} />
+            <Route index path="preferences/" element={<Settings />} />
+            <Route index path="notifications/" element={<Settings />} />
+            <Route index path="email/" element={<Settings />} />
           </Route>
 
         </Route>
