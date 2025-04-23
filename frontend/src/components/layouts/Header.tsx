@@ -12,10 +12,12 @@ interface HeaderProps {
 }
 
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 
 const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   return (
     <header
     className='z-40 sticky top-0 flex items-center py-3 ps-6 pe-4.5 border-b border-b-slate-300 bg-white shadow'
@@ -41,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
             onClick={() => navigate('create-post/')}
             />
           <img src={notificationIcon} alt="Plus icon" className='w-6 ms-5'/>
-          <img src={defaultRedditProfileIcon} alt="" className='w-8 h-8 rounded-full ms-2'/>
+          <img onClick={() => navigate(`/user/${user?.id}/`)} src={defaultRedditProfileIcon} alt="" className='w-8 h-8 rounded-full ms-2'/>
         </div>
       </div>
     </header>

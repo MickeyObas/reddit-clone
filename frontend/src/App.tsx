@@ -1,4 +1,5 @@
 import './App.css';
+import { ModalProvider } from './contexts/ModalContext';
 import AppRoutes from './routes/AppRoutes';
 
 
@@ -6,7 +7,9 @@ function App() {
 
   return (
     <>
-      <AppRoutes />
+      <ModalProvider>
+        <AppRoutes />
+      </ModalProvider>
     </>
   )
 }

@@ -4,10 +4,12 @@ import { MessageCircleMore, Ellipsis, ChevronDown, Columns3, Columns2, Shirt, Sh
 import columnsIcon from '../../assets/icons/columns.png';
 import { useState } from "react";
 import redditIcon from '../../assets/icons/reddit-outline.png';
+import { useAuth } from "../../contexts/AuthContext";
 
 
 const UserProfileHeader = ({profile}) => {
   const { userId } = useParams();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -39,7 +41,9 @@ const UserProfileHeader = ({profile}) => {
             <div className="w-28 h-[105px]"></div>
           </div>
           <div className="flex self-start gap-2">
-            <button className="bg-blue-800 text-white py-2 px-2.5 rounded-full text-xs font-semibold">Follow</button>
+            {userId !== user?.id.toString() && (
+              <button className="bg-blue-800 text-white py-2 px-2.5 rounded-full text-xs font-semibold">Follow</button>
+            )}
             <button className="bg-gray-white py-2 px-2.5 rounded-full text-xs font-semibold">
               <MessageCircleMore size={18}/>
             </button>

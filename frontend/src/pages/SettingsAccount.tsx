@@ -1,6 +1,9 @@
 import { ChevronRight, SquareArrowOutUpRight } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 const SettingsAccount = () => {
+  const { user } = useAuth();
+
   return (
     <div className="grid grid-cols-1 pt-6 ps-4 pe-6">
       <div className="mb-8">
@@ -9,7 +12,7 @@ const SettingsAccount = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-between w-[90%]">
               <span className="w-[28%]">Email address</span>
-              <span className="text-xs">redditemail@email.com</span>
+              <span className="text-xs">{user?.email}</span>
             </div>
             <div className="flex justify-end items-center w-9">
               <ChevronRight size={18}/>
