@@ -7,6 +7,7 @@ import { useModal } from "../contexts/ModalContext";
 import DisplayNameModal from "../components/modals/DisplayNameModal";
 import AboutModal from "../components/modals/AboutModal";
 import AvatarModal from "../components/modals/AvatarModal";
+import BannerModal from "../components/modals/BannerModal";
 
 const SettingsProfile = () => {
 
@@ -99,7 +100,9 @@ const SettingsProfile = () => {
               <ChevronRight size={18}/>
             </div>
           </div>
-          <div className="flex justify-between gap-y-6">
+          <div 
+            onClick={() => showModal(<BannerModal hideModal={hideModal} updateProfile={updateProfile} currentBanner={profile?.banner}/>)}
+            className="flex justify-between gap-y-6">
             <div className="flex flex-col">
               <span className="text-[14px]">Banner</span>
               <span className="text-xs text-gray-500">Upload a profile background image</span>
