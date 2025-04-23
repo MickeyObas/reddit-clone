@@ -1,6 +1,34 @@
 import { ChevronRight, SquareArrowOutUpRight } from "lucide-react";
+import { useEffect } from "react";
+import { fetchWithAuth } from "../utils";
+import { BACKEND_URL } from "../config";
+import { useAuth } from "../contexts/AuthContext";
 
 const SettingsProfile = () => {
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try{
+        const response = await fetchWithAuth(`${BACKEND_URL}/profiles/${user?.id}/`, {
+          method: 'GET'
+        });
+        if(!response?.ok){
+          console.log("Whoops, bad response.");
+        }else{
+          const data = await response.json();
+          console.log(data);
+        }
+      }catch(err){
+        console.error(err);
+      }
+    };
+
+    fetchProfile();
+
+  }, [user?.id])
+
   return (
     <div className="grid grid-cols-1 pt-6 ps-4 pe-6">
       <div className="mb-8">

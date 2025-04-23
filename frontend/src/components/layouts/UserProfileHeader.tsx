@@ -92,7 +92,9 @@ const UserProfileHeader = ({profile}) => {
                   <span className="font-medium">Profile</span>
                   <p className="text-xs text-gray-500">Customize your profile</p> 
                 </div>
-                <button className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Update</button>
+                <Link
+                  to={`/settings/profile/`} 
+                  className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Update</Link>
               </div>  
               <div className="flex items-center py-4">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center">
@@ -109,8 +111,8 @@ const UserProfileHeader = ({profile}) => {
                   <Shield strokeWidth={1.5}/>
                 </div>
                 <div className="flex flex-col ms-3">
-                  <span className="font-medium">Avatar</span>
-                  <p className="text-xs text-gray-500">Customize and style</p> 
+                  <span className="font-medium">Moderation</span>
+                  <p className="text-xs text-gray-500">Moderation tools</p> 
                 </div>
                 <button className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Update</button>
               </div>  

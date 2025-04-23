@@ -15,7 +15,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             "display_name",
             "about_description",
             "avatar",
-            "banner"
+            "banner",
+            "is_mature",
+            "created_at"
         ]
 
     
