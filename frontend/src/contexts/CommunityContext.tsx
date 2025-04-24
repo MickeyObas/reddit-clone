@@ -13,7 +13,7 @@ export function CommunityProvider({children}: {children: ReactNode}){
   useEffect(() => {
     const fetchCommunities = async () => {
       try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/communities/`, {
+        const response = await fetchWithAuth(`${BACKEND_URL}/communities/user/`, {
           method: 'GET'
         })
         if(!response?.ok){

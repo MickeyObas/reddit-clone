@@ -88,8 +88,9 @@ class PostSerializer(serializers.ModelSerializer):
         community_id = validated_data.pop('community_id')
         community = Community.objects.get(id=community_id)
 
-        if user.id not in community.members.values_list('id', flat=True):
-            raise serializers.ValidationError('You are not a member of this community.')
+        if community.type != 'public':
+            if user.id not in community.members.values_list('id', flat=True):
+                raise serializers.ValidationError('You cannot perform this action. You are not a member of this community')
         
         media_files = request.FILES.getlist('media')
         validated_data['owner'] = user

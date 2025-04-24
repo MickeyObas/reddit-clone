@@ -3,6 +3,7 @@ import dotIcon from '../assets/icons/dot.png';
 import UpArrow from '../assets/svgs/UpArrow';
 import DownArrow from '../assets/svgs/DownArrow';
 import ellipsisIcon from '../assets/icons/ellipsis.png';
+import redditIcon from '../assets/icons/reddit-outline.png';
 
 import { ChevronDown, Pin } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -157,7 +158,9 @@ const Community = ({sort='latest'}) => {
             <div className='flex justify-between'>
               <div className='flex flex-col'>
                 <div className='left-of-panel flex text-xs items-center'>
-                  <div className='w-4 h-4 rounded-full bg-green-700'></div>
+                  <div className='w-4 h-4 rounded-full bg-green-700 flex items-center justify-center overflow-hidden'>
+                    <img src={post.owner.avatar ?? redditIcon} alt="" className='w-full h-full object-cover' />
+                  </div>
                   <span className='ms-2 font-medium'>{formatUsername(post?.owner.username)}</span>
                   <img src={dotIcon} alt="" className='w-2.5 h-2.5 mx-1'/>
                   <span>{timeAgo(post?.created_at)}</span>

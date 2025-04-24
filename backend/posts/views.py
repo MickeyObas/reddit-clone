@@ -1,3 +1,10 @@
+import random
+from itertools import chain
+from operator import attrgetter
+
+from django.db.models import Sum, Value
+from django.db.models.functions import Coalesce
+
 from rest_framework import status, parsers
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
@@ -61,14 +68,48 @@ def post_detail_update_delete(request, pk):
 
 @api_view(['GET'])
 def user_post_feed(request):
+    sort = request.query_params.get('sort', None)
+    print("This is sort: ", sort)
     user = request.user
     user_communities = Community.objects.filter(
         # members__in=[user]
         members=user
     )
-    posts = Post.objects.filter(
-        community__in=user_communities
-    ).order_by('-created_at')
+
+    if sort == 'new':
+        followed_communities_posts = Post.objects.filter(
+            community__in=user_communities
+        ).order_by('-created_at')
+        trending_posts = Post.objects.exclude(
+            community__in=user_communities
+        ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-created_at')[:6]
+
+    elif sort == 'best' or sort == 'hot':
+        followed_communities_posts = Post.objects.filter(
+            community__in=user_communities
+        ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-vote_total', '-created_at')
+        trending_posts = Post.objects.exclude(
+            community__in=user_communities
+        ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-vote_total', '-created_at')[:6]
+
+    else:
+        followed_communities_posts = Post.objects.filter(
+            community__in=user_communities
+        ).order_by('-created_at')
+        trending_posts = Post.objects.exclude(
+            community__in=user_communities
+        ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-created_at')[:6]
+
+    posts = list(followed_communities_posts) + list(trending_posts)
+
+    if sort == 'none':
+        random.shuffle(posts)
+    elif sort == 'new':
+        posts = sorted(
+            posts,
+            key=attrgetter('created_at'),
+            reverse=True
+        )
 
     serializer = PostDisplaySerializer(posts, many=True, context={'request': request})
 

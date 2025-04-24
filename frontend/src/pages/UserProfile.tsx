@@ -22,7 +22,6 @@ type hoverState = {
 
 
 const UserProfile = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
   const [feed, setFeed] = useState([]);
   const { user } = useAuth();
   const { userId } = useParams();
@@ -53,25 +52,6 @@ const UserProfile = () => {
     fetchOverview();
   }, [userId, sortFilter])
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/posts/`, {
-          method: 'GET'
-        });
-        if(!response?.ok){
-          console.log("Whoops, bad response.");
-        }else{
-          const data = await response.json();
-          setPosts(data);
-        }
-      }catch(err){
-        console.error(err);
-      }
-    };
-    fetchPosts();
-  }, [])
-
   const handlePostVote = async (postId: number, voteType: "upvote" | "downvote" | null) => {
     const dir = voteType === 'upvote' ? 1 : -1;
     const updatedFeedItems = [...feed];
@@ -85,7 +65,7 @@ const UserProfile = () => {
     const { newVoteType, newVoteCount } = getOptimisticVoteUpdate(post, voteType);
     post.user_vote = newVoteType;
     post.vote_count = newVoteCount;
-    setPosts(updatedFeedItems);
+    setFeed(updatedFeedItems);
 
     try{
       const response = await fetchWithAuth(`${BACKEND_URL}/votes/vote?user_id=${user?.id}&obj_id=${post.id}&dir=${dir}&obj=p`, {
@@ -95,13 +75,13 @@ const UserProfile = () => {
       if(!response?.ok){
         post.user_vote = previousVoteType;
         post.vote_count = previousVoteCount;
-        setPosts([...updatedFeedItems]);
+        setFeed([...updatedFeedItems]);
         console.log("Something went wrong during voting.");
       }else{
         const data = await response?.json();
         console.log(data);
         post.vote_count = data.count;
-        setPosts([...updatedFeedItems]);
+        setFeed([...updatedFeedItems]);
       }
     }catch(err){
       console.error(err);

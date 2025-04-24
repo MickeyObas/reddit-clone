@@ -13,7 +13,15 @@ from django.db.models.functions import Coalesce
 from django.db.models import Sum, Value
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
+def user_community_list(request):
+    user = request.user
+    communities = Community.objects.filter(members=user)
+    serializer = CommunitySerializer(communities, many=True, context={'request': request})
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def community_list_or_create(request):
     if request.method == 'GET':
