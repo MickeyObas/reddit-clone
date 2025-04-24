@@ -111,13 +111,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    
+    avatar = serializers.ImageField(source='profile.avatar')
+
     class Meta:
         model = User
         fields = [
             'id',
             'username',
-            'email'
+            'email',
+            'avatar'
         ]
 
     

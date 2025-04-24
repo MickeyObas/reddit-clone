@@ -159,9 +159,8 @@ const Post = () => {
       </div>
       <h1 className='font-semibold text-[17px] mt-1'>{post?.title}</h1>
       <p className='text-xs leading-5 mt-3'>{post?.body}</p>
-      <p>{post?.id}</p>
       {post?.media && post.media.length > 0 && (
-        <div className='bg-blue-300 aspect-[4/3]'>
+        <div className='bg-blue-300 aspect-[4/3] mt-3'>
           <Swiper
             modules={[Navigation, Virtual]}
             className='w-full h-full object-contain'
@@ -229,13 +228,16 @@ const Post = () => {
           </div>
         </div>
       )}
-      <div className='flex gap-x-2.5 text-xs mt-5'>
+      {post?.comments.length > 0 && (
+        <div className='flex gap-x-2.5 text-xs mt-5'>
         <span>Sort by:</span>
         <div className='flex items-center'> 
           <span className='me-1'>Best</span>
           <ChevronDown size={14}/>
         </div>
       </div>
+      )}
+      
 
       {/* Comments */}
       <div className='flex flex-col mt-4'>

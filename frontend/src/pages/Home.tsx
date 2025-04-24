@@ -3,6 +3,7 @@ import ellipsisIcon from '../assets/icons/ellipsis.png';
 import dotIcon from '../assets/icons/dot.png';
 import caretDownIcon from '../assets/icons/caret-down.png';
 import columnsIcon from '../assets/icons/columns.png';
+import redditIcon from '../assets/icons/reddit.png';
 
 import { useEffect, useState } from 'react';
 import { fetchWithAuth, formatCommunity, getImage, timeAgo } from '../utils';
@@ -145,7 +146,9 @@ const Home: React.FC = () => {
             <div className="cursor-pointer" onClick={() => navigate(`post/${post.id}/`)}>
               <div className='flex'>
                 <div className='left-of-panel flex text-xs items-center'>
-                  <div className='w-4 h-4 rounded-full bg-green-700'></div>
+                  <div className='w-4 h-4 rounded-full overflow-hidden'>
+                    <img src={post.community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
+                  </div>
                   <span
                     onClick={(e) => {
                       e.stopPropagation();

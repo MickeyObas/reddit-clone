@@ -35,8 +35,8 @@ const UserProfileHeader = ({profile}) => {
       <div className="p-4">
         <div className="flex relative justify-between mb-3">
           <div className="flex flex-col">
-            <div className="flex bg-red-400 w-28 h-[150px] rounded-xl mb-2 absolute -top-11 overflow-hidden ring-1 ring-gray-300">
-              {profile?.avatar && (<img src={profile.avatar} alt="" className="w-full h-full object-cover"/>)}
+            <div className="flex items-center justify-center bg-gray-white w-28 h-[150px] rounded-xl mb-2 absolute -top-11 overflow-hidden ring-1 ring-gray-300">
+              {profile?.avatar ? (<img src={profile.avatar} alt="" className="w-full h-full object-cover"/>) : <span className="text-xs">No avatar</span>}
             </div>
             <div className="w-28 h-[105px]"></div>
           </div>
@@ -53,10 +53,12 @@ const UserProfileHeader = ({profile}) => {
           </div>
         </div>
         <h1 className="font-bold text-2xl">{profile?.user.username}</h1>
-        <p className="text-xs text-gray-500">{"u/" + profile?.user.username}</p>
-        <div className="bg-gray-100 rounded-2xl text-gray-500 p-3 leading-5 mt-2.5 mb-4">
-          <p>Who lives in a pineapple under the sea? Exactly. So never give up.</p>
+        <p className="text-xs text-gray-500 mb-3">{"u/" + profile?.user.username}</p>
+        {profile?.about_description && (
+          <div className="bg-gray-100 rounded-2xl text-gray-500 p-3 leading-5 mt-2.5 mb-4">
+          <p>{profile?.about_description}</p>
         </div>
+        )}
         <div className={`mb-4 rounded-2xl overflow-hidden transition-all duration-300 ${isAboutExpanded ? 'h-[565px]' : 'h-14'}`}>
           <div
             onClick={() => setIsAboutExpanded(!isAboutExpanded)}

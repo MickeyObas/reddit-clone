@@ -50,7 +50,11 @@ const SettingsProfile = () => {
       if(!response?.ok){
         console.log("Could not update profile");
       }else{
-        setProfile((prev) => ({...prev, [field]: URL.createObjectURL(newvalue)}))
+        if(field === "banner" || field === "avatar"){
+          setProfile((prev) => ({...prev, [field]: URL.createObjectURL(newvalue)}))
+        }else{
+          setProfile((prev) => ({...prev, [field]: newvalue}))
+        }
         const data = await response?.json();
         console.log(data);
         console.log(field, newvalue);

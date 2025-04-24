@@ -41,6 +41,9 @@ def send_confirmation_code_to_email(request):
     ).exists():
         return Response({'error': 'A user with this email address aleady exists.'}, status=400)
     
+    if VerificationCode.objects.filter(email=email).exists():
+        return Response({'error': 'Verrification Code for this email already exists.'})
+    
     code = generate_6_digit_code()
 
     subject = "Your verification code"

@@ -122,8 +122,8 @@ const Comment = ({comment, setPost}: CommentProps) => {
   return (
     <div className='flex flex-col py-1.5'>
       <div className='flex items-center text-xs'>
-        <div className='w-6 h-6 flex items-center justify-center me-2'>
-          <img src={redditIcon} alt="" />
+        <div className='w-6 h-6 flex items-center justify-center me-2 rounded-full overflow-hidden'>
+          <img src={comment.owner.avatar ?? redditIcon} alt="" className='w-full h-full object-cover' />
         </div>
         <span className='font-bold'>{comment.owner.username}</span>
         <Dot size={16} />
