@@ -155,7 +155,14 @@ const CreatePost = () => {
           className="flex items-center bg-gray-white font-medium w-fit ps-0.5 pe-2.5 rounded-full gap-x-1.5 cursor-pointer"
           onClick={() => setIsSearchDropdownOpen(true)}
           >
-          <img src={communityIcon} alt="" className='w-10 h-10'/>
+          {selectedCommunity?.avatar ? (
+            <div className='w-10 h-10 overflow-hidden rounded-full flex items-center justify-center'>
+              <img src={selectedCommunity?.avatar} alt="" className='w-6 h-6 object-cover rounded-full'/>
+            </div>
+          ) : (
+            <img src={communityIcon} alt="" className='w-10 h-10'/>
+          )}
+          
           {selectedCommunityId ? (
             <span>{"r/" + selectedCommunity?.name}</span>
           ) : (
@@ -202,8 +209,8 @@ const CreatePost = () => {
                 key={idx}
                 className='flex items-center py-0.5'
                 >
-                  <div className='w-8 h-8'>
-                    <img src={redditIcon} alt="" className='w-full h-full'/>
+                  <div className='w-8 h-8 rounded-full overflow-hidden'>
+                    <img src={community.avatar ?? redditIcon} alt="" className='w-full h-full object-center object-cover'/>
                   </div>
                   <div className='flex flex-col ms-2'>
                     <span className='font-medium'>{"r/" + community.name}</span>

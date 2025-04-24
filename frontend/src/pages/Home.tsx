@@ -8,7 +8,7 @@ import { ChevronDown, Columns2, Columns3 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { fetchWithAuth, formatCommunity, getImage, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import UpArrow from '../assets/svgs/UpArrow';
 import DownArrow from '../assets/svgs/DownArrow';
@@ -31,6 +31,8 @@ type PostVotes = {
 
 const Home: React.FC = () => {
 
+  const location = useLocation();
+  console.log(location.pathname);
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -174,7 +176,7 @@ const Home: React.FC = () => {
               className="flex flex-col relative cursor-pointer rounded-2xl select-none" 
               onClick={() => toggleDropdown('sort')}>
               <div 
-                className='flex items-center gap-x-1 rounded-full px-3 py-2 hover:bg-gray-white'>
+                className={`flex items-center gap-x-1 rounded-full px-3 py-2 hover:bg-gray-white`}>
                 <span>{sortFilter !== "none" ? sortFilter.charAt(0).toUpperCase() + sortFilter.slice(1) : 'Sort by'}</span>
                 <span><ChevronDown size={14}/></span>
               </div>
@@ -188,7 +190,7 @@ const Home: React.FC = () => {
                       setOpenDropdown(null)
                     }} 
                     key={idx} 
-                    className="px-4 py-4 hover:bg-gray-white"
+                    className={`px-4 py-4 hover:bg-gray-white ${!sortFilter || searchParams.get('sort') === opt && 'bg-gray-white'}`}
                     >{opt.charAt(0).toUpperCase() + opt.slice(1)}</span>
                 ))}
               </div>

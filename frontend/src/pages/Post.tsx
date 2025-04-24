@@ -11,7 +11,7 @@ import { Navigation, Virtual } from 'swiper/modules';
 
 import type { Post } from '../types/post';
 import { CommentType } from '../types/comment';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { fetchWithAuth, formatCommunity, formatUsername, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
@@ -37,6 +37,7 @@ const Post = () => {
   const [postVote, setPostVote] = useState<PostVote>({count: 0, userVote: null});
   const [postLoading, setPostLoading] = useState(true);
   const { postId } = useParams();
+  const formattedTimeAgo = useMemo(() => timeAgo(post?.created_at), [post?.created_at]);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -146,7 +147,7 @@ const Post = () => {
             <Link 
               to={`/community/${post?.community.id}/`}
               className='font-semibold me-2'>{post?.community.name && formatCommunity(post?.community.name)}</Link>
-            <span className='opacity-70'>{timeAgo(post?.created_at)}</span>
+            <span className='opacity-70'>{formattedTimeAgo}</span>
           </div>
           <span 
             onClick={(e) => {
