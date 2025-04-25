@@ -45,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
           <img src={notificationIcon} alt="Plus icon" className='w-6 ms-5'/>
           <div className='w-8 h-8 rounded-full ms-2 overflow-hidden'>
             {/* Ignore this, temp patch  */}
-            <img onClick={() => navigate(`/user/${user?.id}/`)} src={user.avatar ?"http://localhost:8000" + user.avatar : defaultRedditProfileIcon} alt="" className='w-full h-full object-cover'/>
+            <img onClick={() => navigate(`/user/${user?.id}/`)} src={user?.avatar ?"http://localhost:8000" + user.avatar : defaultRedditProfileIcon} alt="" className='w-full h-full object-cover'/>
           </div>
         </div>
       </div>

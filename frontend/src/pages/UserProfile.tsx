@@ -1,35 +1,24 @@
 import { useEffect, useState } from 'react';
-import { fetchWithAuth, formatCommunity, getImage, timeAgo } from '../utils';
+import { fetchWithAuth } from '../utils';
 import { BACKEND_URL } from '../config';
 import { useAuth } from '../contexts/AuthContext';
-import { Post } from '../types/post';
+import { PostFeed } from '../types/post';
 import PostItem from '../components/ui/PostItem';
 import CommentItem from '../components/ui/CommentItem';
 import { useOutletContext, useParams, useSearchParams } from 'react-router-dom';
-
-
-type PostVotes = {
-  [id: number]: {
-    count: number,
-    userVote: string | null
-  }
-}
-
-type hoverState = {
-  id: number,
-  hovered: string
-}
+import { CommentFeed } from '../types/comment';
+import { Profile } from '../types/profile';
 
 
 const UserProfile = () => {
-  const [feed, setFeed] = useState([]);
+  const [feed, setFeed] = useState<(PostFeed | CommentFeed)[]>([]);
   const { user } = useAuth();
   const { userId } = useParams();
-  const profile = useOutletContext();
+  const profile: {profile: Profile} = useOutletContext();
   const [searchParams] = useSearchParams();
   const sortFilter = searchParams.get('sort') || 'new';
 
-  console.log(sortFilter);
+  console.log(profile);
 
 
   useEffect(() => {
@@ -62,7 +51,7 @@ const UserProfile = () => {
     const previousVoteType = post?.user_vote;
     const previousVoteCount = post?.vote_count;
 
-    const { newVoteType, newVoteCount } = getOptimisticVoteUpdate(post, voteType);
+    const { newVoteType, newVoteCount } = getOptimisticVoteUpdate(post as PostFeed, voteType);
     post.user_vote = newVoteType;
     post.vote_count = newVoteCount;
     setFeed(updatedFeedItems);
@@ -88,7 +77,7 @@ const UserProfile = () => {
     }
   }
 
-  const getOptimisticVoteUpdate = (post: Post, voteType: "upvote" | "downvote" | null) => {
+  const getOptimisticVoteUpdate = (post: PostFeed, voteType: "upvote" | "downvote" | null) => {
     const previousVoteType = post.user_vote;
     let newVoteType = voteType;
     let newVoteCount = post.vote_count;
@@ -117,7 +106,7 @@ const UserProfile = () => {
 
   }
 
-  const getOptimisticCommentVoteUpdate = (comment: Comment, voteType: "upvote" | "downvote" | null) => {
+  const getOptimisticCommentVoteUpdate = (comment: CommentFeed, voteType: "upvote" | "downvote" | null) => {
     const previousVoteType = comment.user_vote;
     let newVoteType = voteType;
     let newVoteCount = comment.vote_count;
@@ -156,7 +145,7 @@ const UserProfile = () => {
     const previousVoteType = comment?.user_vote;
     const previousVoteCount = comment?.vote_count;
 
-    const { newVoteType, newVoteCount } = getOptimisticCommentVoteUpdate(comment, type);
+    const { newVoteType, newVoteCount } = getOptimisticCommentVoteUpdate(comment as CommentFeed, type);
     comment.user_vote = newVoteType;
     comment.vote_count = newVoteCount;
     setFeed(updatedFeedItems);
@@ -165,7 +154,7 @@ const UserProfile = () => {
       method: 'POST'
     });
 
-    if(!response.ok){
+    if(!response?.ok){
       comment.user_vote = previousVoteType;
       comment.vote_count = previousVoteCount;
       setFeed([...updatedFeedItems]);
@@ -186,16 +175,15 @@ const UserProfile = () => {
           return (
             <PostItem 
               key={idx} 
-              post={feedItem} 
+              post={feedItem as PostFeed} 
               onVote={handlePostVote}
-              profile={profile}
               />
             )
         }else if(feedItem.type === 'comment'){
           return (
             <CommentItem 
               key={idx} 
-              comment={feedItem} 
+              comment={feedItem as CommentFeed} 
               onVote={handleCommentVote}
               profile={profile}
               />

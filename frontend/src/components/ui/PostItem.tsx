@@ -3,15 +3,13 @@ import ellipsisIcon from '../../assets/icons/ellipsis.png';
 import dotIcon from '../../assets/icons/dot.png';
 import UpArrow from '../../assets/svgs/UpArrow';
 import DownArrow from '../../assets/svgs/DownArrow';
-import communityIcon from '../../assets/icons/community.png';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { fetchWithAuth, formatCommunity, getImage, timeAgo } from '../../utils';
 import { BACKEND_URL } from '../../config';
 import { useNavigate } from 'react-router-dom';
 
-import { Post } from '../../types/post';
-import { useAuth } from '../../contexts/AuthContext';
+import { PostFeed } from '../../types/post';
 import redditIcon from '../../assets/icons/reddit-outline.png';
 
 type hoverState = {
@@ -20,13 +18,12 @@ type hoverState = {
 }
 
 type PostItemProps = {
-  post: Post,
+  post: PostFeed,
   onVote: (postId: number, voteType: "upvote" | "downvote" | null) => void
 }
 
 const PostItem = ({post, onVote}: PostItemProps) => {
 
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState<hoverState | null>(null);
 

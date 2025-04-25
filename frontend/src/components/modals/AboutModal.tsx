@@ -1,9 +1,15 @@
 import { useState } from "react"
 
-const AboutModal = ({hideModal, updateProfile, currentAbout}) => {
+interface AboutModalProps {
+  hideModal: () => void,
+  updateProfile: (field: string, newvalue: string | File) => void,
+  currentAbout: string
+}
+
+const AboutModal = ({hideModal, updateProfile, currentAbout}: AboutModalProps) => {
   const [about, setAbout] = useState(currentAbout);
 
-  const handleChangeAbout = (e) => {
+  const handleChangeAbout = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if(e.target.value.length >= 201){
       return;
     }

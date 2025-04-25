@@ -2,7 +2,14 @@ import { useRef, useState } from "react"
 import { CloudUpload } from "lucide-react";
 import redditIcon from '../../assets/icons/reddit.png';
 
-const AvatarModal = ({hideModal, updateProfile, currentAvatar}) => {
+interface AvatarModalProps {
+  hideModal: () => void,
+  updateProfile: (field: string, newValue: string | File) => void,
+  currentAvatar: string
+}
+
+
+const AvatarModal = ({hideModal, updateProfile, currentAvatar}: AvatarModalProps) => {
   console.log(currentAvatar);
   const [avatar, setAvatar] = useState(currentAvatar);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);

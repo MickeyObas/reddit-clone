@@ -1,15 +1,14 @@
-import { Outlet, useParams, useSearchParams } from "react-router-dom"
+import { Outlet, useParams } from "react-router-dom"
 import UserProfileHeader from "./UserProfileHeader"
 import { useEffect, useState } from "react";
 import { fetchWithAuth } from "../../utils";
 import { BACKEND_URL } from "../../config";
+import { Profile } from "../../types/profile";
 
 const UserProfileLayout = () => {
 
   const { userId } = useParams();
-  const [profile, setProfile] = useState(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const sortFilter = searchParams.get('sort');
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -31,10 +30,6 @@ const UserProfileLayout = () => {
     fetchProfile();
   }, [userId])
 
-  const handleChangeFilter = (newFilter: string) => {
-    searchParams.set('sort', newFilter);
-    setSearchParams(searchParams);
-  }
 
   return (
     <div>

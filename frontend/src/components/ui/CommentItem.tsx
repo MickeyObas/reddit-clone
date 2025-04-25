@@ -1,17 +1,26 @@
 import { Dot, Ellipsis, Forward, MessageCircle } from "lucide-react"
 import UpArrow from "../../assets/svgs/UpArrow"
 import DownArrow from "../../assets/svgs/DownArrow"
-import { fetchWithAuth, timeAgo } from "../../utils"
+import { timeAgo } from "../../utils"
 import { useAuth } from "../../contexts/AuthContext"
-import { useNavigate, useOutletContext, useParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useMemo, useState } from "react"
 import redditIcon from '../../assets/icons/reddit-outline.png';
+import { CommentFeed } from "../../types/comment"
+import { Profile } from "../../types/profile"
 
-const CommentItem = ({comment, onVote, profile}) => {
+interface CommentItemProps {
+  comment: CommentFeed,
+  onVote: (commentId: number, type: "upvote" | "downvote" | null) => void,
+  profile: {
+    profile: Profile
+  }
+}
+
+const CommentItem = ({comment, onVote, profile}: CommentItemProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState<string | null>(null);
-  const { userId } = useParams();
   const formattedTimeAgo = useMemo(() => timeAgo(comment.created_at), [comment.created_at])
 
   return (

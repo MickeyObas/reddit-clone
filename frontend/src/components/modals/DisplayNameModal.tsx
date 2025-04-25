@@ -1,10 +1,16 @@
 import { useState } from "react"
 import { FormInput } from "../ui/FormInput"
 
-const DisplayNameModal = ({hideModal, updateProfile, currentDisplayName}) => {
+interface DisplayNameModalProps {
+  hideModal: () => void,
+  updateProfile: (field: string, newValue: string | File) => void,
+  currentDisplayName: string
+}
+
+const DisplayNameModal = ({hideModal, updateProfile, currentDisplayName}: DisplayNameModalProps) => {
   const [displayName, setDisplayName] = useState(currentDisplayName);
 
-  const handleChangeDisplayName = (e) => {
+  const handleChangeDisplayName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDisplayName(e.target.value);
   } 
 
@@ -17,6 +23,7 @@ const DisplayNameModal = ({hideModal, updateProfile, currentDisplayName}) => {
         containerClassName="mt-3.5" 
         value={displayName}
         placeholder="Display name"
+        isValid={true}
       />
       <button
         onClick={hideModal} 

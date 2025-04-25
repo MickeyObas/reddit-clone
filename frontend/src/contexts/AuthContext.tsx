@@ -11,7 +11,8 @@ interface LoginResponseData {
   user: {
     id: number,
     username: string,
-    email: string
+    email: string,
+    avatar: string
   }
 }
 

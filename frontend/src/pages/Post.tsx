@@ -229,7 +229,7 @@ const Post = () => {
           </div>
         </div>
       )}
-      {post?.comments.length > 0 && (
+      {post?.comments && post?.comments?.length > 0 && (
         <div className='flex gap-x-2.5 text-xs mt-5'>
         <span>Sort by:</span>
         <div className='flex items-center'> 

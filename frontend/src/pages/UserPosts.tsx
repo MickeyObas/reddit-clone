@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { fetchWithAuth } from "../utils";
 import { BACKEND_URL } from "../config";
 import PostItem from "../components/ui/PostItem";
-import { Post } from "../types/post";
+import { PostFeed } from "../types/post";
 
 const UserPosts = () => {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<PostFeed[]>([]);
   const { user } = useAuth()
   const { userId } = useParams();
-  const profile = useOutletContext();
   const [searchParams] = useSearchParams();
   const sortFilter = searchParams.get('sort') || 'new';
 
@@ -34,7 +33,7 @@ const UserPosts = () => {
     fetchPosts();
   }, [userId, sortFilter])
 
-  const handleVote = async (postId, voteType) => {
+  const handleVote = async (postId: number, voteType: "upvote" | "downvote" | null) => {
     const dir = voteType === 'upvote' ? 1 : -1;
     const updatedPosts = [...posts];
     const post = updatedPosts.find((post) => post.id === postId);
@@ -70,7 +69,7 @@ const UserPosts = () => {
     }
   }
 
-   const getOptimisticVoteUpdate = (post: Post, voteType: "upvote" | "downvote" | null) => {
+   const getOptimisticVoteUpdate = (post: PostFeed, voteType: "upvote" | "downvote" | null) => {
       const previousVoteType = post.user_vote;
       let newVoteType = voteType;
       let newVoteCount = post.vote_count;
@@ -105,7 +104,6 @@ const UserPosts = () => {
         <PostItem 
           key={idx}
           post={post}
-          profile={profile}
           onVote={handleVote}
         />
       ))}

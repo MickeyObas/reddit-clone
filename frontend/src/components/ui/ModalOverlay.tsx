@@ -1,8 +1,13 @@
 import { X } from "lucide-react";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { createPortal } from "react-dom"
 
-const ModalOverlay = ({ children, onClose }) => {
+interface ModalOverlayProps {
+  children: ReactNode,
+  onClose: () => void
+}
+
+const ModalOverlay = ({ children, onClose }: ModalOverlayProps) => {
   const [isClosing, setIsClosing] = useState(false);
 
   const handleClose = () => {

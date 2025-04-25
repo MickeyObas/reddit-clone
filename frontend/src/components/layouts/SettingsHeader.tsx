@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 
 const SettingsHeader = () => {
   const location = useLocation();
-  const menuRef = useRef(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
@@ -17,7 +17,7 @@ const SettingsHeader = () => {
     console.log((scrollLeft + clientWidth), scrollWidth);
   };
 
-  const scroll = (direction) => {
+  const scroll = (direction: string) => {
     if (menuRef.current) {
       const scrollAmount = 500;
       menuRef.current.scrollBy({

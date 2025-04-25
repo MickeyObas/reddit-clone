@@ -41,3 +41,21 @@ export type PostDisplay = {
         username: string
     },
 }
+
+export type PostFeed = {
+    id: number,
+    title: string,
+    body: string,
+    community: {
+        id: number,
+        avatar: string,
+        name: string
+    },
+    thumbnail: string | null,
+    vote_count: number,
+    comment_count: number,
+    created_at: string,
+    user_vote: string | null,
+    is_member: boolean,
+    type: string
+}

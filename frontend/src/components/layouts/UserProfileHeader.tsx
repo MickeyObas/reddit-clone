@@ -1,18 +1,18 @@
-import { useParams, useLocation, Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useLocation, Link, useSearchParams } from "react-router-dom";
 
 import { MessageCircleMore, Ellipsis, ChevronDown, Columns3, Columns2, Shirt, Shield, ScrollIcon } from "lucide-react";
 import columnsIcon from '../../assets/icons/columns.png';
 import { useState } from "react";
 import redditIcon from '../../assets/icons/reddit-outline.png';
 import { useAuth } from "../../contexts/AuthContext";
+import { Profile } from "../../types/profile";
 
 
-const UserProfileHeader = ({profile}) => {
+const UserProfileHeader = ({profile}: {profile: Profile | null}) => {
   const { userId } = useParams();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
-  const navigate = useNavigate();
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const sortFilter = searchParams.get('sort') || 'new';
 

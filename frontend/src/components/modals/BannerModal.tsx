@@ -2,7 +2,14 @@ import { useRef, useState } from "react"
 import { CloudUpload } from "lucide-react";
 import redditIcon from '../../assets/icons/reddit.png';
 
-const BannerModal = ({hideModal, updateProfile, currentBanner}) => {
+interface BannerModalProps {
+  hideModal: () => void,
+  updateProfile: (field: string, newValue: string | File) => void,
+  currentBanner: string
+}
+
+
+const BannerModal = ({hideModal, updateProfile, currentBanner}: BannerModalProps) => {
   const [banner, setBanner] = useState(currentBanner);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

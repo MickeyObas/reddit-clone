@@ -8,12 +8,13 @@ import DisplayNameModal from "../components/modals/DisplayNameModal";
 import AboutModal from "../components/modals/AboutModal";
 import AvatarModal from "../components/modals/AvatarModal";
 import BannerModal from "../components/modals/BannerModal";
+import { Profile } from "../types/profile";
 
 const SettingsProfile = () => {
 
   const { user } = useAuth();
   const { showModal, hideModal } = useModal();
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -37,7 +38,7 @@ const SettingsProfile = () => {
 
   }, [user?.id])
 
-  const updateProfile = async (field: string, newvalue) => {
+  const updateProfile = async (field: string, newvalue: string | File) => {
     const updateProfileForm = new FormData();
 
     updateProfileForm.append(field, newvalue);
@@ -51,9 +52,21 @@ const SettingsProfile = () => {
         console.log("Could not update profile");
       }else{
         if(field === "banner" || field === "avatar"){
-          setProfile((prev) => ({...prev, [field]: URL.createObjectURL(newvalue)}))
+          setProfile((prev: Profile | null) => {
+            if(!prev) return null;
+            return {
+              ...prev,
+              [field]: URL.createObjectURL(newvalue as File)
+            }
+          })
         }else{
-          setProfile((prev) => ({...prev, [field]: newvalue}))
+          setProfile((prev) => {
+            if(!prev) return null;
+            return {
+              ...prev,
+              [field]: newvalue
+            }
+          })
         }
         const data = await response?.json();
         console.log(data);
@@ -84,7 +97,7 @@ const SettingsProfile = () => {
             </div>
           </div>
           <div 
-            onClick={() => showModal(<AboutModal hideModal={hideModal} updateProfile={updateProfile} currentAbout={profile?.about_description}/>)}
+            onClick={() => showModal(<AboutModal hideModal={hideModal} updateProfile={updateProfile} currentAbout={profile?.about_description ?? ''}/>)}
             className="flex justify-between gap-y-6">
             <div className="flex flex-col">
               <span className="text-[14px]">About description</span>

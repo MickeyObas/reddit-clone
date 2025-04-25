@@ -81,7 +81,9 @@ const Home: React.FC = () => {
     };
     fetchPosts();
 
-    return () => isMounted = false;
+    return () => {
+      isMounted = false
+    };
   }, [sortFilter])
 
   // Handlers

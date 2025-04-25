@@ -47,6 +47,9 @@ def profile_detail_update(request, pk):
     except Profile.DoesNotExist:
         return Response({'error': "Profile does not exist."}, status=404)
     
+    except User.DoesNotExist:
+        return Response({'error': 'User does not exist.'}, status=404)
+    
 
 @api_view(['GET'])
 def profile_overview(request, pk):
