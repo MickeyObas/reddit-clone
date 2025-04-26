@@ -36,7 +36,7 @@ const CreateCommunityModal = ({
   const [stepValidity, setStepValidity] = useState<{[key: number]: boolean}>({
     0: false,
     1: true,
-    2: true, // NOTE: Changed just for prod
+    2: false, // NOTE: Changed just for prod
     3: true
   });
   const [error, setError] = useState<CommunityFormError>({
@@ -420,7 +420,7 @@ const StepTopics = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const isValid = formData?.topics.length > 0;
+    const isValid = true; // NOTE: Changing this just for PROD
     updateStepValidity(2, isValid);
   }, [formData.topics, updateStepValidity])
 
