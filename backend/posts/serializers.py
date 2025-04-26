@@ -148,9 +148,10 @@ class PostDisplaySerializer(serializers.ModelSerializer):
             ).count()
     
     def get_thumbnail(self, obj):
+        request = self.context.get('request')
         media_files = obj.postmedia_set.all()
         if media_files:
-            return media_files[0].file.url
+            return request.build_absolute_uri(media_files[0].file.url)
         return None
     
     def get_user_vote(self, obj):
