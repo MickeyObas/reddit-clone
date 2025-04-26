@@ -1,4 +1,5 @@
 import { Outlet, Navigate, useLocation } from "react-router-dom";
+import { BACKEND_URL } from "./config";
 
 export const formatCommunity = (community: string) => {
   return "r/" + community;
@@ -22,7 +23,7 @@ export const formatDate = (dateString: string):string => {
 }
 
 export const getImage = (imageURL: string) => {
-  return 'http://localhost:8000/media/' + imageURL;
+  return `https://reddit-clone-seven-eta.vercel.app/media/` + imageURL;
 }
 
 export const validateEmail = (email: string) => {
@@ -66,7 +67,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   if (response.status === 401 && refreshToken) {
       console.log("Token expired");
       // Attempt to refresh the token
-      const refreshResponse = await fetch('http://localhost:8000/api/token/refresh/', {
+      const refreshResponse = await fetch(`${BACKEND_URL}/api/token/refresh/`, {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',

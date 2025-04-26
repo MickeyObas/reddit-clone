@@ -150,10 +150,18 @@ const Home: React.FC = () => {
     joinCommunity();
   }
 
-  if(isLoading || posts.length === 0) {
+  if(isLoading) {
     return (
       <main className="p-4">
         <p className="text-center text-slate-500">Loading feed...</p>
+      </main>
+    );
+  }
+
+  if(posts.length === 0){
+    return (
+      <main className="p-4">
+        <p className="text-center text-slate-500">No posts on your feed yet.</p>
       </main>
     );
   }

@@ -36,7 +36,7 @@ const CreateCommunityModal = ({
   const [stepValidity, setStepValidity] = useState<{[key: number]: boolean}>({
     0: false,
     1: true,
-    2: false,
+    2: true, // NOTE: Changed just for prod
     3: true
   });
   const [error, setError] = useState<CommunityFormError>({
