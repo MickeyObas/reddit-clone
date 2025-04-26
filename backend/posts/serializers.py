@@ -150,7 +150,7 @@ class PostDisplaySerializer(serializers.ModelSerializer):
     def get_thumbnail(self, obj):
         media_files = obj.postmedia_set.all()
         if media_files:
-            return "https://reddit-clone-backend-pgon.onrender.com" + media_files[0].file.url
+            media_files[0].file.url
         return None
     
     def get_user_vote(self, obj):
