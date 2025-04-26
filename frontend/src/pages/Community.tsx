@@ -8,7 +8,7 @@ import redditIcon from '../assets/icons/reddit-outline.png';
 import { ChevronDown, Pin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { fetchWithAuth, formatUsername, getImage, timeAgo } from '../utils';
+import { fetchWithAuth, formatUsername, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 import { Post, PostDisplay} from '../types/post';
 import { useAuth } from '../contexts/AuthContext';
