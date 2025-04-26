@@ -100,7 +100,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 export function timeAgo(isoDateString: string) {
   const date = new Date(isoDateString); // Parse the ISO string into a Date object
   const now = new Date(); // Current date and time
-  const seconds = Math.floor((now - date) / 1000); // Difference in seconds
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000); // Difference in seconds
   const intervals = [
       { label: "year", seconds: 31536000 },
       { label: "month", seconds: 2592000 },

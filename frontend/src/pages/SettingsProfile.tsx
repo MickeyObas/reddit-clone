@@ -84,7 +84,7 @@ const SettingsProfile = () => {
         <div className="flex flex-col gap-y-6">
           <div 
             onClick={() => 
-              showModal(<DisplayNameModal hideModal={hideModal} updateProfile={updateProfile} currentDisplayName={profile?.display_name}/>
+              showModal(<DisplayNameModal hideModal={hideModal} updateProfile={updateProfile} currentDisplayName={profile?.display_name ?? ""}/>
               )}
             className="flex justify-between gap-y-6">
             <div className="flex flex-col">
@@ -107,7 +107,7 @@ const SettingsProfile = () => {
             </div>
           </div>
           <div
-            onClick={() => showModal(<AvatarModal hideModal={hideModal} updateProfile={updateProfile} currentAvatar={profile?.avatar}/>)} 
+            onClick={() => showModal(<AvatarModal hideModal={hideModal} updateProfile={updateProfile} currentAvatar={profile?.avatar ?? null}/>)} 
             className="flex justify-between gap-y-6">
             <div className="flex flex-col">
               <span className="text-[14px]">Avatar</span>
@@ -118,7 +118,7 @@ const SettingsProfile = () => {
             </div>
           </div>
           <div 
-            onClick={() => showModal(<BannerModal hideModal={hideModal} updateProfile={updateProfile} currentBanner={profile?.banner}/>)}
+            onClick={() => showModal(<BannerModal hideModal={hideModal} updateProfile={updateProfile} currentBanner={profile?.banner ?? null}/>)}
             className="flex justify-between gap-y-6">
             <div className="flex flex-col">
               <span className="text-[14px]">Banner</span>

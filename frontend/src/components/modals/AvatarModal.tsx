@@ -5,7 +5,7 @@ import redditIcon from '../../assets/icons/reddit.png';
 interface AvatarModalProps {
   hideModal: () => void,
   updateProfile: (field: string, newValue: string | File) => void,
-  currentAvatar: string
+  currentAvatar: string | null 
 }
 
 

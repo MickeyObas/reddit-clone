@@ -5,7 +5,7 @@ import redditIcon from '../../assets/icons/reddit.png';
 interface BannerModalProps {
   hideModal: () => void,
   updateProfile: (field: string, newValue: string | File) => void,
-  currentBanner: string
+  currentBanner: string | null
 }
 
 

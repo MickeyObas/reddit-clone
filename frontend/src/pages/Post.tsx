@@ -37,7 +37,7 @@ const Post = () => {
   const [postVote, setPostVote] = useState<PostVote>({count: 0, userVote: null});
   const [postLoading, setPostLoading] = useState(true);
   const { postId } = useParams();
-  const formattedTimeAgo = useMemo(() => timeAgo(post?.created_at), [post?.created_at]);
+  const formattedTimeAgo = useMemo(() => timeAgo(post?.created_at ?? ''), [post?.created_at]);
 
   useEffect(() => {
     const fetchPost = async () => {

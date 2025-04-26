@@ -38,7 +38,8 @@ export type PostDisplay = {
     owner: {
         id: number,
         email: string,
-        username: string
+        username: string,
+        avatar: string | null
     },
 }
 
