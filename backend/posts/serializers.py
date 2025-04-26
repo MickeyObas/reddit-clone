@@ -150,7 +150,7 @@ class PostDisplaySerializer(serializers.ModelSerializer):
     def get_thumbnail(self, obj):
         media_files = obj.postmedia_set.all()
         if media_files:
-            media_files[0].file.url
+            return media_files[0].file.name
         return None
     
     def get_user_vote(self, obj):
