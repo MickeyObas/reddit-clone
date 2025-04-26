@@ -6,7 +6,7 @@ import redditIcon from '../assets/icons/reddit.png';
 import { ChevronDown, Columns2, Columns3 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
-import { fetchWithAuth, formatCommunity, getImage, timeAgo } from '../utils';
+import { fetchWithAuth, formatCommunity, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -264,7 +264,7 @@ const Home: React.FC = () => {
                   {post.thumbnail && (
                       <div className='w-20 h-16 rounded-xl overflow-hidden'>
                       <img 
-                        src={getImage(post.thumbnail)} 
+                        src={post.thumbnail} 
                         alt="" 
                         className='w-full h-full object-cover border-0 outline-0'
                         />

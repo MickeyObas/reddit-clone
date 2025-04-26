@@ -171,7 +171,7 @@ const Community = ({sort='latest'}) => {
               {post.thumbnail && (
                   <div className='w-20 h-14 rounded-xl overflow-hidden'>
                   <img 
-                    src={getImage(post.thumbnail)} 
+                    src={post.thumbnail} 
                     alt="" 
                     className='w-full h-full object-cover border-0 outline-0'
                     />
