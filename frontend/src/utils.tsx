@@ -67,7 +67,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   if (response.status === 401 && refreshToken) {
       console.log("Token expired");
       // Attempt to refresh the token
-      const refreshResponse = await fetch(`${BACKEND_URL}/api/token/refresh/`, {
+      const refreshResponse = await fetch(`${BACKEND_URL}/token/refresh/`, {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',
