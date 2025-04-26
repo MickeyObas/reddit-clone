@@ -230,7 +230,7 @@ const StepBasic = ({
   }
 
   useEffect(() => {
-    const isValid = formData?.name.length >= 3 && !error.name && !error.description;
+    const isValid = formData?.name.length >= 3 && formData.description.length > 0 && !error.name && !error.description;
     updateStepValidity(0, isValid);
   }, [formData.name, formData.description, error.name, error.description, updateStepValidity])
 
