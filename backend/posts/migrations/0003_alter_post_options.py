@@ -13,5 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterModelOptions(
             name='post',
             options={'ordering': ['-created_at']},
+            
         ),
     ]
