@@ -109,8 +109,8 @@ const UserPosts = () => {
         />
       )) : (
         isOwner
-          ? <h1>You haven't made any posts yet. Find/create a community and make a post :)</h1>
-          : <h1>This user hasn't made any posts yet.</h1>
+          ? <h1 className="px-4 py-3">You haven't made any posts yet. Find/create a community and make a post :)</h1>
+          : <h1 className="px-4 py-3">This user hasn't made any posts yet.</h1>
       )}
     </div>
   )

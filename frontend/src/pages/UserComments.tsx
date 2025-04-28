@@ -110,8 +110,8 @@ const UserComments = () => {
         />
       )): (
         isOwner
-        ? <h1>You haven't made any comments yet. Find an interesting post and make a comment :)</h1>
-        : <h1>This user hasn't made any comment yet.</h1>
+        ? <h1 className="px-4 py-3">You haven't made any comments yet. Find an interesting post and make a comment :)</h1>
+        : <h1 className="px-4 py-3">This user hasn't made any comment yet.</h1>
       )}
     </div>
   )
