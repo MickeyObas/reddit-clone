@@ -1,7 +1,8 @@
-import os, cloudinary, cloudinary_storage
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
+import cloudinary, cloudinary.uploader, cloudinary.api, cloudinary_storage
 
 
 load_dotenv()
@@ -168,12 +169,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Storage
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-import logging
-logger = logging.getLogger(__name__)
-logger.info(f"File Storage Engine: {DEFAULT_FILE_STORAGE}")
-
+STORAGES = {
+    "default": {
+        "BACKEND": 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+    }
+}
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
