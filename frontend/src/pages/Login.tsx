@@ -98,6 +98,7 @@ const Login = (): JSX.Element => {
       }
     }catch(err){
       console.error(err);
+    }finally{
       setIsLoading(false);
     }
   }
