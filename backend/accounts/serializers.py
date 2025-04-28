@@ -111,7 +111,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    avatar = serializers.ImageField(source='profile.avatar.url')
+    avatar = serializers.SerializerMethodField()
+
+    def get_avatar(self, obj):
+        if obj.profile.avatar:
+            return obj.profile.avatar.url
+        return None
 
     class Meta:
         model = User
