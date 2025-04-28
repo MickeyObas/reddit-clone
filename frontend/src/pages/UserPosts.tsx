@@ -5,6 +5,7 @@ import { fetchWithAuth } from "../utils";
 import { BACKEND_URL } from "../config";
 import PostItem from "../components/ui/PostItem";
 import { PostFeed } from "../types/post";
+import Skeleton from "react-loading-skeleton";
 
 const UserPosts = () => {
   const [posts, setPosts] = useState<PostFeed[]>([]);
@@ -13,6 +14,7 @@ const UserPosts = () => {
   const [searchParams] = useSearchParams();
   const sortFilter = searchParams.get('sort') || 'new';
   const isOwner = user?.id == userId;
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -29,6 +31,8 @@ const UserPosts = () => {
         }
       }catch(err){
         console.error(err);
+      }finally{
+        setIsLoading(false);
       }
     };
     fetchPosts();
@@ -98,6 +102,14 @@ const UserPosts = () => {
       return {newVoteType, newVoteCount};
   
     }
+
+  if (isLoading) {
+    return (
+      <div>
+        <Skeleton height={140} count={6} style={{ }} />
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1">

@@ -6,6 +6,7 @@ import { BACKEND_URL } from "../config";
 import CommentItem from "../components/ui/CommentItem";
 import { CommentFeed } from "../types/comment";
 import { Profile } from "../types/profile";
+import Skeleton from "react-loading-skeleton";
 
 const UserComments = () => {
   const [comments, setComments] = useState<CommentFeed[]>([]);
@@ -15,6 +16,7 @@ const UserComments = () => {
   const [searchParams] = useSearchParams();
   const sortFilter = searchParams.get('sort') || 'new';
   const isOwner = user?.id == userId;
+  const [isLoading, setIsLoading] = useState(true);
 
 
   useEffect(() => {
@@ -32,6 +34,8 @@ const UserComments = () => {
         }
       }catch(err){
         console.error(err);
+      }finally{
+        setIsLoading(false);
       }
     };
     fetchComments();
@@ -98,6 +102,14 @@ const UserComments = () => {
       }
   
     }
+
+  if (isLoading) {
+    return (
+      <div>
+        <Skeleton height={140} count={6} style={{ }} />
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1">

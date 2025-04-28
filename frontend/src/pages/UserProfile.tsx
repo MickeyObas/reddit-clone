@@ -8,6 +8,7 @@ import CommentItem from '../components/ui/CommentItem';
 import { useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { CommentFeed } from '../types/comment';
 import { Profile } from '../types/profile';
+import Skeleton from 'react-loading-skeleton';
 
 
 const UserProfile = () => {
@@ -18,6 +19,7 @@ const UserProfile = () => {
   const [searchParams] = useSearchParams();
   const sortFilter = searchParams.get('sort') || 'new';
   const isOwner = user?.id == userId;
+  const [isLoading, setIsLoading] = useState(true);
 
   console.log(profile);
 
@@ -37,6 +39,8 @@ const UserProfile = () => {
         }
       }catch(err){
         console.error(err);
+      }finally{
+        setIsLoading(false);
       }
     };
     fetchOverview();
@@ -169,6 +173,14 @@ const UserProfile = () => {
 
   }
 
+  if(isLoading) {
+      return (
+        <div>
+          <Skeleton height={140} count={3} style={{ }} />
+        </div>
+      );
+    }
+
   return (
     <div className="grid grid-cols-1">
       {feed && feed.length > 0 ? feed.map((feedItem, idx) => {
@@ -192,8 +204,8 @@ const UserProfile = () => {
         }
       }) : (
         isOwner 
-        ? <h1>You haven't really been active here yet. Make a post or comment :)</h1>
-        : <h1>This user hasn't really been active here yet.</h1>
+        ? <h1 className="px-4 py-3">You haven't really been active here yet. Make a post or comment :)</h1>
+        : <h1 className="px-4 py-3">This user hasn't really been active here yet.</h1>
       )}
     </div>
   )
