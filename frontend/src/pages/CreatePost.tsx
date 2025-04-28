@@ -170,7 +170,7 @@ const CreatePost = () => {
             <img src={communityIcon} alt="" className='w-10 h-10'/>
           )}
           
-          {selectedCommunityId ? (
+          {selectedCommunity && selectedCommunity?.name ? (
             <span>{"r/" + selectedCommunity?.name}</span>
           ) : (
           <span>Select a community</span>

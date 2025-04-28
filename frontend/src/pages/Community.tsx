@@ -230,7 +230,7 @@ const Community = ({sort='latest'}) => {
           </div>
         </article>
         )) : (
-          <h1>There are no posts in this community, yet. Why not be the first poster? XD</h1>
+          <h1 className='px-4 py-3'>There are no posts in this community, yet. Why not be the first poster? XD</h1>
         )}
       </div>      
     </div>
