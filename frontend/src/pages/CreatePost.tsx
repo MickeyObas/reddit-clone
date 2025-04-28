@@ -170,7 +170,7 @@ const CreatePost = () => {
             className="flex items-center bg-gray-white font-medium w-fit ps-0.5 pe-2.5 rounded-full gap-x-1.5 cursor-pointer"
             onClick={() => setIsSearchDropdownOpen(true)}
             >
-            {selectedCommunity?.avatar ? (
+            {selectedCommunityId && selectedCommunity?.avatar ? (
               <div className='w-10 h-10 overflow-hidden rounded-full flex items-center justify-center'>
                 <img src={selectedCommunity?.avatar} alt="" className='w-6 h-6 object-cover rounded-full'/>
               </div>
@@ -178,7 +178,7 @@ const CreatePost = () => {
               <img src={communityIcon} alt="" className='w-10 h-10'/>
             )}
             
-            {selectedCommunity && selectedCommunity?.name ? (
+            {selectedCommunityId && selectedCommunity?.name ? (
               <span>{"r/" + selectedCommunity?.name}</span>
             ) : (
             <span>Select a community</span>
