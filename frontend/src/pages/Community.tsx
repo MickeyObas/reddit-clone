@@ -152,13 +152,13 @@ const Community = ({sort='latest'}) => {
         </div>
         <hr className='border-none h-[1px] bg-slate-300 opacity-50 mt-3'/>
         {/* Feed */}
-        {posts.length > 0 && posts.map((post) => (
+        {posts && posts.length > 0 ? posts.map((post) => (
           <article key={post.id} className="feed grid grid-cols-1 px-5 py-3 border-b border-b-slate-200">
           <Link to={`/post/${post.id}/`}>
             <div className='flex justify-between'>
               <div className='flex flex-col'>
                 <div className='left-of-panel flex text-xs items-center'>
-                  <div className='w-4 h-4 rounded-full bg-green-700 flex items-center justify-center overflow-hidden'>
+                  <div className='w-4 h-4 rounded-full flex items-center justify-center overflow-hidden'>
                     <img src={post.owner.avatar ?? redditIcon} alt="" className='w-full h-full object-cover' />
                   </div>
                   <span className='ms-2 font-medium'>{formatUsername(post?.owner.username)}</span>
@@ -229,7 +229,9 @@ const Community = ({sort='latest'}) => {
             <img src={ellipsisIcon} className='w-6 h-6'/>
           </div>
         </article>
-        ))}
+        )) : (
+          <h1>There are no posts in this community, yet. Why not be the first poster? XD</h1>
+        )}
       </div>      
     </div>
   )
