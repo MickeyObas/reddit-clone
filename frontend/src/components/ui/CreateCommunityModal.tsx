@@ -182,7 +182,7 @@ const CreateCommunityModal = ({
                 onClick={handleCreateCommunity} 
                 className={`py-3 px-3.5 rounded-full font-semibold ${stepValidity[step] ? 'bg-blue-700 text-white' : 'bg-gray-white text-gray-400'}`}
                 disabled={!stepValidity[step]}
-                >Create Community</button>
+                >{!isLoading ? "Create community" : "Creating your community"}</button>
               ) : (
                 <button
                 onClick={nextStep} 
