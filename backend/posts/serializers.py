@@ -51,7 +51,7 @@ class PostSerializer(serializers.ModelSerializer):
     def get_media(self, obj):
         media_files = obj.postmedia_set.all()
         if media_files:
-            return ["https://reddit-clone-backend-pgon.onrender.com" + media_file.file.url for media_file in media_files]
+            return [media_file.file.url for media_file in media_files]
         return None
     
     def get_comments(self, obj):
