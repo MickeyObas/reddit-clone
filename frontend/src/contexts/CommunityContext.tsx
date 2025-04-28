@@ -10,10 +10,13 @@ const CommunityContext = createContext<CommunityContextType | undefined>(undefin
 export function CommunityProvider({children}: {children: ReactNode}){
   const [communities, setCommunities] = useState<Community[]>([]);
   const [allCommunities, setAllCommunities] = useState<Community[]>([]);
+  const [isCommunitiesLoading, setIsCommunitiesLoading] = useState(false);
+  const [isAllCommunitiesLoading, setIsAllCommunitiesLoading] = useState(false);
 
   useEffect(() => {
     const fetchCommunities = async () => {
       try{
+        setIsCommunitiesLoading(true);
         const response = await fetchWithAuth(`${BACKEND_URL}/communities/user/`, {
           method: 'GET'
         })
@@ -25,6 +28,8 @@ export function CommunityProvider({children}: {children: ReactNode}){
         }
       }catch(err){
         console.error(err);
+      }finally{
+        setIsCommunitiesLoading(false);
       }
     };
     fetchCommunities();
@@ -33,6 +38,7 @@ export function CommunityProvider({children}: {children: ReactNode}){
   useEffect(() => {
     const fetchAllCommunities = async () => {
       try{
+        setIsAllCommunitiesLoading(true);
         const response = await fetchWithAuth(`${BACKEND_URL}/communities/`, {
           method: 'GET'
         })
@@ -44,13 +50,15 @@ export function CommunityProvider({children}: {children: ReactNode}){
         }
       }catch(err){
         console.error(err);
+      }finally{
+        setIsAllCommunitiesLoading(false);
       }
     };
     fetchAllCommunities();
   }, [])
 
   return (
-    <CommunityContext.Provider value={{communities, setCommunities, allCommunities, setAllCommunities}}>
+    <CommunityContext.Provider value={{communities, setCommunities, allCommunities, setAllCommunities, isCommunitiesLoading, isAllCommunitiesLoading}}>
       {children}
     </CommunityContext.Provider>
   )

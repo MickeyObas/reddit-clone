@@ -34,7 +34,7 @@ const CreatePost = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || '/';
-  const { communities, allCommunities } = useCommunities();
+  const { communities, allCommunities, isCommunitiesLoading, isAllCommunitiesLoading } = useCommunities();
   const [post, setPost] = useState<Post>({
     title: '',
     link: '',
@@ -156,8 +156,102 @@ const CreatePost = () => {
         <span className='font-medium'>Drafts</span>
       </div>
 
+      {(isCommunitiesLoading || isAllCommunitiesLoading) ? (
+         <div 
+          className="flex items-center bg-gray-white font-medium w-fit ps-0.5 pe-2.5 rounded-full gap-x-1.5 cursor-pointer">
+            <div className='w-10 h-10 overflow-hidden rounded-full flex items-center justify-center'>
+              <img src={redditIcon} alt="" className='w-6 h-6 object-cover rounded-full'/>
+            </div>
+            <span>Loading...</span>
+          </div>
+      ) : (
+        !isSearchDropdownOpen ? (
+          <div 
+            className="flex items-center bg-gray-white font-medium w-fit ps-0.5 pe-2.5 rounded-full gap-x-1.5 cursor-pointer"
+            onClick={() => setIsSearchDropdownOpen(true)}
+            >
+            {selectedCommunity?.avatar ? (
+              <div className='w-10 h-10 overflow-hidden rounded-full flex items-center justify-center'>
+                <img src={selectedCommunity?.avatar} alt="" className='w-6 h-6 object-cover rounded-full'/>
+              </div>
+            ) : (
+              <img src={communityIcon} alt="" className='w-10 h-10'/>
+            )}
+            
+            {selectedCommunity && selectedCommunity?.name ? (
+              <span>{"r/" + selectedCommunity?.name}</span>
+            ) : (
+            <span>Select a community</span>
+            )}
+            <ChevronDown size={17} strokeWidth={2.5}/>
+          </div>
+        ) : (
+          <div
+            ref={dropdownRef}
+            className='flex flex-col relative cursor-pointer'
+          >
+            <div 
+            className='flex items-center bg-gray-white rounded-full max-w-[75vw] outline-2 outline-blue-600'
+            >
+            <span className='w-10 h-10 flex'>
+              <img 
+                src={communityIcon} alt="" 
+                className='w-full h-full'
+                />
+            </span>
+            <input 
+              type="text" 
+              className='px-3 py-2 outline-none bg-gray-white'
+              placeholder='Select a community'
+              value={search}
+              onChange={handleSearchChange}
+              />
+            {/* {false && (
+              <span className='ms-auto w-10 h-10 flex '>
+              <img 
+                src={communityIcon} alt="" 
+                className='w-full h-full'
+                />
+            </span>
+            )} */}
+            </div>
+            <ul 
+              className='absolute top-[62px] left-[30px] z-10 flex flex-col gap-y-4 bg-white w-[68vw] p-4 shadow-[0_0_10px_2px_rgba(0,0,0,0.2)] max-h-[75vw] overflow-y-auto rounded-lg'
+              >
+              {filteredCommunities.length > 0 ? filteredCommunities.map((community: Community, idx: number) => (
+                <li
+                  onClick={() => handleCommunityClick(community.id)} 
+                  key={idx}
+                  className='flex items-center py-0.5'
+                  >
+                    <div className='w-8 h-8 rounded-full overflow-hidden'>
+                      <img src={community.avatar ?? redditIcon} alt="" className='w-full h-full object-center object-cover'/>
+                    </div>
+                    <div className='flex flex-col ms-2'>
+                      <span className='font-medium'>{"r/" + community.name}</span>
+                      <div className='flex items-center text-xs text-slate-500'>
+                        <span className=''>{community.member_count} Members</span>
+                        {community?.is_member && (
+                          <>
+                            <img className='w-2 h-2 mx-0.5 mt-0.5' src={dotIcon} alt="" />
+                            <span>Subscribed</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+              )) : (
+                <>
+                  <h1>No communities :(</h1>
+                </>
+              )}
+            </ul>
+          </div>
+        )
+      )}
+
       {/* Searchable Dropdown */}
-      {!isSearchDropdownOpen ? (
+      {/* {!isSearchDropdownOpen ? (
         <div 
           className="flex items-center bg-gray-white font-medium w-fit ps-0.5 pe-2.5 rounded-full gap-x-1.5 cursor-pointer"
           onClick={() => setIsSearchDropdownOpen(true)}
@@ -198,14 +292,6 @@ const CreatePost = () => {
             value={search}
             onChange={handleSearchChange}
             />
-          {/* {false && (
-            <span className='ms-auto w-10 h-10 flex '>
-            <img 
-              src={communityIcon} alt="" 
-              className='w-full h-full'
-              />
-          </span>
-          )} */}
           </div>
           <ul 
             className='absolute top-[62px] left-[30px] z-10 flex flex-col gap-y-4 bg-white w-[68vw] p-4 shadow-[0_0_10px_2px_rgba(0,0,0,0.2)] max-h-[75vw] overflow-y-auto rounded-lg'
@@ -239,7 +325,8 @@ const CreatePost = () => {
             )}
           </ul>
         </div>
-      )}
+      )} */}
+      {/*  */}
 
       <div className='flex gap-x-8 font-medium mb-2'>
         <span 

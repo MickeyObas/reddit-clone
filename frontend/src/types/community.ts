@@ -5,6 +5,8 @@ export interface CommunityContextType {
   setCommunities: React.Dispatch<SetStateAction<Community[]>>,
   allCommunities: Community[],
   setAllCommunities: React.Dispatch<SetStateAction<Community[]>>,
+  isCommunitiesLoading: boolean,
+  isAllCommunitiesLoading: boolean,
 }
 
 export type Community = {
