@@ -9,6 +9,7 @@ const CommunityContext = createContext<CommunityContextType | undefined>(undefin
 
 export function CommunityProvider({children}: {children: ReactNode}){
   const [communities, setCommunities] = useState<Community[]>([]);
+  const [allCommunities, setAllCommunities] = useState<Community[]>([]);
 
   useEffect(() => {
     const fetchCommunities = async () => {
@@ -29,8 +30,27 @@ export function CommunityProvider({children}: {children: ReactNode}){
     fetchCommunities();
   }, [])
 
+  useEffect(() => {
+    const fetchAllCommunities = async () => {
+      try{
+        const response = await fetchWithAuth(`${BACKEND_URL}/communities/`, {
+          method: 'GET'
+        })
+        if(!response?.ok){
+          console.error("Whoops, problem with response.")
+        }else{
+          const data = await response.json();
+          setAllCommunities(data);
+        }
+      }catch(err){
+        console.error(err);
+      }
+    };
+    fetchAllCommunities();
+  }, [])
+
   return (
-    <CommunityContext.Provider value={{communities}}>
+    <CommunityContext.Provider value={{communities, setCommunities, allCommunities, setAllCommunities}}>
       {children}
     </CommunityContext.Provider>
   )

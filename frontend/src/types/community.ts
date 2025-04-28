@@ -1,5 +1,10 @@
+import { SetStateAction } from "react"
+
 export interface CommunityContextType {
-  communities: Community[]
+  communities: Community[],
+  setCommunities: React.Dispatch<SetStateAction<Community[]>>,
+  allCommunities: Community[],
+  setAllCommunities: React.Dispatch<SetStateAction<Community[]>>,
 }
 
 export type Community = {

@@ -40,8 +40,9 @@ def profile_detail_update(request, pk):
             
             serializer = ProfileSerializer(profile, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():
-                serializer.save()
-                return Response({'message': 'Profile updated successfuly.'})
+                updated_profile = serializer.save()
+                serializer = ProfileSerializer(updated_profile, context={"request": request})
+                return Response(serializer.data)
             return Response(serializer.errors, status=400)
     
     except Profile.DoesNotExist:

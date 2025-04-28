@@ -1,9 +1,17 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, SetStateAction } from "react";
 
 interface AuthContextType {
   login: (data: LoginResponseData) => void,
-  user: LoginResponseData["user"] | null
+  user: LoginResponseData["user"] | null,
+  setUser: React.Dispatch<SetStateAction<User | null>>
 }
+
+type User = {
+    id: number,
+    username: string,
+    email: string,
+    avatar: string
+  }
 
 interface LoginResponseData {
   access: string,
@@ -32,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ login, user }}>
+    <AuthContext.Provider value={{ login, user, setUser }}>
       {children}
     </AuthContext.Provider>
   );

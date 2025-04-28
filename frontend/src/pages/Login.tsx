@@ -105,22 +105,23 @@ const Login = (): JSX.Element => {
         <div className="pt-10">
           <h1 className="text-2xl font-bold text-center">Log In</h1>
           <p className="text-center my-3">By continuing, you agree to our <span className="text-blue-400">User Agreement</span> and acknowledge that you understand the <span className="text-blue-400">Privacy Policy</span>.</p>
-          <div className="flex flex-col mt-4 gap-y-2">
-            <div className="relative flex items-center p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
+          <p className="text-center text-xs">Login via Apple & Google is currently not available</p>
+          <div className="flex flex-col mt-4 gap-y-2 hover:cursor-not-allowed">
+            <div className="relative flex items-center justify-between p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
               <div className="w-5 h-5 bg-red-400 rounded-full"></div>
-              <p className="ms-3">Continue as Michael</p>
+              <p className="text-slate-400">Continue with Google</p>
               <img
-                className="w-[18px] h-[18px] ms-auto" 
+                className="w-[18px] h-[18px]" 
                 src={googleIcon} 
                 alt="Google Icon" />
             </div>
-            <div className="flex items-center p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
-              <img 
-                className="w-[17px] h-[17px]"
-                src={appleIcon}
-                alt="Apple Icon"
-                />
-              <p className="ms-[25%] font-medium">Continue With Apple</p>
+            <div className="relative flex items-center justify-between p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
+              <div className="w-5 h-5 bg-red-400 rounded-full"></div>
+              <p className="text-slate-400">Continue with Apple</p>
+              <img
+                className="w-[18px] h-[18px]" 
+                src={appleIcon} 
+                alt="Apple Icon" />
             </div>
           </div>
           <div className="divider my-3">OR</div>

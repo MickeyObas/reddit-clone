@@ -19,8 +19,9 @@ import caretDownIcon from '../../assets/icons/caret-down.png';
 import plusIcon from '../../assets/icons/plus.png';
 
 import { SetStateAction } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCommunities } from '../../contexts/CommunityContext';
+import { LogOut } from 'lucide-react';
 
 
 type SidebarProps = {
@@ -37,6 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const { communities } = useCommunities();
   const location = useLocation();
+  const navigate  = useNavigate();
 
   return (
     <div
@@ -66,6 +68,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         <li className='flex items-center px-4 py-0.5 hover:bg-gray-200'>
           <img className="w-5 h-5" src={chatIcon} alt="Home Icon" />
           <a href="#" className="ms-2.5 block p-2">Chat</a>
+        </li>
+        <li
+          onClick={() => {
+            localStorage.clear();
+            navigate('/login/')
+          }} 
+          className='flex items-center px-4 py-0.5 hover:bg-gray-200'>
+          <LogOut size={20} color='red'/>
+          <a href="#" className="ms-2.5 block p-2 text-red-600">Logout</a>
         </li>
       </ul>
       <ul className="space-y-0 border-b border-b-gray-200 py-3">

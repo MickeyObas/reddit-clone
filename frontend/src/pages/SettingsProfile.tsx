@@ -12,7 +12,7 @@ import { Profile } from "../types/profile";
 
 const SettingsProfile = () => {
 
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const { showModal, hideModal } = useModal();
   const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -51,6 +51,7 @@ const SettingsProfile = () => {
       if(!response?.ok){
         console.log("Could not update profile");
       }else{
+        const data = await response?.json();
         if(field === "banner" || field === "avatar"){
           setProfile((prev: Profile | null) => {
             if(!prev) return null;
@@ -58,7 +59,16 @@ const SettingsProfile = () => {
               ...prev,
               [field]: URL.createObjectURL(newvalue as File)
             }
-          })
+          });
+          if(field === 'avatar'){
+            setUser((prev) => {
+              if(!prev) return null;
+              return {
+                ...prev,
+                avatar: data?.avatar
+              }
+            })
+          }
         }else{
           setProfile((prev) => {
             if(!prev) return null;
@@ -68,9 +78,6 @@ const SettingsProfile = () => {
             }
           })
         }
-        const data = await response?.json();
-        console.log(data);
-        console.log(field, newvalue);
       }
     }catch(err){
       console.error(err);

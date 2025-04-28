@@ -34,7 +34,7 @@ const CreatePost = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || '/';
-  const { communities } = useCommunities();
+  const { communities, allCommunities } = useCommunities();
   const [post, setPost] = useState<Post>({
     title: '',
     link: '',
@@ -51,14 +51,21 @@ const CreatePost = () => {
   })
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
   const [selectedCommunityId, setSelectedCommunityId] = useState<number | null>(
     communityId ? parseInt(communityId) : null
   );
-  const selectedCommunity = communities?.find((community: Community) => community.id.toString() === selectedCommunityId?.toString());
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const filteredCommunities = communities.filter((community: Community) => community?.name?.toLowerCase().includes(search.toLowerCase()))
+  const selectedCommunity = allCommunities?.find((community: Community) => community.id.toString() === selectedCommunityId?.toString());
 
+  let filteredCommunities: Community[];
+  if(search){
+    filteredCommunities = allCommunities.filter((community: Community) => community?.name?.toLowerCase().includes(search.toLowerCase()))
+  }else{
+    filteredCommunities = communities.filter((community: Community) => community?.name?.toLowerCase().includes(search.toLowerCase()))
+  }
+  
   // Handlers
   const handlePostInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if(e.target.name === 'title' && e.target.value.length > 300){
@@ -203,7 +210,7 @@ const CreatePost = () => {
           <ul 
             className='absolute top-[62px] left-[30px] z-10 flex flex-col gap-y-4 bg-white w-[68vw] p-4 shadow-[0_0_10px_2px_rgba(0,0,0,0.2)] max-h-[75vw] overflow-y-auto rounded-lg'
             >
-            {filteredCommunities.map((community: Community, idx: number) => (
+            {filteredCommunities.length > 0 ? filteredCommunities.map((community: Community, idx: number) => (
               <li
                 onClick={() => handleCommunityClick(community.id)} 
                 key={idx}
@@ -216,12 +223,20 @@ const CreatePost = () => {
                     <span className='font-medium'>{"r/" + community.name}</span>
                     <div className='flex items-center text-xs text-slate-500'>
                       <span className=''>{community.member_count} Members</span>
-                      <img className='w-2 h-2 mx-0.5 mt-0.5' src={dotIcon} alt="" />
-                      <span>Subscribed</span>
+                      {community?.is_member && (
+                        <>
+                          <img className='w-2 h-2 mx-0.5 mt-0.5' src={dotIcon} alt="" />
+                          <span>Subscribed</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </li>
-            ))}
+            )) : (
+              <>
+                <h1>No communities :(</h1>
+              </>
+            )}
           </ul>
         </div>
       )}

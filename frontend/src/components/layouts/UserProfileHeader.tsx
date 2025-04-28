@@ -15,6 +15,8 @@ const UserProfileHeader = ({profile}: {profile: Profile | null}) => {
   const location = useLocation();
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const sortFilter = searchParams.get('sort') || 'new';
+  const isOwner = userId == user?.id;
+  console.log(isOwner);
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -59,7 +61,11 @@ const UserProfileHeader = ({profile}: {profile: Profile | null}) => {
           <p>{profile?.about_description}</p>
         </div>
         )}
-        <div className={`mb-4 rounded-2xl overflow-hidden transition-all duration-300 ${isAboutExpanded ? 'h-[565px]' : 'h-14'}`}>
+        <div className={`mb-4 rounded-2xl overflow-hidden transition-all duration-300 ${isAboutExpanded ? 
+          isOwner
+            ? 'h-[565px]' 
+            : 'h-[290px]'
+          : 'h-14'}`}>
           <div
             onClick={() => setIsAboutExpanded(!isAboutExpanded)}
           >
@@ -69,7 +75,7 @@ const UserProfileHeader = ({profile}: {profile: Profile | null}) => {
             </div>
           </div>
           <div className="grid grid-cols-1  pt-4.5 px-3 bg-gray-100 rounded-b-2xl">
-            <div className="grid grid-cols-2 gap-y-5">
+            <div className="grid grid-cols-2 pb-3 gap-y-5">
               <div className="flex flex-col gap-y-1">
                 <h3 className="font-semibold">1</h3>
                 <span className="text-xs text-gray-500">Post karma</span>
@@ -87,49 +93,55 @@ const UserProfileHeader = ({profile}: {profile: Profile | null}) => {
                 <span className="text-xs text-gray-500">Gold earned</span>
               </div>
             </div>
-            <hr className="border-gray-300 my-4"/>
-            <p className="uppercase mb-5">Settings</p>
-            <div className="grid grid-cols-1 ps-1.5">
-              <div className="flex items-center py-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                  <img src={redditIcon} alt="" className="w-full h-full object-cover" />
+            {/* Only for owner */}
+            {isOwner && (
+              <>
+                <hr className="border-gray-300 my-4"/>
+                <p className="uppercase mb-5">Settings</p>
+                <div className="grid grid-cols-1 ps-1.5">
+                  <div className="flex items-center py-4">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                      <img src={redditIcon} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex flex-col ms-3">
+                      <span className="font-medium">Profile</span>
+                      <p className="text-xs text-gray-500">Customize your profile</p> 
+                    </div>
+                    <Link
+                      to={`/settings/profile/`} 
+                      className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Update</Link>
+                  </div>  
+                  <div className="flex items-center py-4">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                      <Shirt strokeWidth={1.5}/>
+                    </div>
+                    <div className="flex flex-col ms-3">
+                      <span className="font-medium">Avatar</span>
+                      <p className="text-xs text-gray-500">Customize and style</p> 
+                    </div>
+                    <button className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Style Avatar</button>
+                  </div>  
+                  <div className="flex items-center py-4">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                      <Shield strokeWidth={1.5}/>
+                    </div>
+                    <div className="flex flex-col ms-3">
+                      <span className="font-medium">Moderation</span>
+                      <p className="text-xs text-gray-500">Moderation tools</p> 
+                    </div>
+                    <button className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Update</button>
+                  </div>   
                 </div>
-                <div className="flex flex-col ms-3">
-                  <span className="font-medium">Profile</span>
-                  <p className="text-xs text-gray-500">Customize your profile</p> 
-                </div>
-                <Link
-                  to={`/settings/profile/`} 
-                  className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Update</Link>
-              </div>  
-              <div className="flex items-center py-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                  <Shirt strokeWidth={1.5}/>
-                </div>
-                <div className="flex flex-col ms-3">
-                  <span className="font-medium">Avatar</span>
-                  <p className="text-xs text-gray-500">Customize and style</p> 
-                </div>
-                <button className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Style Avatar</button>
-              </div>  
-              <div className="flex items-center py-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                  <Shield strokeWidth={1.5}/>
-                </div>
-                <div className="flex flex-col ms-3">
-                  <span className="font-medium">Moderation</span>
-                  <p className="text-xs text-gray-500">Moderation tools</p> 
-                </div>
-                <button className="bg-gray-white font-bold px-2.5 text-xs rounded-full ms-auto py-2">Update</button>
-              </div>  
-              <hr className="border-gray-300 mt-1 mb-4"/>
-              <p className="uppercase">Trophy case</p>
-              <div className="flex items-center py-4">
-                <div className="bg-blue-500 rounded-md w-8 h-8 flex justify-center items-center">
-                  <ScrollIcon fill="white" stroke="black"/>
-                </div>
-                <p className="ms-3 font-medium">One-Year Club</p> 
-              </div>  
+              </>
+            )}
+          {/* End of settings for owner */}
+          <hr className="border-gray-300 mb-4"/>
+            <p className="uppercase">Trophy case</p>
+            <div className="flex items-center py-4">
+              <div className="bg-blue-500 rounded-md w-8 h-8 flex justify-center items-center">
+                <ScrollIcon fill="white" stroke="black"/>
+              </div>
+              <p className="ms-3 font-medium">Newbies Club</p> 
             </div> 
           </div>
         </div>

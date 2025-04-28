@@ -8,6 +8,7 @@ import { fetchWithAuth } from "../../utils";
 import { BACKEND_URL } from "../../config";
 import { CommunityFormData, CommunityFormError } from '../../types/community';
 import { TopicCategory } from '../../types/topic';
+import { useCommunities } from '../../contexts/CommunityContext';
 
 
 interface CreateCommunityModalProps {
@@ -31,6 +32,7 @@ const CreateCommunityModal = ({
   setFormData
 }: CreateCommunityModalProps) => {
   
+  const { setCommunities } = useCommunities();
   const steps = ["basic", "style", "topics", "settings"];
   const [step, setStep] = useState(0);
   const [stepValidity, setStepValidity] = useState<{[key: number]: boolean}>({
@@ -83,6 +85,14 @@ const CreateCommunityModal = ({
       console.log(data);
     }else{
       const data = await response?.json();
+      setCommunities((prev) => {
+        if(!prev) return [];
+        return [
+          ...prev,
+          data
+        ]
+      });
+      setIsCommunityModalOpen(false);
       console.log(data);
     }
 
