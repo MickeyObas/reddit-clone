@@ -102,11 +102,12 @@ const CreatePost = () => {
     }
     formData.append('title', post.title);
     formData.append('body', post.content);
-    if (communityId) {
-      formData.append('community_id', String(communityId));
-    } else if (post.community) {
-      formData.append('community_id', String(post.community));
-    }
+    // if (communityId) {
+    //   formData.append('community_id', String(communityId));
+    // } else if (post.community) {
+    //   formData.append('community_id', String(post.community));}
+
+    formData.append('community_id', String(post.community));
     
     try{
       setPostLoading(true);
@@ -147,12 +148,16 @@ const CreatePost = () => {
   }, [])
 
   useEffect(() => {
-    if (communityId) {
-      const parsedId = parseInt(communityId);
-      setSelectedCommunityId(parsedId);
-      setPost((prev) => ({ ...prev, community: parsedId }));
+    if (communityId && allCommunities.length > 0) {
+      const matchingCommunity = allCommunities.find(
+        (community: Community) => community.id.toString() === communityId.toString()
+      );
+      if (matchingCommunity) {
+        setSelectedCommunityId(matchingCommunity.id);
+        setPost((prev) => ({ ...prev, community: matchingCommunity.id }));
+      }
     }
-  }, [communityId]);
+  }, [communityId, allCommunities]);  
 
   const isValid = selectedCommunityId && post.title.trim() !== "" && post.content.trim() !== "";
 
