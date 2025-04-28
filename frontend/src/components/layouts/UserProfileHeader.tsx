@@ -31,7 +31,7 @@ const UserProfileHeader = ({profile}: {profile: Profile | null}) => {
 
   return (
     <>
-      <div className="bg-green-300 h-20">
+      <div className="bg-gray-white h-20">
         {profile?.banner && (<img src={profile?.banner} alt="" className="object-cover w-full h-full" />)}
       </div>
       <div className="p-4">

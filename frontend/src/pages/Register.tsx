@@ -11,6 +11,7 @@ import CompleteRegistration from "./CompleteRegistration";
 // Components
 import { Button } from "../components/ui/Button";
 import { FormInput } from "../components/ui/FormInput";
+import toast from "react-hot-toast";
 
 
 const Register: React.FC = () => {
@@ -19,6 +20,7 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isValid, setIsValid] = useState(false);
+  const [isSendingEmail, setisSendingEmail] = useState(false);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -47,6 +49,7 @@ const Register: React.FC = () => {
     console.log(e);
 
     try{
+      setisSendingEmail(true);
       const response = await fetch(`${BACKEND_URL}/send-confirmation-email/`, {
         method: 'POST',
         headers: {
@@ -64,11 +67,14 @@ const Register: React.FC = () => {
           setError(error.error);
         }
       }else{
+        toast.success("A verification code has been sent to your email.")
         setStep(2);
       }
 
     }catch(err){
       console.error(err);
+    }finally{
+      setisSendingEmail(false);
     }
   }
 
@@ -115,7 +121,7 @@ const Register: React.FC = () => {
             onClick={handleClick}
             disabled={!isValid}
             isValid={isValid}
-            label="Continue"
+            label={`${isSendingEmail ? 'Loading...' : 'Continue'}`}
             className="mt-auto"
           />
         </div>

@@ -265,12 +265,14 @@ export const AboutCommunity = () => {
         <div className='bg-slate-50 flex flex-col'>
           <div className='px-3 py-6 border-b border-b-slate-300'>
             <h3 className='uppercase font-semibold mb-3'>Rules</h3>
-            {community?.rules && (
+            {community && community?.rules?.length > 0 ? (
             <ol className='list-decimal px-7 flex flex-col'>
               {community?.rules.map((rule, idx) => (
                 <RuleItem key={idx} rule={rule} idx={idx}/>
               ))}
             </ol>                
+            ) : (
+              <h1>No specific rules set. The community expects members to follow general Reddit guidelines.</h1>
             )}
           </div>
         </div>

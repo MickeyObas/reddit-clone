@@ -119,7 +119,7 @@ def verify_email(request):
             is_approved=False
         )
         if timezone.now() > code_entry.expiry_time:
-            return Response({'error': 'Code expired'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Code expired. Please tap on "Resend" to get a new verification code sent to your email.'}, status=status.HTTP_400_BAD_REQUEST)
         
         code_entry.is_approved = True
         code_entry.save()

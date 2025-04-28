@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BACKEND_URL } from "../config";
 import { FormInput } from "../components/ui/FormInput";
 import { Button } from "../components/ui/Button";
+import toast from "react-hot-toast";
 
 interface VerifyEmailProps{
   email: string,
@@ -14,6 +15,8 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
   const [error, setError] = useState<string>('');
   const [codeResendCountdown, setCodeResendCountdown] = useState(59);
   const [canResend, setCanResend] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -40,6 +43,7 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
 
     // Resend confirmation email
     try{
+      setIsResending(true);
       const response = await fetch(`${BACKEND_URL}/resend-confirmation-email/`, {
         method: 'POST',
         headers: {
@@ -58,14 +62,18 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
         console.log("Email sent again", data);
         setCanResend(false);
         setCodeResendCountdown(59);
+        toast.success("A new verification code has been sent to your account.")
       }
     }catch(err){
       console.error(err);
+    }finally{
+      setIsResending(false);
     }
   }
 
   const handleContinueClick = async () => {
     try{
+      setIsVerifying(true);
       const response = await fetch(`${BACKEND_URL}/verify-email/`, {
         method: 'POST',
         headers: {
@@ -85,10 +93,13 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
         const data = await response.json();
         console.log("Verification successful", data);
         setStep(3);
+        toast.success("Verification successful.")
       }
 
     }catch(err){
       console.error(err);
+    }finally{
+      setIsVerifying(false);
     }
   }
 
@@ -131,7 +142,9 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
         <p className="text-center mb-8">Didn't get an email?{
           !canResend 
           ? <span className="ms-3 text-xs opacity-50">Resend in {codeResendCountdown} seconds</span>
-          : <span 
+          : isResending
+            ? <span className="ms-3 text-xs opacity-50">Resending...</span>
+            : <span 
             className="ms-4 underline font-medium"
             onClick={handleResendClick}
             >Resend</span>}
@@ -141,7 +154,7 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
           onClick={handleContinueClick}
           disabled={!(code.length === 6)}
           isValid={code.length === 6}
-          label="Continue"
+          label={`${isVerifying ? 'Loading...' : 'Continue'}`}
         />
       </div> 
     </div>

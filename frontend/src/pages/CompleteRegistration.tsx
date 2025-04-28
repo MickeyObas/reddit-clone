@@ -5,6 +5,7 @@ import { Button } from "../components/ui/Button";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../config";
+import toast from "react-hot-toast";
 
 
 type ErrorState = {
@@ -24,6 +25,7 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
   });
   const [isPassword1Valid, setIsPassword1Valid] = useState(false);
   const [isPassword2Valid, setIsPassword2Valid] = useState(false);
+  const [isLoading, setisLoading] = useState(false);
 
   const handlePassword1Change = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword1(e.target.value);
@@ -64,6 +66,7 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
   const handleClick = async () => {
 
     try{
+      setisLoading(true);
       const response = await fetch(`${BACKEND_URL}/register/`, {
         method: 'POST',
         headers: {
@@ -83,12 +86,14 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
           setError((prev) => ({...prev, password1: error.password[0]}))
         }
       }else{
-        alert("Registration complete!");
+        toast.success("Registration complete!");
         navigate('/login')
       }
 
     }catch(err){
       console.error(err);
+    }finally{
+      setisLoading(false);
     }
   }
 
@@ -134,7 +139,7 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
           className="mt-auto" 
           onClick={handleClick}
           disabled={!isFormValid}
-          label="Continue"
+          label={`${isLoading ? 'Loading...' : 'Continue'}`}
           isValid={isFormValid}
         />
       </div>

@@ -30,6 +30,7 @@ const Login = (): JSX.Element => {
   });
   const [isEmailOrUsernameValid, setIsEmailOrUsernameValid] = useState(false);
   const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isFormValid = isEmailOrUsernameValid && isPasswordValid;
 
@@ -72,6 +73,7 @@ const Login = (): JSX.Element => {
 
     // Resend confirmation email
     try{
+      setIsLoading(true)
       const response = await fetch(`${BACKEND_URL}/token/`, {
         method: 'POST',
         headers: {
@@ -96,6 +98,7 @@ const Login = (): JSX.Element => {
       }
     }catch(err){
       console.error(err);
+      setIsLoading(false);
     }
   }
 
@@ -153,7 +156,7 @@ const Login = (): JSX.Element => {
           onClick={handleContinue}
           disabled={!isFormValid}
           isValid={isFormValid}
-          label="Continue"
+          label={`${isLoading ? 'Loading...' : 'Continue'}`}
           className="mt-auto"
         />
       </div>

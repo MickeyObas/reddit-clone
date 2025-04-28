@@ -9,6 +9,7 @@ import { BACKEND_URL } from "../../config";
 import { CommunityFormData, CommunityFormError } from '../../types/community';
 import { TopicCategory } from '../../types/topic';
 import { useCommunities } from '../../contexts/CommunityContext';
+import toast from 'react-hot-toast';
 
 
 interface CreateCommunityModalProps {
@@ -32,6 +33,7 @@ const CreateCommunityModal = ({
   setFormData
 }: CreateCommunityModalProps) => {
   
+  const [isLoading, setIsLoading] = useState(false);
   const { setCommunities } = useCommunities();
   const steps = ["basic", "style", "topics", "settings"];
   const [step, setStep] = useState(0);
@@ -74,26 +76,36 @@ const CreateCommunityModal = ({
     communityFormData.append('description', formData.description);
     communityFormData.append('is_mature', String(formData.isForMature));
 
-    const response = await fetchWithAuth(`${BACKEND_URL}/communities/`, {
-      method: 'POST',
-      body: communityFormData
-    });
-
-    if(!response?.ok){
-      console.log("Whoops, something went wrong");
-      const data = await response?.json();
-      console.log(data);
-    }else{
-      const data = await response?.json();
-      setCommunities((prev) => {
-        if(!prev) return [];
-        return [
-          ...prev,
-          data
-        ]
+    try {
+      setIsLoading(true);
+      const response = await fetchWithAuth(`${BACKEND_URL}/communities/`, {
+        method: 'POST',
+        body: communityFormData
       });
-      setIsCommunityModalOpen(false);
-      console.log(data);
+  
+      if(!response?.ok){
+        console.log("Whoops, something went wrong");
+        const data = await response?.json();
+        console.log(data);
+        toast.error(`Uh-oh, ${data}`);
+      }else{
+        const data = await response?.json();
+        setCommunities((prev) => {
+          if(!prev) return [];
+          return [
+            ...prev,
+            data
+          ]
+        });
+        setIsCommunityModalOpen(false);
+        console.log(data);
+        toast.success("Community created successfully!");
+      }
+    } catch(err){
+      console.error(err);
+      toast.error("Uh-oh, something went wrong - but it's nothing to worry about. Please alert Mickey.");
+    }finally{
+      setIsLoading(false);
     }
 
     setFormData({
