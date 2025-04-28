@@ -47,7 +47,7 @@ def send_confirmation_code_to_email(request):
     code = generate_6_digit_code()
 
     subject = "Your verification code"
-    message = f"Enter this code on reddit to confirm your email address -> {code}"
+    message = f"Enter this code on reddit to confirm your email address -> {code}. If you did NOT request for this code, please ignore and report to Mickey, the developer."
     send_mail(subject, message, settings.EMAIL_HOST_USER, [email])
 
     VerificationCode.objects.create(email=email, code=code)
@@ -85,7 +85,7 @@ def resend_confirmation_code_to_email(request):
     # TODO: Make atomic
     send_mail(
         "Your verification code",
-        f"Enter this new verification code on Reddit to confirm your email address -> {code}",
+        f"Enter this new verification code on Reddit (the clone) to confirm your email address -> {code}. If you did NOT request for this code, please ignore and report to Mickey, the developer.",
         settings.EMAIL_HOST_USER,
         [email]
     )
