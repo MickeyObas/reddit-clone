@@ -17,6 +17,7 @@ const UserProfile = () => {
   const profile: {profile: Profile} = useOutletContext();
   const [searchParams] = useSearchParams();
   const sortFilter = searchParams.get('sort') || 'new';
+  const isOwner = user?.id == userId;
 
   console.log(profile);
 
@@ -170,7 +171,7 @@ const UserProfile = () => {
 
   return (
     <div className="grid grid-cols-1">
-      {feed && feed.map((feedItem, idx) => {
+      {feed && feed.length > 0 ? feed.map((feedItem, idx) => {
         if(feedItem.type === 'post'){
           return (
             <PostItem 
@@ -189,7 +190,11 @@ const UserProfile = () => {
               />
             )
         }
-      })}
+      }) : (
+        isOwner 
+        ? <h1>You haven't really been active here yet. Make a post or comment :)</h1>
+        : <h1>This user hasn't really been active here yet.</h1>
+      )}
     </div>
   )
 }

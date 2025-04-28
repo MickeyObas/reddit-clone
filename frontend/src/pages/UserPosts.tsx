@@ -12,6 +12,7 @@ const UserPosts = () => {
   const { userId } = useParams();
   const [searchParams] = useSearchParams();
   const sortFilter = searchParams.get('sort') || 'new';
+  const isOwner = user?.id == userId;
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -100,13 +101,17 @@ const UserPosts = () => {
 
   return (
     <div className="grid grid-cols-1">
-      {posts && posts.map((post, idx) => (
+      {posts && posts.length > 0 ? posts.map((post, idx) => (
         <PostItem 
           key={idx}
           post={post}
           onVote={handleVote}
         />
-      ))}
+      )) : (
+        isOwner
+          ? <h1>You haven't made any posts yet. Find/create a community and make a post :)</h1>
+          : <h1>This user hasn't made any posts yet.</h1>
+      )}
     </div>
   )
 }

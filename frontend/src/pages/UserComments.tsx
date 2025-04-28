@@ -14,6 +14,7 @@ const UserComments = () => {
   const profile: {profile: Profile} = useOutletContext();
   const [searchParams] = useSearchParams();
   const sortFilter = searchParams.get('sort') || 'new';
+  const isOwner = user?.id == userId;
 
 
   useEffect(() => {
@@ -100,14 +101,18 @@ const UserComments = () => {
 
   return (
     <div className="grid grid-cols-1">
-      {comments && comments.map((comment, idx) => (
+      {comments && comments.length > 0 ? comments.map((comment, idx) => (
         <CommentItem 
           key={idx}
           comment={comment}
           profile={profile}
           onVote={handleCommentVote}
         />
-      ))}
+      )): (
+        isOwner
+        ? <h1>You haven't made any comments yet. Find an interesting post and make a comment :)</h1>
+        : <h1>This user hasn't made any comment yet.</h1>
+      )}
     </div>
   )
 
