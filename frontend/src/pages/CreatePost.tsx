@@ -162,6 +162,7 @@ const CreatePost = () => {
         }else{
           const data = await response.json();
           setSelectedCommunity(data);
+          setPost((prev) => ({...prev, community: Number(communityId)}))
         }
       }catch(err){
         console.error(err);
@@ -173,9 +174,7 @@ const CreatePost = () => {
   }, [communityId])
 
   const isValid = post.community && post.title.trim() !== "" && post.content.trim() !== "";
-
-  if(isAllCommunitiesLoading || isCommunitiesLoading) return <h1>Loading</h1>
-
+  
   return (
     <div className="grid grid-cols-1 py-5 px-4 gap-y-5">
       <div className="flex justify-between">
@@ -183,7 +182,7 @@ const CreatePost = () => {
         <span className='font-medium'>Drafts</span>
       </div>
 
-      {(isCommunitiesLoading || isAllCommunitiesLoading) ? (
+      {(isCommunityLoading || isCommunitiesLoading || isAllCommunitiesLoading) ? (
          <div 
           className="flex items-center bg-gray-white font-medium w-fit ps-0.5 pe-2.5 rounded-full gap-x-1.5 cursor-pointer">
             <div className='w-10 h-10 overflow-hidden rounded-full flex items-center justify-center'>
