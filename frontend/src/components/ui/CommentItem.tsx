@@ -67,7 +67,7 @@ const CommentItem = ({comment, onVote, profile}: CommentItemProps) => {
               className='font-bold text-black cursor-pointer hover:text-blue-700'>{profile?.profile?.user?.username}</span>
             {comment.parent ? (
               <>
-                {comment.post.owner.id === profile.profile.user.id && (
+                {comment.post.owner.id === profile?.profile?.user.id && (
                   <span className='text-blue-500 font-bold'>OP</span>
                 )}
                 <span>replied to{' '}
