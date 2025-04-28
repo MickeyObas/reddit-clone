@@ -30,6 +30,8 @@ type ErrorState = {
 
 
 const CreatePost = () => {
+  const [isCommunityLoading, setIsCommunityLoading] = useState(false) 
+  const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
   const { communityId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,11 +55,6 @@ const CreatePost = () => {
   const [search, setSearch] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-
-  const [selectedCommunityId, setSelectedCommunityId] = useState<number | null>(
-    communityId ? parseInt(communityId) : null
-  );
-  const selectedCommunity = allCommunities?.find((community: Community) => community.id.toString() === selectedCommunityId?.toString());
 
   let filteredCommunities: Community[];
   if(search){
@@ -87,9 +84,15 @@ const CreatePost = () => {
   }
 
   const handleCommunityClick = (communityId: number) => {
-    setSelectedCommunityId(communityId);
     setIsSearchDropdownOpen(false);
     setPost((prev) => ({...prev, community: communityId}))
+    setSelectedCommunity(() => {
+      const selectedCom = allCommunities.find((c) => c.id.toString() === communityId.toString());
+      if(selectedCom) return selectedCom;
+      else{
+        return null
+      }
+    })
   }
 
   const handleCreatePostClick = async () => {
@@ -148,18 +151,30 @@ const CreatePost = () => {
   }, [])
 
   useEffect(() => {
-    if (communityId && allCommunities.length > 0) {
-      const matchingCommunity = allCommunities.find(
-        (community: Community) => community.id.toString() === communityId.toString()
-      );
-      if (matchingCommunity) {
-        setSelectedCommunityId(matchingCommunity.id);
-        setPost((prev) => ({ ...prev, community: matchingCommunity.id }));
+    const fetchCommunity = async () => {
+      try{
+        setIsCommunityLoading(true);
+        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/`, {
+          method: 'GET'
+        })
+        if(!response?.ok){
+          console.error("Whoops, problem with response.")
+        }else{
+          const data = await response.json();
+          setSelectedCommunity(data);
+        }
+      }catch(err){
+        console.error(err);
+      }finally{
+        setIsCommunityLoading(false);
       }
-    }
-  }, [communityId, allCommunities]);  
+    };
+    fetchCommunity();
+  }, [communityId])
 
-  const isValid = selectedCommunityId && post.title.trim() !== "" && post.content.trim() !== "";
+  const isValid = post.community && post.title.trim() !== "" && post.content.trim() !== "";
+
+  if(isAllCommunitiesLoading || isCommunitiesLoading) return <h1>Loading</h1>
 
   return (
     <div className="grid grid-cols-1 py-5 px-4 gap-y-5">
@@ -182,7 +197,7 @@ const CreatePost = () => {
             className="flex items-center bg-gray-white font-medium w-fit ps-0.5 pe-2.5 rounded-full gap-x-1.5 cursor-pointer"
             onClick={() => setIsSearchDropdownOpen(true)}
             >
-            {selectedCommunityId && selectedCommunity?.avatar ? (
+            {selectedCommunity?.avatar ? (
               <div className='w-10 h-10 overflow-hidden rounded-full flex items-center justify-center'>
                 <img src={selectedCommunity?.avatar} alt="" className='w-6 h-6 object-cover rounded-full'/>
               </div>
@@ -190,7 +205,7 @@ const CreatePost = () => {
               <img src={communityIcon} alt="" className='w-10 h-10'/>
             )}
             
-            {selectedCommunityId && selectedCommunity?.name ? (
+            {selectedCommunity?.name ? (
               <span>{"r/" + selectedCommunity?.name}</span>
             ) : (
             <span>Select a community</span>
