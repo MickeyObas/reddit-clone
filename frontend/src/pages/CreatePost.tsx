@@ -108,7 +108,6 @@ const CreatePost = () => {
       formData.append('community_id', String(post.community));
     }
     
-
     try{
       setPostLoading(true);
       const response = await fetchWithAuth(`${BACKEND_URL}/posts/`, {
@@ -146,6 +145,14 @@ const CreatePost = () => {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
 
   }, [])
+
+  useEffect(() => {
+    if (communityId) {
+      const parsedId = parseInt(communityId);
+      setSelectedCommunityId(parsedId);
+      setPost((prev) => ({ ...prev, community: parsedId }));
+    }
+  }, [communityId]);
 
   const isValid = selectedCommunityId && post.title.trim() !== "" && post.content.trim() !== "";
 
