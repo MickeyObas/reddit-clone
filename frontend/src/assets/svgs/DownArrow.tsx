@@ -10,7 +10,7 @@ const DownArrow = ({
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     xmlnsXlink="http://www.w3.org/1999/xlink"
-    transform="scale(1 -1)"
+    style={{ transform: 'scale(1, -1)' }}
     stroke={!color ? outlineColor : ''}
     strokeWidth={0.03}
     {...props}
