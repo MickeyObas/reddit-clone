@@ -114,8 +114,14 @@ class UserSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
 
     def get_avatar(self, obj):
-        if obj.profile.avatar:
-            return obj.profile.avatar.url
+        request = self.context['request']
+        avatar = obj.profile.avatar
+
+        if avatar and hasattr(avatar, 'url'):
+            url = avatar.url
+            if request and not url.startswith('http'):
+                return request.build_absolute_uri(url)
+            return url
         return None
 
     class Meta:

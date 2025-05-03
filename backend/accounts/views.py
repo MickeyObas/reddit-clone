@@ -9,5 +9,5 @@ from .serializers import UserSerializer
 @api_view(['GET'])
 def user_list(request):
     users = User.objects.all()
-    serializer = UserSerializer(users, many=True)
+    serializer = UserSerializer(users, many=True, context={'request': request})
     return Response(serializer.data)

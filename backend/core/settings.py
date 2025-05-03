@@ -14,7 +14,10 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(",")
+if DEBUG:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+else:
+    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(",")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -78,7 +81,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
-
 
 
 # Database
@@ -170,14 +172,25 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Storage
-STORAGES = {
-    "default": {
-        "BACKEND": 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+
+if DEBUG:
+    STORAGES = {
+        "default": {
+            "BACKEND": 'django.core.files.storage.FileSystemStorage'
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        }
     }
-}
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": 'cloudinary_storage.storage.MediaCloudinaryStorage'
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        }
+    }
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
