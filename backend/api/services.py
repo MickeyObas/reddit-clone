@@ -1,0 +1,46 @@
+from .models import VerificationCode
+from .utils import generate_6_digit_code
+from accounts.models import User
+from django.conf import settings
+from django.core.mail import send_mail
+from django.core.cache import cache
+from django.utils import timezone
+
+
+class VerificationService:
+    @staticmethod
+    def send_verification_code(email):
+        if User.objects.filter(email=email).exists():
+            raise ValueError("User has already verified email for registration")
+        elif VerificationCode.objects.filter(email=email).exists():
+            raise ValueError("Verification code already exists")
+        code = generate_6_digit_code()
+        subject = "Your verification code"
+        message = f"Enter this code on reddit to confirm your email address -> {code}. If you did NOT request for this code, please ignore and report to Mickey, the developer."
+        send_mail(subject, message, settings.EMAIL_HOST_USER, [email])
+        VerificationCode.objects.create(email=email, code=code)
+
+    @staticmethod
+    def resend_verification_code(email):
+        cache_key = f"sent_token_{email}"
+        if cache.get(cache_key):
+            raise ValueError('Too many requests. Please wait before requesting a new code')
+        cache.set(cache_key, True, 60)
+        VerificationCode.objects.filter(email=email).delete()
+        VerificationService.send_verification_code(email=email)
+
+    @staticmethod
+    def verify_email(email, user_code):
+        try:
+            code_entry = VerificationCode.objects.get(
+                email=email,
+                code=user_code,
+                is_approved=False
+            )
+            if timezone.now() > code_entry.expiry_time:
+                raise ValueError('Code expired. Please tap on "Resend" to get a new verification code sent to your email.'
+                )
+            code_entry.is_approved = True
+            code_entry.save()
+        except VerificationCode.DoesNotExist:
+            raise ValueError("Invalid code or email")

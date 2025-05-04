@@ -1,12 +1,9 @@
-from rest_framework import status, parsers
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
-from django.db import transaction
-from django.db.models import F
-
-from .models import Vote
+from .services import VoteService
 from posts.models import Post
 from accounts.models import User
 from comments.models import Comment
@@ -23,62 +20,19 @@ def vote(request):
 
         if not obj in ['c', 'p'] or not user_id or not obj_id or dir not in [1, -1]:
             return Response({'error': 'Invalid request.'}, status=400)
-        
-        new_vote_total = None
 
         user = User.objects.get(id=user_id)
+        if request.user != user:
+            raise PermissionDenied("You cannot vote as another user.");
+    
+        vote_service = VoteService()
+        new_vote_total = vote_service.vote(user, obj, obj_id, dir)
 
-        with transaction.atomic():
-            if obj == 'p':
-                post = Post.objects.select_for_update().get(id=obj_id)
-
-                vote_qs = Vote.objects.select_for_update().filter(
-                    owner=user,
-                    post=post,
-                )
-                if vote_qs.exists():
-                    existing_vote = vote_qs.get()
-                    if existing_vote.type == dir:
-                        existing_vote.delete()
-                    else:
-                        existing_vote.type = dir
-                        existing_vote.save()
-                else:
-                    Vote.objects.create(
-                        owner=user,
-                        type=dir,
-                        post=post, 
-                    )
-                new_vote_total = post.vote_count
-
-            elif obj == 'c':
-                comment = Comment.objects.select_for_update().get(id=obj_id)
-
-                vote_qs = Vote.objects.select_for_update().filter(
-                    owner=user,
-                    comment=comment,
-                )
-
-                if vote_qs.exists():
-                    existing_vote = vote_qs.get()
-                    if existing_vote.type == dir:
-                        existing_vote.delete()
-                    else:
-                        existing_vote.type = dir
-                        existing_vote.save()
-                else:
-                    Vote.objects.create(
-                        owner=user,
-                        type=dir,
-                        comment=comment  
-                    )
-                new_vote_total = comment.vote_count
-
-            return Response({
-                'message': 'Vote administered successfully.',
-                'obj': obj,
-                "count": new_vote_total
-                })
+        return Response({
+            'message': 'Vote administered successfully.',
+            'obj': obj,
+            "count": new_vote_total
+            })
         
     except User.DoesNotExist:
         return Response({'error': 'User does not exist'}, status=400)
