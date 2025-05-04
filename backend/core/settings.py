@@ -173,24 +173,23 @@ MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Storage
 
-if DEBUG:
-    STORAGES = {
-        "default": {
-            "BACKEND": 'django.core.files.storage.FileSystemStorage'
-        },
-        "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
-        }
+# if DEBUG:
+#     STORAGES = {
+#         "default": {
+#             "BACKEND": 'django.core.files.storage.FileSystemStorage'
+#         },
+#         "staticfiles": {
+#             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+#         }
+#     }
+STORAGES = {
+    "default": {
+        "BACKEND": 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
     }
-else:
-    STORAGES = {
-        "default": {
-            "BACKEND": 'cloudinary_storage.storage.MediaCloudinaryStorage'
-        },
-        "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
-        }
-    }
+}
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
