@@ -89,7 +89,6 @@ DATABASES = {
     'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
 
-
 # Email
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
 EMAIL_HOST = os.getenv('EMAIL_HOST')
@@ -139,7 +138,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -159,10 +157,10 @@ REST_FRAMEWORK = {
 # CORS
 
 CORS_ALLOWED_ORIGINS = [
+    "https://reddit-clone-seven-eta.vercel.app",
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175",
-    "https://reddit-clone-seven-eta.vercel.app"
 ]
 
 # MEDIA

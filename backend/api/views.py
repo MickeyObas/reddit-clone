@@ -56,7 +56,7 @@ def resend_confirmation_code_to_email(request):
     
     try:
         VerificationService.resend_verification_code(email)
-        return Response({'message': 'A confirmation code has been sent to your email'})
+        return Response({'message': 'A confirmatio34cn code has been sent to your email'})
     except ValueError as e:
         return Response({'error': str(e)}, status=400)
     except Exception as e:
