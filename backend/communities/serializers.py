@@ -8,6 +8,7 @@ class CommunitySerializer(serializers.ModelSerializer):
     is_member = serializers.SerializerMethodField()
     moderators = UserSerializer(many=True, required=False)
     # topic_ids = serializers.ListField(write_only=True, child=serializers.IntegerField(), required=False)
+    # ...
     topics = TopicSerializer(many=True, read_only=True)
     
     class Meta:
