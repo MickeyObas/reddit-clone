@@ -32,6 +32,8 @@ class CommunitySerializer(serializers.ModelSerializer):
 
     def get_is_member(self, obj):
         user = self.context.get('request').user
+        if not user or not user.is_authenticated:
+            return False
         return obj.members.filter(id=user.id).exists()
     
     def create(self, validated_data):

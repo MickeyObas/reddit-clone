@@ -1,6 +1,10 @@
 from rest_framework import status, parsers
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+from django.db import transaction
+from django.db.models import F
 
 from .models import Vote
 from posts.models import Post
@@ -9,6 +13,7 @@ from comments.models import Comment
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def vote(request):
     try:
         obj = request.query_params.get('obj')  
@@ -23,57 +28,58 @@ def vote(request):
 
         user = User.objects.get(id=user_id)
 
-        if obj == 'p':
-            post = Post.objects.get(id=obj_id)
+        with transaction.atomic():
+            if obj == 'p':
+                post = Post.objects.select_for_update().get(id=obj_id)
 
-            similar_vote = Vote.objects.filter(
-                owner=user,
-                post=post,
-            )
-            if similar_vote.exists():
-                similar_vote = similar_vote.first()
-                if similar_vote.type == dir:
-                    similar_vote.delete()
-                else:
-                    similar_vote.type = dir
-                    similar_vote.save()
-            else:
-                Vote.objects.create(
+                vote_qs = Vote.objects.select_for_update().filter(
                     owner=user,
-                    type=dir,
-                    post=post, 
+                    post=post,
                 )
-            new_vote_total = post.vote_count
-
-        elif obj == 'c':
-            comment = Comment.objects.get(id=obj_id)
-
-            similar_vote = Vote.objects.filter(
-                owner=user,
-                comment=comment,
-            )
-
-            if similar_vote.exists():
-                similar_vote = similar_vote.first()
-                if similar_vote.type == dir:
-                    similar_vote.delete()
+                if vote_qs.exists():
+                    existing_vote = vote_qs.get()
+                    if existing_vote.type == dir:
+                        existing_vote.delete()
+                    else:
+                        existing_vote.type = dir
+                        existing_vote.save()
                 else:
-                    similar_vote.type = dir
-                    similar_vote.save()
-            else:
-                Vote.objects.create(
-                    owner=user,
-                    type=dir,
-                    comment=comment  
-                )
-            new_vote_total = comment.vote_count
+                    Vote.objects.create(
+                        owner=user,
+                        type=dir,
+                        post=post, 
+                    )
+                new_vote_total = post.vote_count
 
-        return Response({
-            'message': 'Vote administered successfully.',
-            'obj': obj,
-            "count": new_vote_total
-            })
-    
+            elif obj == 'c':
+                comment = Comment.objects.select_for_update().get(id=obj_id)
+
+                vote_qs = Vote.objects.select_for_update().filter(
+                    owner=user,
+                    comment=comment,
+                )
+
+                if vote_qs.exists():
+                    existing_vote = vote_qs.get()
+                    if existing_vote.type == dir:
+                        existing_vote.delete()
+                    else:
+                        existing_vote.type = dir
+                        existing_vote.save()
+                else:
+                    Vote.objects.create(
+                        owner=user,
+                        type=dir,
+                        comment=comment  
+                    )
+                new_vote_total = comment.vote_count
+
+            return Response({
+                'message': 'Vote administered successfully.',
+                'obj': obj,
+                "count": new_vote_total
+                })
+        
     except User.DoesNotExist:
         return Response({'error': 'User does not exist'}, status=400)
     
@@ -82,4 +88,8 @@ def vote(request):
     
     except Comment.DoesNotExist:
         return Response({'error': 'Comment does not exist.'}, status=400)
+    
+    except Exception as e:
+        print(e)
+        return Response({'error': f"Something went wrong -> {e}"})
     

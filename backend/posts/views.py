@@ -6,8 +6,10 @@ from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 
 from rest_framework import status, parsers
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import PermissionDenied
 
 from .models import (
     Post,
@@ -22,6 +24,7 @@ from communities.serializers import CommunitySerializer
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def post_list_or_create(request):
     if request.method == 'GET':
@@ -47,15 +50,14 @@ def post_detail_update_delete(request, pk):
             serializer = PostSerializer(post, context={"request": request})
             return Response(serializer.data, status=200)
         
-        elif request.method == 'DELETE':
-            if post.owner != request.user:
-                return Response({'error': 'You cannot delete posts owned by another user!'}, status=status.HTTP_401_UNAUTHORIZED)
+        if request.user != post.owner:
+            raise PermissionDenied("You cannot perform this action")
+
+        if request.method == 'DELETE':
             post.delete()
             return Response(status=204)
         
         elif request.method == 'PATCH':
-            if post.owner != request.user:
-                return Response({'error': 'You cannot update posts owned by another user!'}, status=status.HTTP_401_UNAUTHORIZED)
             serializer = PostSerializer(post, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()

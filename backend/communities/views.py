@@ -1,6 +1,8 @@
 from rest_framework import status, parsers
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 from .models import Community
 from posts.models import Post
@@ -22,6 +24,7 @@ def user_community_list(request):
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def community_list_or_create(request):
     if request.method == 'GET':
@@ -48,15 +51,15 @@ def community_detail_update_delete(request, pk):
             serializer = CommunitySerializer(community, context={'request': request})
             return Response(serializer.data, status=200)
         
-        elif request.method == 'DELETE':
-            if community.owner != request.user:
-                return Response({'error': 'You cannot delete communities owned by another user!'}, status=status.HTTP_401_UNAUTHORIZED)
+        # NOTE: I should probably go back to using CBVs
+        if community.owner != request.user:
+            raise PermissionDenied("You cannot perform this action.")
+
+        if request.method == 'DELETE':
             community.delete()
             return Response(status=204)
         
         elif request.method == 'PATCH':
-            if community.owner != request.user:
-                return Response({'error': 'You cannot update communities owned by another user!'}, status=status.HTTP_401_UNAUTHORIZED)
             serializer = CommunitySerializer(community, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
@@ -96,6 +99,7 @@ def community_post_feed(request, pk):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def community_join(request, pk):
     try:
         user = request.user
@@ -113,6 +117,7 @@ def community_join(request, pk):
     
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def community_leave(request, pk):
     try:
         user = request.user
@@ -130,6 +135,7 @@ def community_leave(request, pk):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def community_name_legal(request):
     community_name = request.data.get('community_name')
     if Community.objects.filter(name__iexact=community_name).exists():

@@ -6,7 +6,7 @@ from api.models import TimeStampedModel
 class Post(TimeStampedModel):
     owner = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     community = models.ForeignKey('communities.Community', on_delete=models.CASCADE)
-    title = models.CharField(max_length=300)
+    title = models.CharField(max_length=300, blank=False)
     body = models.TextField()
     flairs = models.ManyToManyField('tags.Flair', blank=True)
 
@@ -26,9 +26,17 @@ class PostMedia(TimeStampedModel):
         LINK = "LINK", "Link"
 
     post = models.ForeignKey('Post', on_delete=models.CASCADE)
-    type = models.CharField(max_length=5, default=MEDIA_TYPES.IMAGE, blank=True)
+    type = models.CharField(max_length=5, default=MEDIA_TYPES.IMAGE, blank=True, choices=MEDIA_TYPES.choices)
     file = models.FileField(upload_to='post_media/')
     url = models.URLField()
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.type in [self.MEDIA_TYPES.IMAGE, self.MEDIA_TYPES.VIDEO] and not self.file:
+            raise ValidationError("File is required for image/video media.")
+        if self.type == self.MEDIA_TYPES.LINK and not self.url:
+            raise ValidationError("URL is required for link media.")
 
     def __str__(self):
         return f"Post-{self.post.id} ({self.type})"

@@ -15,7 +15,7 @@ class Vote(TimeStampedModel):
 
     class Meta:
         # Enforce either post/comment
-        unique_together = ['owner', 'post']
+        unique_together = [('owner', 'post'), ('owner', 'comment')]
 
     @property
     def vote_type_name(self):

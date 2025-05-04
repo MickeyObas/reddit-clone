@@ -20,6 +20,11 @@ class PostMediaSerializer(serializers.ModelSerializer):
             'type'
         ]
 
+    def validate(self, attrs):
+        instance = PostMedia(**attrs)
+        instance.full_clean()
+        return attrs
+
 class PostSerializer(serializers.ModelSerializer):
     media = serializers.SerializerMethodField()
     owner = UserSerializer(read_only=True)
@@ -157,6 +162,8 @@ class PostDisplaySerializer(serializers.ModelSerializer):
     
     def get_user_vote(self, obj):
         user = self.context.get('request').user
+        if not user or not user.is_authenticated:
+            return None
         vote = Vote.objects.filter(
             post=obj,
             owner=user
@@ -167,6 +174,8 @@ class PostDisplaySerializer(serializers.ModelSerializer):
 
     def get_is_member(self, obj):
         user = self.context.get('request').user
+        if not user or not user.is_authenticated:
+            return False
         return user.id in obj.community.members.values_list('id', flat=True)
     
 class CommunityPostFeedSerializer(PostDisplaySerializer):

@@ -1,6 +1,8 @@
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.response import Response
-from rest_framework import status, parsers
+from rest_framework import status, parsers, permissions
+from rest_framework.exceptions import PermissionDenied
+
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 
@@ -17,6 +19,7 @@ from operator import attrgetter
 
 
 @api_view(['GET'])
+@permission_classes([permissions.IsAdminUser])
 def profile_list(request):
     profiles = Profile.objects.all()
     serializer = ProfileSerializer(profiles, many=True, context={'request': request})
@@ -33,10 +36,10 @@ def profile_detail_update(request, pk):
         if request.method == 'GET':
             serializer = ProfileSerializer(profile, context={'request': request})
             return Response(serializer.data)
-        
+
         elif request.method == 'PATCH':
             if request.user.id != profile.user.id:
-                return Response({'error': 'You cannot perform this action'}, status=status.HTTP_403_FORBIDDEN)
+                raise PermissionDenied("You cannot update a profile that does not belong to you")
             
             serializer = ProfileSerializer(profile, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid():

@@ -1,6 +1,8 @@
 from rest_framework import status, parsers
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .models import Comment
 from .serializers import CommentSerializer
@@ -25,7 +27,10 @@ def comment_detail_update_delete(request, pk):
             serializer = CommentSerializer(comment)
             return Response(serializer.data)
         
-        elif request.method == 'PATCH':
+        if request.user != comment.owner:
+            raise PermissionDenied("You do not have the permission to perform this action.")
+
+        if request.method == 'PATCH':
             serializer = CommentSerializer(comment, data=request.data, partial=True, context={"request": request})
             if serializer.is_valid():
                 serializer.save()
@@ -41,6 +46,7 @@ def comment_detail_update_delete(request, pk):
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 @parser_classes([parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser])
 def comment_list_or_create(request, pk):
     try:
