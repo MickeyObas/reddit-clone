@@ -76,6 +76,8 @@ def post_detail_update_delete(request, pk):
                 queryset=Vote.objects.filter(owner=request.user),
                 to_attr='user_votes'
             )
+        ).annotate(
+            vote_count=Coalesce(Sum('vote__type'), Value(0))
         ).get(id=pk)
     
         if request.method == 'GET':
@@ -119,7 +121,8 @@ def user_post_feed(request):
                 queryset=Vote.objects.filter(owner=request.user),
                 to_attr='user_votes'
             )
-        ).order_by('-created_at')
+        ).order_by('-created_at').annotate(vote_count=Coalesce(Sum('vote__type'), Value(0)))
+
         trending_posts = Post.objects.exclude(
             community__in=user_communities
         ).prefetch_related(
@@ -128,7 +131,7 @@ def user_post_feed(request):
                 queryset=Vote.objects.filter(owner=request.user),
                 to_attr='user_votes'
             )
-        ).select_related('community').annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-created_at')[:6]
+        ).select_related('community').annotate(vote_count=Coalesce(Sum('vote__type'), Value(0))).order_by('-created_at')[:6]
 
     elif sort == 'best' or sort == 'hot':
         followed_communities_posts = Post.objects.filter(
@@ -139,7 +142,8 @@ def user_post_feed(request):
                 queryset=Vote.objects.filter(owner=request.user),
                 to_attr='user_votes'
             )
-        ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-vote_total', '-created_at')
+        ).annotate(vote_count=Coalesce(Sum('vote__type'), Value(0))).order_by('-vote_count')
+
         trending_posts = Post.objects.exclude(
             community__in=user_communities
         ).select_related('community').prefetch_related(
@@ -148,7 +152,7 @@ def user_post_feed(request):
                 queryset=Vote.objects.filter(owner=request.user),
                 to_attr='user_votes'
             )
-        ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-vote_total', '-created_at')[:6]
+        ).annotate(vote_count=Coalesce(Sum('vote__type'), Value(0))).order_by('-vote_count')[:6]
 
     else:
         followed_communities_posts = Post.objects.filter(
@@ -168,7 +172,7 @@ def user_post_feed(request):
                 queryset=Vote.objects.filter(owner=request.user),
                 to_attr='user_votes'
             )
-        ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-created_at')[:6]
+        ).annotate(vote_count=Coalesce(Sum('vote__type'), Value(0))).order_by('-created_at')[:6]
 
     posts = list(followed_communities_posts) + list(trending_posts)
 

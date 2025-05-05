@@ -6,7 +6,7 @@ import ellipsisIcon from '../assets/icons/ellipsis.png';
 import redditIcon from '../assets/icons/reddit-outline.png';
 
 import { ChevronDown, Pin } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { fetchWithAuth, formatUsername, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
@@ -62,6 +62,12 @@ const Community = ({sort='latest'}) => {
     
   }, [sort, communityId])
 
+  const processedPosts = useMemo(() => {
+    return posts.map(post => ({
+      ...post,
+      timeAgoText: timeAgo(post.created_at)
+    }))
+  }, [posts])
 
   useEffect(() => {
     const fetchCommunityPosts = async () => {
@@ -152,7 +158,7 @@ const Community = ({sort='latest'}) => {
         </div>
         <hr className='border-none h-[1px] bg-slate-300 opacity-50 mt-3'/>
         {/* Feed */}
-        {posts && posts.length > 0 ? posts.map((post) => (
+        {processedPosts && processedPosts.length > 0 ? processedPosts.map((post) => (
           <article key={post.id} className="feed grid grid-cols-1 px-5 py-3 border-b border-b-slate-200">
           <Link to={`/post/${post.id}/`}>
             <div className='flex justify-between'>
@@ -163,7 +169,7 @@ const Community = ({sort='latest'}) => {
                   </div>
                   <span className='ms-2 font-medium'>{formatUsername(post?.owner.username)}</span>
                   <img src={dotIcon} alt="" className='w-2.5 h-2.5 mx-1'/>
-                  <span>{timeAgo(post?.created_at)}</span>
+                  <span>{post.timeAgoText}</span>
                 </div>
                 <div className='w-[75%] font-semibold text-slate-800 mt-2'>{post.title}</div>
               </div>

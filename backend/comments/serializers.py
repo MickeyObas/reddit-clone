@@ -117,6 +117,7 @@ class FeedCommentSerializer(serializers.ModelSerializer):
     user_vote = serializers.SerializerMethodField()
     post = serializers.SerializerMethodField()
     parent = ThinCommentSerializer()
+    vote_count = serializers.IntegerField()
 
     class Meta:
         model = Comment
@@ -136,11 +137,10 @@ class FeedCommentSerializer(serializers.ModelSerializer):
 
     def get_user_vote(self, obj):
         user = self.context.get('request').user
-        vote = Vote.objects.filter(
-            comment=obj,
-            owner=user
-        )
-        if vote.exists():
-            return vote.first().vote_type_name.lower()
+        if not user or not user.is_authenticated:
+            return None 
+        
+        if hasattr(obj, 'user_votes') and obj.user_votes:
+            return obj.user_votes[0].vote_type_name.lower()
         
         return None

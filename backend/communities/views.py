@@ -6,13 +6,14 @@ from rest_framework.exceptions import PermissionDenied
 
 from .models import Community
 from posts.models import Post
+from votes.models import Vote
 from .serializers import CommunitySerializer
 from posts.serializers import (
     PostDisplaySerializer, 
     CommunityPostFeedSerializer
 )
 from django.db.models.functions import Coalesce
-from django.db.models import Sum, Value
+from django.db.models import Sum, Value, Prefetch
 
 
 @api_view(['GET'])
@@ -75,17 +76,21 @@ def community_detail_update_delete(request, pk):
 def community_post_feed(request, pk):
     sort = request.GET.get('sort')
     try:
-        community = Community.objects.get(id=pk)
-        posts = Post.objects.filter(
+        community = Community.objects.select_related('owner').get(id=pk)
+        posts = Post.objects.prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
+        ).filter(
             community=community
-        )
+        ).annotate(vote_count=Coalesce(Sum('vote__type'), Value(0)))
 
         if sort == "latest":
             posts = posts.order_by('-created_at')
         elif sort == "best":
-            posts = posts.annotate(
-                vote_total=Coalesce(Sum('vote__type'), Value(0))
-            ).order_by('-vote_total')
+            posts = posts.order_by('-vote_count')
 
         community_serializer = CommunitySerializer(community, context={"request": request})
         post_serializer = CommunityPostFeedSerializer(posts, many=True, context={'request': request})

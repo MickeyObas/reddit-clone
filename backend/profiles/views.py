@@ -3,11 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status, parsers, permissions
 from rest_framework.exceptions import PermissionDenied
 
-from django.db.models import Sum, Value
+from django.db.models import Sum, Value, Prefetch
 from django.db.models.functions import Coalesce
 
 from .models import Profile
 from accounts.models import User
+from votes.models import Vote
 from posts.models import Post
 from comments.models import Comment
 from .serializers import ProfileSerializer
@@ -61,8 +62,24 @@ def profile_overview(request, pk):
     user = User.objects.get(id=pk)
     # NOTE: This is temporary. Change back to request-scoping for user
     # user = request.user
-    posts = Post.objects.filter(owner=user)
-    comments = Comment.objects.filter(owner=user)
+    posts = Post.objects.select_related('community').prefetch_related(
+        Prefetch(
+            'vote_set',
+            queryset=Vote.objects.filter(owner=request.user),
+            to_attr='user_votes'
+        )
+    ).filter(owner=user).annotate(
+        vote_count=Coalesce(Sum('vote__type'), Value(0))
+    )
+    comments = Comment.objects.select_related('post').prefetch_related(
+        Prefetch(
+            'vote_set',
+            queryset=Vote.objects.filter(owner=request.user),
+            to_attr='user_votes'
+        )
+    ).filter(owner=user).annotate(
+        vote_count=Coalesce(Sum('vote__type'), Value(0))
+    )
 
     for p in posts:
         p.content_type = 'post'
@@ -102,11 +119,25 @@ def profile_posts(request, pk):
     posts = []
 
     if sort == 'new':
-        posts = Post.objects.filter(owner=user).order_by('-created_at')
+        posts = Post.objects.select_related('community').prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
+        ).filter(owner=user).order_by('-created_at').annotate(
+            vote_count=Coalesce(Sum('vote__type'), Value(0))
+        )
     elif sort == 'best' or sort == 'hot':
-        posts = Post.objects.filter(owner=user).annotate(
-            vote_total=Coalesce(Sum('vote__type'), Value(0))
-        ).order_by('-vote_total')
+        posts = Post.objects.prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
+        ).filter(owner=user).annotate(
+            vote_count=Coalesce(Sum('vote__type'), Value(0))
+        ).order_by('-vote_count')
 
     serializer = PostDisplaySerializer(posts, many=True, context={'request': request})
     return Response(serializer.data)
@@ -119,11 +150,25 @@ def profile_comments(request, pk):
     comments = []
 
     if sort == 'new':
-        comments = Comment.objects.filter(owner=user).order_by('created_at')
+        comments = Comment.objects.select_related('post').prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
+        ).filter(owner=user).order_by('-created_at').annotate(
+            vote_count=Coalesce(Sum('vote__type'), Value(0))
+        )
     elif sort == 'best' or sort == 'hot':
-        comments = Comment.objects.filter(owner=user).annotate(
-            vote_total=Coalesce(Sum('vote__type'), Value(0))
-        ).order_by('-vote_total')
+        comments = Comment.objects.select_related('post').prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
+        ).filter(owner=user).annotate(
+            vote_count=Coalesce(Sum('vote__type'), Value(0))
+        ).order_by('-vote_count')
 
     serializer = FeedCommentSerializer(comments, many=True, context={'request': request})
     return Response(serializer.data)

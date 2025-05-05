@@ -19,7 +19,10 @@ class VoteService:
         post = Post.objects.select_for_update().get(id=obj_id)
         vote_qs = Vote.objects.select_for_update().filter(owner=user, post=post)
         self._process_vote(vote_qs, user, direction, post=post)
-        return post.vote_count
+        vote_count = Vote.objects.filter(post_id=obj_id).aggregate(
+            total=Sum('type')
+        )['total'] or 0
+        return vote_count
     
     def _vote_comment(self, user, obj_id, direction):
         comment = Comment.objects.select_for_update().get(id=obj_id)

@@ -145,7 +145,7 @@ const Comment = ({comment, setPost}: CommentProps) => {
                   onMouseLeave={() => setIsHovered(null)}
                   />
               </div>
-              <span className='text-xs'>{commentVote.userVote ? commentVote.count : 'Vote'}</span>
+              <span className='text-xs'>{!commentVote.userVote && commentVote.count == 0 ? 'Vote' : commentVote.count}</span>
               <div 
                 onClick={() => handleCommentVote(comment.id, "downvote")}
                 className='rounded-full h-full py-2 px-2 cursor-pointer hover:bg-slate-300'>

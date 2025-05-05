@@ -34,6 +34,7 @@ class PostSerializer(serializers.ModelSerializer):
     community = serializers.SerializerMethodField()
     community_id = serializers.CharField(write_only=True)
     is_member = serializers.SerializerMethodField()
+    vote_count = serializers.IntegerField(default=0, read_only=True)
 
     class Meta:
         model = Post
@@ -134,6 +135,7 @@ class PostDisplaySerializer(serializers.ModelSerializer):
     community = CommunityDisplaySerializer()
     user_vote = serializers.SerializerMethodField()
     is_member = serializers.SerializerMethodField()
+    vote_count = serializers.IntegerField()
 
     class Meta:
         model = Post
