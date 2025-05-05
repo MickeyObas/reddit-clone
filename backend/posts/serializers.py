@@ -61,20 +61,18 @@ class PostSerializer(serializers.ModelSerializer):
         return None
     
     def get_comments(self, obj):
-        comments = Comment.objects.filter(
-            post=obj,
-            parent__isnull=True
-        )
-        return CommentSerializer(comments, many=True, context={'request': self.context.get('request')}).data
+        top_comments = obj.comment_set.all()
+        return CommentSerializer(top_comments, many=True, context={'request': self.context.get('request')}).data
     
     def get_comment_count(self, obj):
-        return Comment.objects.filter(
-            post=obj,
-            parent__isnull=True
-            ).count()
+        return obj.comment_set.count()
     
     def get_user_vote(self, obj):
         user = self.context.get('request').user
+
+        if not user or not user.is_authenticated:
+            return None
+
         vote = Vote.objects.filter(
             post=obj,
             owner=user
@@ -85,6 +83,10 @@ class PostSerializer(serializers.ModelSerializer):
         
     def get_is_member(self, obj):
         user = self.context.get('request').user
+
+        if not user or not user.is_authenticated:
+            return False
+
         return user.id in obj.community.members.values_list('id', flat=True)
 
     def create(self, validated_data):
@@ -144,7 +146,7 @@ class PostDisplaySerializer(serializers.ModelSerializer):
             'thumbnail',
             'created_at',
             'user_vote',
-            'is_member'
+            'is_member',
         ]
 
     def get_comment_count(self, obj):
@@ -161,15 +163,14 @@ class PostDisplaySerializer(serializers.ModelSerializer):
         return None
     
     def get_user_vote(self, obj):
+        
         user = self.context.get('request').user
         if not user or not user.is_authenticated:
             return None
-        vote = Vote.objects.filter(
-            post=obj,
-            owner=user
-        )
-        if vote.exists():
-            return vote.first().vote_type_name.lower()
+        
+        if hasattr(obj, 'user_votes') and obj.user_votes:
+            return obj.user_votes[0].vote_type_name.lower()
+        
         return None
 
     def get_is_member(self, obj):

@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Sum
 from posts.models import Post
 from comments.models import Comment
 from votes.models import Vote
@@ -24,7 +25,10 @@ class VoteService:
         comment = Comment.objects.select_for_update().get(id=obj_id)
         vote_qs = Vote.objects.select_for_update().filter(owner=user, comment=comment)
         self._process_vote(vote_qs, user, direction, comment=comment)
-        return comment.vote_count
+        vote_count = Vote.objects.filter(comment_id=obj_id).aggregate(
+            total=Sum('type')
+        )['total'] or 0
+        return vote_count
     
     def _process_vote(self, vote_qs, user, direction, **kwargs):
         if vote_qs.exists():

@@ -1,4 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Prefetch, Sum, Value
+from django.db.models.functions import Coalesce
 
 from rest_framework import serializers
 
@@ -16,6 +18,7 @@ class CommentSerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField()
     user_vote = serializers.SerializerMethodField()
     owner = UserSerializer(read_only=True)
+    vote_count = serializers.IntegerField(default=0, read_only=True)
 
     class Meta:
         model = Comment
@@ -27,13 +30,33 @@ class CommentSerializer(serializers.ModelSerializer):
             'body',
             'media',
             'user_vote',
-            'vote_count',
             'replies',
-            'created_at'
+            'created_at',
+            'vote_count'
         ]
 
+    # NOTE: Fetch on demand instead
     def get_replies(self, obj):
-        return CommentSerializer(obj.replies.all().order_by('created_at'), many=True, context={'request': self.context.get('request')}).data
+        request = self.context['request']
+
+        """
+        if hasattr(obj, 'replies'):
+            replies = sorted(obj.replies.all(), key=lambda x: x.created_at, reverse=True)
+            return CommentSerializer(
+                replies,
+                many=True,
+                context={'request': self.context.get('request')}
+            ).data
+        return []
+        """
+    
+        return CommentSerializer(obj.replies.select_related('owner', 'owner__profile', 'commentmedia').prefetch_related('replies__owner', Prefetch(
+            'vote_set',
+            queryset=Vote.objects.filter(owner=request.user),
+            to_attr='user_votes'
+        )).annotate(
+            vote_count=Coalesce(Sum('vote__type'), Value(0))
+        ).order_by('created_at'), many=True, context={'request': self.context.get('request')}).data
     
     def get_media(self, obj):
         try:
@@ -43,12 +66,20 @@ class CommentSerializer(serializers.ModelSerializer):
         
     def get_user_vote(self, obj):
         user = self.context.get('request').user
-        vote = Vote.objects.filter(
-            comment=obj,
-            owner=user
-        )
-        if vote.exists():
-            return vote.first().vote_type_name.lower()
+
+        if not user or not user.is_authenticated:
+            return None
+
+        if hasattr(obj, 'user_votes') and obj.user_votes:
+            return obj.user_votes[0].vote_type_name.lower()
+
+        # vote = Vote.objects.filter(
+        #     comment=obj,
+        #     owner=user
+        # )
+        # if vote.exists():
+        #     return vote.first().vote_type_name.lower()
+
         return None
     
     def create(self, validated_data):

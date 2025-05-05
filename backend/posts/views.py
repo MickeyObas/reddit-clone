@@ -2,10 +2,10 @@ import random
 from itertools import chain
 from operator import attrgetter
 
-from django.db.models import Sum, Value
+from django.db.models import Sum, Value, Prefetch
 from django.db.models.functions import Coalesce
 
-from rest_framework import status, parsers
+from rest_framework import parsers
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -13,14 +13,14 @@ from rest_framework.exceptions import PermissionDenied
 
 from .models import (
     Post,
-    PostMedia
 )
 from communities.models import Community
+from comments.models import Comment
+from votes.models import Vote
 from .serializers import (
     PostSerializer,
     PostDisplaySerializer
 )
-from communities.serializers import CommunitySerializer
 
 
 @api_view(['GET', 'POST'])
@@ -28,7 +28,20 @@ from communities.serializers import CommunitySerializer
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def post_list_or_create(request):
     if request.method == 'GET':
-        posts = Post.objects.order_by('-created_at')
+        posts = Post.objects.select_related('owner', 'community').prefetch_related(
+            'postmedia_set',
+            Prefetch(
+                'comment_set',
+                queryset=Comment.objects.filter(parent__isnull=True)
+                .select_related('owner')
+                .prefetch_related('replies__owner')
+            ),
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
+        ).order_by('-created_at')
         serializer = PostDisplaySerializer(posts, many=True, context={"request": request})
         return Response(serializer.data, status=200)
     
@@ -44,8 +57,27 @@ def post_list_or_create(request):
 @api_view(['GET', 'PATCH', 'DELETE'])
 def post_detail_update_delete(request, pk):
     try:
-        post = Post.objects.get(id=pk)
-
+        post = Post.objects.select_related('owner', 'community').prefetch_related(
+            'postmedia_set',
+            Prefetch(
+                'comment_set',
+                queryset=Comment.objects.filter(parent__isnull=True).annotate(
+                    vote_count=Coalesce(Sum('vote__type'), Value(0))
+                ).order_by('-created_at')
+                .select_related('owner', 'owner__profile', 'commentmedia')
+                .prefetch_related('replies__owner', Prefetch(
+                    'vote_set',
+                    queryset=Vote.objects.filter(owner=request.user),
+                    to_attr='user_votes'
+                ))
+            ),
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
+        ).get(id=pk)
+    
         if request.method == 'GET':
             serializer = PostSerializer(post, context={"request": request})
             return Response(serializer.data, status=200)
@@ -81,25 +113,61 @@ def user_post_feed(request):
     if sort == 'new':
         followed_communities_posts = Post.objects.filter(
             community__in=user_communities
+        ).select_related('community').prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
         ).order_by('-created_at')
         trending_posts = Post.objects.exclude(
             community__in=user_communities
-        ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-created_at')[:6]
+        ).prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
+        ).select_related('community').annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-created_at')[:6]
 
     elif sort == 'best' or sort == 'hot':
         followed_communities_posts = Post.objects.filter(
             community__in=user_communities
+        ).select_related('community').prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
         ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-vote_total', '-created_at')
         trending_posts = Post.objects.exclude(
             community__in=user_communities
+        ).select_related('community').prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
         ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-vote_total', '-created_at')[:6]
 
     else:
         followed_communities_posts = Post.objects.filter(
             community__in=user_communities
+        ).select_related('community').prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
         ).order_by('-created_at')
         trending_posts = Post.objects.exclude(
             community__in=user_communities
+        ).select_related('community').prefetch_related(
+            Prefetch(
+                'vote_set',
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr='user_votes'
+            )
         ).annotate(vote_total=Coalesce(Sum('vote__type'), Value(0))).order_by('-created_at')[:6]
 
     posts = list(followed_communities_posts) + list(trending_posts)

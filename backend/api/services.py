@@ -43,4 +43,4 @@ class VerificationService:
             code_entry.is_approved = True
             code_entry.save()
         except VerificationCode.DoesNotExist:
-            raise ValueError("Invalid code or email")
+            raise ValueError("Invalid code")

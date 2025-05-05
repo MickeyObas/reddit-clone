@@ -11,10 +11,10 @@ class Comment(TimeStampedModel):
     def __str__(self):
         return f"{self.owner} on {self.post.title}"
     
-    @property
-    def vote_count(self):
-        count_query = self.vote_set.all().aggregate(vote_count=models.Sum('type', default=0))
-        return count_query['vote_count']
+    # @property
+    # def vote_count(self):
+    #     count_query = self.vote_set.all().aggregate(vote_count=models.Sum('type', default=0))
+    #     return count_query['vote_count']
 
 
 class CommentMedia(TimeStampedModel):
