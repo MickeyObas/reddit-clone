@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useParams, useSearchParams } from "react-router-dom";
 import { fetchWithAuth } from "../utils";
@@ -6,6 +6,7 @@ import { BACKEND_URL } from "../config";
 import PostItem from "../components/ui/PostItem";
 import { PostFeed } from "../types/post";
 import Skeleton from "react-loading-skeleton";
+import redditIcon from '../assets/icons/reddit.png';
 
 const UserPosts = () => {
   const [posts, setPosts] = useState<PostFeed[]>([]);
@@ -15,6 +16,13 @@ const UserPosts = () => {
   const sortFilter = searchParams.get('sort') || 'new';
   const isOwner = user?.id == userId;
   const [isLoading, setIsLoading] = useState(true);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const observer = useRef<IntersectionObserver>(null);
+  const loaderRef = useRef(null);
+  const [nextUrl, setNextUrl] = useState('');
+  const loadingRef = useRef<boolean>(false);
+
+  console.log("NEXT URL: ", nextUrl);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -26,13 +34,15 @@ const UserPosts = () => {
           console.log("Whoops, bad response.");
         }else{
           const data = await response.json();
-          console.log(data);
-          setPosts(data);
+          // console.log(data);
+          setPosts(data.results);
+          setNextUrl(data.next);
         }
       }catch(err){
         console.error(err);
       }finally{
         setIsLoading(false);
+        setPostsLoading(false);
       }
     };
     fetchPosts();
@@ -103,6 +113,41 @@ const UserPosts = () => {
   
     }
 
+  const loadMore = useCallback(async () => {
+    if (!nextUrl || loadingRef.current) return;
+  
+    setPostsLoading(true);
+    loadingRef.current = true;
+    const response = await fetchWithAuth(nextUrl);
+  
+    if (!response?.ok) {
+      console.error("Something went wrong while trying to fetch more posts.");
+    } else {
+      const data = await response.json();
+      setPosts((prev) => [...prev, ...data.results]);
+      setNextUrl(data.next);
+      setPostsLoading(false);
+      loadingRef.current = false;
+    }
+  }, [nextUrl]);
+
+  useEffect(() => {
+    if(observer.current) observer.current.disconnect();
+
+    observer.current = new IntersectionObserver(entries => {
+      if(entries[0].isIntersecting){
+        loadMore();
+      }
+    })
+
+    if(loaderRef.current){
+      observer.current.observe(loaderRef.current);
+    }
+
+    return () => observer.current?.disconnect();
+
+  }, [postsLoading, nextUrl, loadMore])
+
   if (isLoading) {
     return (
       <div>
@@ -113,13 +158,25 @@ const UserPosts = () => {
 
   return (
     <div className="grid grid-cols-1">
-      {posts && posts.length > 0 ? posts.map((post, idx) => (
-        <PostItem 
-          key={idx}
-          post={post}
-          onVote={handleVote}
-        />
-      )) : (
+      {posts && posts.length > 0 ? (
+        <>
+          {posts.map((post, idx) => (
+            <PostItem
+              key={idx}
+              post={post}
+              onVote={handleVote}
+            />
+          ))}
+          <div>{nextUrl && (
+            <div ref={loaderRef} className="flex justify-center iteme-center p-5">
+              <div className="animate-pulse">
+                <img src={redditIcon} alt="" className="w-8 h-8"/>
+              </div>
+            </div>
+          )}
+          </div>
+        </>
+      ) : (
         isOwner
           ? <h1 className="px-4 py-3">You haven't made any posts yet. Find/create a community and make a post :)</h1>
           : <h1 className="px-4 py-3">This user hasn't made any posts yet.</h1>

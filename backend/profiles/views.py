@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view, parser_classes, permission_class
 from rest_framework.response import Response
 from rest_framework import status, parsers, permissions
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import LimitOffsetPagination
 
 from django.db.models import Sum, Value, Prefetch
 from django.db.models.functions import Coalesce
@@ -12,8 +13,8 @@ from votes.models import Vote
 from posts.models import Post
 from comments.models import Comment
 from .serializers import ProfileSerializer
-from posts.serializers import PostSerializer, PostDisplaySerializer
-from comments.serializers import CommentSerializer, FeedCommentSerializer
+from posts.serializers import PostDisplaySerializer
+from comments.serializers import  FeedCommentSerializer
 
 from itertools import chain
 from operator import attrgetter
@@ -98,6 +99,8 @@ def profile_overview(request, pk):
     )
 
     results = []
+    paginator = LimitOffsetPagination()
+    paginator.default_limit = 5
 
     for item in combined:
         if item.content_type == 'post':
@@ -107,8 +110,10 @@ def profile_overview(request, pk):
         data['type'] = item.content_type
 
         results.append(data)
+
+    paginated_feed_items = paginator.paginate_queryset(results, request)
     
-    return Response(results)
+    return paginator.get_paginated_response(paginated_feed_items)
 
 
 @api_view(['GET'])
@@ -116,7 +121,10 @@ def profile_posts(request, pk):
     sort = request.query_params.get('sort', 'new')
     print(sort)
     user = User.objects.get(id=pk)
+
     posts = []
+    paginator = LimitOffsetPagination()
+    paginator.default_limit = 3
 
     if sort == 'new':
         posts = Post.objects.select_related('community').prefetch_related(
@@ -139,15 +147,20 @@ def profile_posts(request, pk):
             vote_count=Coalesce(Sum('vote__type'), Value(0))
         ).order_by('-vote_count')
 
-    serializer = PostDisplaySerializer(posts, many=True, context={'request': request})
-    return Response(serializer.data)
+    paginated_posts = paginator.paginate_queryset(posts, request)
+
+    serializer = PostDisplaySerializer(paginated_posts, many=True, context={'request': request})
+    return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(['GET'])
 def profile_comments(request, pk):
     sort = request.query_params.get('sort', 'new')
     user = User.objects.get(id=pk)
+
     comments = []
+    paginator = LimitOffsetPagination()
+    paginator.default_limit = 10
 
     if sort == 'new':
         comments = Comment.objects.select_related('post').prefetch_related(
@@ -170,5 +183,7 @@ def profile_comments(request, pk):
             vote_count=Coalesce(Sum('vote__type'), Value(0))
         ).order_by('-vote_count')
 
-    serializer = FeedCommentSerializer(comments, many=True, context={'request': request})
-    return Response(serializer.data)
+    paginated_comments = paginator.paginate_queryset(comments, request)
+
+    serializer = FeedCommentSerializer(paginated_comments, many=True, context={'request': request})
+    return paginator.get_paginated_response(serializer.data)

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchWithAuth } from '../utils';
 import { BACKEND_URL } from '../config';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,6 +9,7 @@ import { useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { CommentFeed } from '../types/comment';
 import { Profile } from '../types/profile';
 import Skeleton from 'react-loading-skeleton';
+import redditIcon from '../assets/icons/reddit.png';
 
 
 const UserProfile = () => {
@@ -20,9 +21,11 @@ const UserProfile = () => {
   const sortFilter = searchParams.get('sort') || 'new';
   const isOwner = user?.id == userId;
   const [isLoading, setIsLoading] = useState(true);
-
-  console.log(profile);
-
+  const [feedItemsLoading, setFeedItemsLoading] = useState(true);
+  const loadingRef = useRef<boolean>(false);
+  const loaderRef = useRef(null);
+  const [nextUrl, setNextUrl] = useState('');
+  const observer = useRef<IntersectionObserver>(null);
 
   useEffect(() => {
     const fetchOverview = async () => {
@@ -35,7 +38,8 @@ const UserProfile = () => {
         }else{
           const data = await response.json();
           console.log(data);
-          setFeed(data);
+          setFeed(data.results);
+          setNextUrl(data.next)
         }
       }catch(err){
         console.error(err);
@@ -170,8 +174,41 @@ const UserProfile = () => {
       comment.vote_count = data.count;
       setFeed([...updatedFeedItems]);
     }
-
   }
+
+    const loadMore = useCallback(async () => {
+      if (!nextUrl || loadingRef.current) return;
+    
+      setFeedItemsLoading(true);
+      loadingRef.current = true;
+    
+      const response = await fetchWithAuth(nextUrl);
+    
+      if (!response?.ok) {
+        console.error("Something went wrong while trying to fetch more comments.");
+      } else {
+        const data = await response.json();
+        console.log("GOT MORE COMMENTS", data);
+        setFeed((prev) => [...prev, ...data.results]);
+        setNextUrl(data.next);
+        setFeedItemsLoading(false);
+        loadingRef.current = false;
+      }
+    }, [nextUrl]);
+
+    useEffect(() => {
+      if(observer.current) observer.current.disconnect();
+  
+      observer.current = new IntersectionObserver(entries => {
+        if(entries[0].isIntersecting){
+          loadMore();
+        }
+      })
+  
+      if(loaderRef.current){
+        observer.current.observe(loaderRef.current);
+      }
+    }, [feedItemsLoading, nextUrl, loadMore])
 
   if(isLoading) {
       return (
@@ -181,34 +218,49 @@ const UserProfile = () => {
       );
     }
 
-  return (
-    <div className="grid grid-cols-1">
-      {feed && feed.length > 0 ? feed.map((feedItem, idx) => {
-        if(feedItem.type === 'post'){
-          return (
-            <PostItem 
-              key={idx} 
-              post={feedItem as PostFeed} 
-              onVote={handlePostVote}
-              />
-            )
-        }else if(feedItem.type === 'comment'){
-          return (
-            <CommentItem 
-              key={idx} 
-              comment={feedItem as CommentFeed} 
-              onVote={handleCommentVote}
-              profile={profile}
-              />
-            )
-        }
-      }) : (
-        isOwner 
-        ? <h1 className="px-4 py-3">You haven't really been active here yet. Make a post or comment :)</h1>
-        : <h1 className="px-4 py-3">This user hasn't really been active here yet.</h1>
-      )}
-    </div>
-  )
+    return (
+      <div className="grid grid-cols-1">
+        {feed && feed.length > 0 ? (
+          <>
+            {feed.map((feedItem, idx) => {
+              if (feedItem.type === 'post') {
+                return (
+                  <PostItem 
+                    key={idx} 
+                    post={feedItem as PostFeed} 
+                    onVote={handlePostVote}
+                  />
+                );
+              } else if (feedItem.type === 'comment') {
+                return (
+                  <CommentItem 
+                    key={idx} 
+                    comment={feedItem as CommentFeed} 
+                    onVote={handleCommentVote}
+                    profile={profile}
+                  />
+                );
+              } else {
+                return null;
+              }
+            })}
+            <div>{nextUrl && (
+              <div ref={loaderRef} className="flex justify-center iteme-center p-5">
+                <div className="animate-pulse">
+                  <img src={redditIcon} alt="" className="w-8 h-8"/>
+                </div>
+            </div>
+          )}
+          </div>
+          </>
+        ) : (
+          isOwner 
+            ? <h1 className="px-4 py-3">You haven't really been active here yet. Make a post or comment :)</h1>
+            : <h1 className="px-4 py-3">This user hasn't really been active here yet.</h1>
+        )}
+      </div>
+    );
+    
 }
 
 export default UserProfile;
