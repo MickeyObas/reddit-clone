@@ -60,3 +60,15 @@ export type PostFeed = {
     is_member: boolean,
     type: string
 }
+
+export type RecentPostDisplay = {
+    id: number,
+    post_id: number,
+    title: string,
+    thumbnail: string | null,
+    community_name: string,
+    community_id: number,
+    community_avatar: string | null,
+    comment_count: number,
+    vote_count: number
+}

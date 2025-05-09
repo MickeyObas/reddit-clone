@@ -83,10 +83,12 @@ const PostItem = ({post, onVote}: PostItemProps) => {
             >Join</button>
             )}
           </div>
-          <div className='flex justify-between py-1.5 min-h-16'>
-            <div className='w-[75%] font-semibold text-slate-800'>{post.title}</div>
+          <div className='flex justify-between gap-x-4 py-1.5 min-h-16'>
+            <div className='max-w-[60%] lg:max-w-full'>
+              <p className='font-semibold text-slate-800 line-clamp-2'>{post.title}</p>
+            </div>
             {post.thumbnail && (
-                <div className='w-20 h-16 rounded-xl overflow-hidden'>
+                <div className='w-25 h-16 rounded-xl overflow-hidden'>
                 <img 
                   src={post.thumbnail} 
                   alt="" 

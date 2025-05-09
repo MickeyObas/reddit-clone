@@ -55,7 +55,7 @@ const CommentItem = ({comment, onVote, profile}: CommentItemProps) => {
                   e.stopPropagation();
                   navigate(`/post/${comment.post.id}/`)
                 }} 
-                className='hover:text-blue-700 whitespace-nowrap overflow-hidden text-ellipsis'>{comment.post.title}</span>
+                className='hover:text-blue-700 line-clamp-1'>{comment.post.title}</span>
             </div>
           </div>
           <p className='text-xs flex gap-x-1 text-gray-500 ms-7 flex-wrap gap-y-1.5'>

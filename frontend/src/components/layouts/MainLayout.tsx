@@ -25,7 +25,7 @@ const MainLayout = () => {
 
   useEffect(() => {
     if(isSidebarOpen){
-      document.body.classList.add('overflow-hidden');
+      document.body.classList.add('overflow-hidden.lg:overflow-y-scroll');
     }else{
       document.body.classList.remove('overflow-hidden');
     };
@@ -47,16 +47,18 @@ const MainLayout = () => {
       />
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-50 z-30"
+          className="fixed inset-0 bg-black opacity-50 z-30 lg:z-0 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
-      <Sidebar 
+      <div className="lg:hidden">
+        <Sidebar 
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
         setIsCommunityModalOpen={setIsCommunityModalOpen}
       />
-      <Outlet />
+      </div>
+      <Outlet context={{setIsSidebarOpen, setIsCommunityModalOpen}}/>
     </>
   )
 };

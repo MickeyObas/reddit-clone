@@ -121,3 +121,25 @@ export function timeAgo(isoDateString: string) {
 
   return "just now";
 }
+
+export function getVoteCountLabel(count: number){
+  if(count < 0){
+    if(count === -1){
+      return "downvote"
+    };
+    return "downvotes"
+  }else if(count > 0){
+    if(count === 1){
+      return "upvote"
+    };
+    return "upvotes"
+  }
+  return "votes";
+}
+
+export function getCommentCountLabel(count: number){
+  if(count === 0 || count > 1){
+    return "comments"
+  }
+  return "comment";
+}

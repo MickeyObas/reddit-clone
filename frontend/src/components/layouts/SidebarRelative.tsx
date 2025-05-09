@@ -30,7 +30,7 @@ type SidebarProps = {
   setIsCommunityModalOpen: React.Dispatch<SetStateAction<boolean>>
 }
 
-const Sidebar: React.FC<SidebarProps> = ({
+const SidebarRelative: React.FC<SidebarProps> = ({
   isSidebarOpen,
   setIsSidebarOpen,
   setIsCommunityModalOpen
@@ -42,8 +42,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div
-    className={`border-t-0 z-30 lg:z-1 overflow-y-scroll fixed lg:sticky top-[60px] left-0 h-[calc(100vh-61px)] w-[69%] max-w-[280px] lg:w-full bg-white shadow-lg lg:shadow-none lg:border-r-[1px] lg:border-r-slate-300 transform ${
-      isSidebarOpen ? "translate-x-0 lg:translate-0" : "-translate-x-full lg:translate-0"
+    className={`border-t-0 z-30 overflow-y-scroll top-[60px] left-0 h-[calc(100vh-61px)] w-[69%] md:w-[30%] bg-white shadow-lg transform ${
+      isSidebarOpen ? "translate-x-0" : "-translate-x-full"
     } transition-transform duration-300 ease-in-out`}
     >
     {/* Sidebar Content */}
@@ -186,4 +186,4 @@ const Sidebar: React.FC<SidebarProps> = ({
   )
 }
 
-export default Sidebar;
+export default SidebarRelative;

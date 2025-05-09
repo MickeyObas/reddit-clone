@@ -26,11 +26,11 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
         <div className='flex items-center'>
           <img
             onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-            src={hamburgerIcon} alt="Menu icon" className='h-5 w-5 cursor-pointer'/>
+            src={hamburgerIcon} alt="Menu icon" className='h-5 w-5 cursor-pointer lg:hidden'/>
           <img 
             src={redditIcon}
             alt="Reddit icon" 
-            className='h-9 w-9 ms-5'
+            className='h-9 w-9 ms-5 lg:ms-0'
             onClick={() => navigate('/')}
             />
         </div>
