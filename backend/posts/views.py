@@ -2,8 +2,9 @@ import random
 from itertools import chain
 from operator import attrgetter
 
-from django.db.models import Sum, Value, Prefetch
+from django.db.models import Sum, Value, Prefetch, Count, OuterRef, Subquery
 from django.db.models.functions import Coalesce
+from django.utils import timezone
 
 from rest_framework import parsers
 from rest_framework.decorators import api_view, parser_classes, permission_classes
@@ -13,13 +14,16 @@ from rest_framework.exceptions import PermissionDenied
 
 from .models import (
     Post,
+    PostMedia,
+    RecentlyViewedPost
 )
 from communities.models import Community
 from comments.models import Comment
 from votes.models import Vote
 from .serializers import (
     PostSerializer,
-    PostDisplaySerializer
+    PostDisplaySerializer,
+     RecentlyViewedPostSerializer
 )
 
 
@@ -41,7 +45,7 @@ def post_list_or_create(request):
                 queryset=Vote.objects.filter(owner=request.user),
                 to_attr='user_votes'
             )
-        ).order_by('-created_at')
+        ).order_by('-created_at').annotate(vote_count=Coalesce(Sum('vote__type'), Value(0)))
         serializer = PostDisplaySerializer(posts, many=True, context={"request": request})
         return Response(serializer.data, status=200)
     
@@ -81,6 +85,12 @@ def post_detail_update_delete(request, pk):
         ).get(id=pk)
     
         if request.method == 'GET':
+            if request.user.is_authenticated:
+                obj, created = RecentlyViewedPost.objects.update_or_create(
+                    user=request.user,
+                    post=post,
+                    defaults={'viewed_at': timezone.now()}
+                )
             serializer = PostSerializer(post, context={"request": request})
             return Response(serializer.data, status=200)
         
@@ -189,3 +199,56 @@ def user_post_feed(request):
 
     return Response(serializer.data)
 
+
+@api_view(['POST', 'PATCH'])
+def track_post_view(request, pk):
+    try:
+        post = Post.objects.get(id=pk)
+        if request.user.is_authenticated:
+            obj, created = RecentlyViewedPost.objects.update_or_create(
+                user=request.user,
+                post=post,
+                defaults={'viewed_at': timezone.now()}
+            )
+            return Response({'message': "'Recent posts' updated."})
+        else:
+            return Response({'error': 'User not authorized'}, status=401)
+        
+    except Post.DoesNotExist:
+        return Response({'error': 'Post does not exist'}, status=404)   
+    
+    except Exception as e:
+        print(e)
+        return Response({"error": "Something went wrong"}, status=400)
+
+
+
+@api_view(['GET'])
+def recent_post_list(request):
+    user = request.user
+
+    vote_sum_subquery = Post.objects.filter(
+        id=OuterRef('post_id')
+    ).annotate(
+        vote_sum=Coalesce(Sum('vote__type'), Value(0))
+    ).values('vote_sum')[:1]
+
+    recently_viewed_posts = (
+        RecentlyViewedPost.objects
+        .filter(user=user)
+        .select_related('post', 'post__community')
+        .prefetch_related('post__vote_set', 'post__postmedia_set')
+        .annotate(
+            comment_count=Coalesce(Count('post__comment'), Value(0)),
+            vote_count=Subquery(vote_sum_subquery)
+        )
+        .order_by('-viewed_at')[:10]
+    )
+    serializer = RecentlyViewedPostSerializer(recently_viewed_posts, many=True, context={'request': request})
+    return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+def recent_posts_clear(request):
+    RecentlyViewedPost.objects.filter(user=request.user).delete()
+    return Response(status=204)

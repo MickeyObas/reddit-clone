@@ -40,3 +40,13 @@ class PostMedia(TimeStampedModel):
 
     def __str__(self):
         return f"Post-{self.post.id} ({self.type})"
+    
+
+class RecentlyViewedPost(models.Model):
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='recently_viewed_posts')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'post')
+        ordering = ['-viewed_at']

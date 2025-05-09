@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 from .models import (
     Post,
-    PostMedia
+    PostMedia,
+    RecentlyViewedPost
 )
 from comments.models import Comment
 from communities.models import Community
@@ -201,3 +202,34 @@ class ThinPostSerializer(serializers.ModelSerializer):
             'owner',
             'community'
         ]
+
+
+class RecentlyViewedPostSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(source='post.title')
+    community_id = serializers.CharField(source='post.community.id')
+    community_name = serializers.CharField(source='post.community.name')
+    community_avatar = serializers.ImageField(source='post.community.avatar')
+    comment_count = serializers.IntegerField()
+    vote_count = serializers.IntegerField()
+    thumbnail = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RecentlyViewedPost
+        fields = [
+            'id',
+            'post_id',
+            'title',
+            'thumbnail',
+            'community_id',
+            'community_name',
+            'community_avatar',
+            'comment_count',
+            'vote_count'
+        ]
+
+    def get_thumbnail(self, obj):
+        request = self.context.get('request')
+        media_files = obj.post.postmedia_set.all()
+        if not media_files:
+            return None
+        return request.build_absolute_uri(media_files[0].file.url)
