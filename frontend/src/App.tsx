@@ -9,7 +9,7 @@ function App() {
   return (
     <>
       <ModalProvider>
-        <Toaster position='top-right' reverseOrder={false}/>
+        <Toaster position='top-right' reverseOrder={false} toastOptions={{duration: 5000}}/>
         <AppRoutes />
       </ModalProvider>
     </>

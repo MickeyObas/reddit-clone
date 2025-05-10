@@ -47,11 +47,11 @@ const MainLayout = () => {
       />
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-50 z-30 lg:z-0 lg:hidden"
+          className="fixed inset-0 bg-black opacity-50 z-30 lg:z-0 xl:hidden"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
-      <div className="lg:hidden">
+      <div className="xl:hidden">
         <Sidebar 
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}

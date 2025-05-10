@@ -158,7 +158,7 @@ const Login = (): JSX.Element => {
           disabled={!isFormValid}
           isValid={isFormValid}
           label={`${isLoading ? 'Loading...' : 'Continue'}`}
-          className="mt-auto md:mt-2"
+          className="mt-auto md:mt-2 cursor-pointer"
         />
       </div>
     </div>

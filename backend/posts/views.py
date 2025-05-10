@@ -173,7 +173,7 @@ def user_post_feed(request):
                 queryset=Vote.objects.filter(owner=request.user),
                 to_attr='user_votes'
             )
-        ).order_by('-created_at')
+        ).order_by('-created_at').annotate(vote_count=Coalesce(Sum('vote__type'), Value(0)))
         trending_posts = Post.objects.exclude(
             community__in=user_communities
         ).select_related('community').prefetch_related(
@@ -192,6 +192,12 @@ def user_post_feed(request):
         posts = sorted(
             posts,
             key=attrgetter('created_at'),
+            reverse=True
+        )
+    elif sort == 'best':
+        posts = sorted(
+            posts,
+            key=attrgetter('vote_count'),
             reverse=True
         )
 

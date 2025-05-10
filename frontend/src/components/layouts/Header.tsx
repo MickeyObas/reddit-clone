@@ -13,6 +13,7 @@ interface HeaderProps {
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { Search } from 'lucide-react';
 
 
 const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
@@ -26,13 +27,22 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
         <div className='flex items-center'>
           <img
             onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-            src={hamburgerIcon} alt="Menu icon" className='h-5 w-5 cursor-pointer lg:hidden'/>
+            src={hamburgerIcon} alt="Menu icon" className='h-5 w-5 cursor-pointer xl:hidden'/>
           <img 
             src={redditIcon}
             alt="Reddit icon" 
-            className='h-9 w-9 ms-5 lg:ms-0'
+            className='h-9 w-9 ms-5 xl:ms-0'
             onClick={() => navigate('/')}
             />
+        </div>
+        <div className='hidden lg:flex items-center bg-gray-white rounded-full px-4 w-[560px] hover:bg-gray-300'>
+          <div className=''>
+            <Search size={16}/>
+          </div>
+          <input 
+            className='border-0 outline-0 ms-3 w-full'
+            placeholder='Search Reddit'
+          />
         </div>
         <div className='flex items-center'>
           <img src={searchIcon} alt="Search icon" className='h-7 w-7 ms-3'/>

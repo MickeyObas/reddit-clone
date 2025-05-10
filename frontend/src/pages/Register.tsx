@@ -122,7 +122,7 @@ const Register: React.FC = () => {
             disabled={!isValid}
             isValid={isValid}
             label={`${isSendingEmail ? 'Loading...' : 'Continue'}`}
-            className="mt-auto md:mt-2"
+            className="mt-auto md:mt-2 cursor-pointer"
           />
         </div>
       </div>

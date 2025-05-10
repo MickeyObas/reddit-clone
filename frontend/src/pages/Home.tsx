@@ -18,6 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import Sidebar from '../components/layouts/Sidebar';
+import toast from 'react-hot-toast';
 
 
 type hoverState = {
@@ -50,7 +51,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const sortFilter = searchParams.get('sort') || 'new';
+  const sortFilter = searchParams.get('sort') || 'best';
   const {setIsSidebarOpen, setIsCommunityModalOpen} = useOutletContext<LayoutContextType>();
   console.log(setIsSidebarOpen, setIsCommunityModalOpen);
 
@@ -203,8 +204,8 @@ const Home: React.FC = () => {
   if(!isLoading){
     if(posts.length > 0){
       return (
-        <div className='grid grid-cols-1 lg:grid-cols-[280px_2fr_330px]'>
-          <div className='bg-amber-400 hidden lg:block'>
+        <div className='grid grid-cols-1 lg:grid-cols-[2fr_330px] xl:grid-cols-[280px_2fr_330px]'>
+          <div className='hidden xl:block'>
             <Sidebar 
               isSidebarOpen={true}
               setIsCommunityModalOpen={setIsCommunityModalOpen}
@@ -289,6 +290,11 @@ const Home: React.FC = () => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleJoinCommunity(post.community.id);
+                                navigate(`/community/${post.community.id}/`);
+                                toast.success(`Welcome, you have joined ${"r/" + post.community.name}!`, {
+                                  position: 'top-right',
+                                  duration: 10000
+                                })
                               }}
                               className='hidden md:block ms-2 bg-blue-900 text-white px-3 py-1 rounded-full self-center cursor-pointer'
                           >Join</button>
@@ -301,7 +307,12 @@ const Home: React.FC = () => {
                             onClick={(e) => {
                               e.stopPropagation();
                               handleJoinCommunity(post.community.id);
-                            }}
+                              navigate(`/community/${post.community.id}/`);
+                              toast.success(`Welcome, you have joined ${"r/" + post.community.name}!`, {
+                                  position: 'top-right',
+                                  duration: 10000
+                                })
+                              }}
                             className='md:hidden ms-auto bg-blue-900 text-white px-3 py-0.5 rounded-full self-center cursor-pointer'
                         >Join</button>
                         )}
