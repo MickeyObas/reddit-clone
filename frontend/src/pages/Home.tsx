@@ -3,7 +3,7 @@ import ellipsisIcon from '../assets/icons/ellipsis.png';
 import dotIcon from '../assets/icons/dot.png';
 import columnsIcon from '../assets/icons/columns.png';
 import redditIcon from '../assets/icons/reddit.png';
-import { ChevronDown, Columns2, Columns3, Dot } from 'lucide-react';
+import { ChevronDown, Columns2, Columns3, Dot, Notebook, NotepadTextDashedIcon, NotepadTextIcon } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 import { fetchWithAuth, formatCommunity, getCommentCountLabel, getVoteCountLabel, timeAgo } from '../utils';
@@ -261,101 +261,125 @@ const Home: React.FC = () => {
             </header>
             <main className="homepage grid grid-cols-1">
               {posts && posts.map((post) => (
-                <article key={post?.id} className="feed grid grid-cols-1 px-5 py-3 border-b border-b-slate-200">
+                <div className='flex border-b border-b-slate-200'>
+                  <div className='hidden md:flex bg-gray-100 border border-gray-200 w-32 h-20 rounded-lg mt-3 ms-6 overflow-hidden items-center justify-center'>
+                    {post.thumbnail ? (
+                      <img src={post.thumbnail} alt="" className='w-full h-full object-cover '/>
+                    ): (
+                      <><NotepadTextIcon color='gray'/></>
+                    )}
+                  </div>
+                  <article key={post?.id} className="feed grid grid-cols-1 px-5 py-3  w-full">
                   {/* sfldfh */}
-                  <div className="cursor-pointer" onClick={() => navigate(`post/${post.id}/`)}>
-                    <div className='flex'>
-                      <div className='left-of-panel flex text-xs items-center'>
-                        <div className='w-4 h-4 rounded-full overflow-hidden'>
-                          <img src={post.community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
+                    <div className="cursor-pointer" onClick={() => navigate(`post/${post.id}/`)}>
+                      <div className='flex'>
+                        <div className='left-of-panel flex text-xs items-center'>
+                          <div className='w-4 h-4 rounded-full overflow-hidden'>
+                            <img src={post.community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
+                          </div>
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/community/${post.community.id}/`)
+                            }}
+                            className='ms-2 font-medium cursor-pointer hover:underline'
+                            >{formatCommunity(post?.community.name)}</span>
+                            {!post.is_member && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleJoinCommunity(post.community.id);
+                              }}
+                              className='hidden md:block ms-2 bg-blue-900 text-white px-3 py-1 rounded-full self-center cursor-pointer'
+                          >Join</button>
+                          )}
+                          <img src={dotIcon} alt="" className='w-2.5 h-2.5 mx-1'/>
+                          <span>{timeAgo(post?.created_at)}</span>
                         </div>
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/community/${post.community.id}/`)
-                          }}
-                          className='ms-2 font-medium cursor-pointer hover:underline'
-                          >{formatCommunity(post?.community.name)}</span>
-                        <img src={dotIcon} alt="" className='w-2.5 h-2.5 mx-1'/>
-                        <span>{timeAgo(post?.created_at)}</span>
+                        {!post.is_member && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleJoinCommunity(post.community.id);
+                            }}
+                            className='md:hidden ms-auto bg-blue-900 text-white px-3 py-0.5 rounded-full self-center cursor-pointer'
+                        >Join</button>
+                        )}
                       </div>
-                      {!post.is_member && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleJoinCommunity(post.community.id);
-                          }}
-                          className='ms-auto bg-blue-900 text-white px-3 py-0.5 rounded-full self-center cursor-pointer'
-                      >Join</button>
-                      )}
+                      <div className='flex justify-between py-2.5 md:py-1.5'>
+                        <div className={`${post.thumbnail && 'w-[72%] md:w-full'}`}>
+                          <p className='font-semibold text-slate-800 lg:text-[1rem] line-clamp-2'>{post.title}</p>
+                        </div>
+                        {post.thumbnail && (
+                            <div className='w-20 lg:w-24 h-16 lg:h-20 rounded-xl overflow-hidden md:hidden'>
+                            <img 
+                              src={post.thumbnail} 
+                              alt="" 
+                              className='w-full h-full object-cover border-0 outline-0'
+                              />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className='flex justify-between py-1.5 min-h-16'>
-                      <div className={`${post.thumbnail && 'w-[72%]'}`}>
-                        <p className='font-semibold text-slate-800 lg:text-[1rem] line-clamp-2'>{post.title}</p>
-                      </div>
-                      {post.thumbnail && (
-                          <div className='w-20 lg:w-24 h-16 lg:h-20 rounded-xl overflow-hidden'>
-                          <img 
-                            src={post.thumbnail} 
-                            alt="" 
-                            className='w-full h-full object-cover border-0 outline-0'
+                  {/* sfldfh */}
+                    <div className='flex text-xs items-center select-none gap-x-3 justify-between'>
+                      <div 
+                        className={`min-w-[76px] items-center rounded-full flex justify-between text-black mt-1 overflow-hidden
+                        ${votes[post.id].userVote === 'upvote' ? 'bg-deep-red text-white' :
+                          votes[post.id].userVote === 'downvote' ? 'bg-blue-600 text-white' : 'bg-slate-200' }
+                        `}>
+                        <div 
+                          className={`rounded-full h-full py-2 px-2 cursor-pointer ${!votes[post.id].userVote ? 'hover:bg-slate-300' : 'hover:bg-[rgba(0,0,0,0.2)]'}`}>
+                          <UpArrow
+                            height="16px"
+                            width="16px"
+                            color={`${votes[post.id].userVote === 'upvote' ? 'white' : ''}`}
+                            onClick={() => handleVote(post.id, "upvote")}
+                            onMouseEnter={() => setIsHovered({
+                              id: post.id,
+                              hovered: "up"
+                            })}
+                            onMouseLeave={() => setIsHovered(null)}
+                            outlineColor={
+                              (isHovered?.hovered === "up" && isHovered.id == post.id) 
+                                ? 'red' 
+                                : `${votes[post.id].userVote === null ? 'black' : 'white'}`
+                              }
                             />
                         </div>
-                      )}
-                    </div>
-                  </div>
-                  {/* sfldfh */}
-                  <div className='flex justify-between text-xs items-center select-none'>
-                    <div className={`items-center rounded-full flex justify-between text-black mt-1 overflow-hidden
-                    ${votes[post.id].userVote === 'upvote' ? 'bg-deep-red text-white' :
-                      votes[post.id].userVote === 'downvote' ? 'bg-blue-600 text-white' : 'bg-slate-200' }
-                      `}>
-                      <div className={`rounded-full h-full py-2 px-2 cursor-pointer ${!votes[post.id].userVote ? 'hover:bg-slate-300' : 'hover:bg-[rgba(0,0,0,0.2)]'}`}>
-                        <UpArrow
-                          height="16px"
-                          width="16px"
-                          color={`${votes[post.id].userVote === 'upvote' ? 'white' : ''}`}
-                          onClick={() => handleVote(post.id, "upvote")}
-                          onMouseEnter={() => setIsHovered({
-                            id: post.id,
-                            hovered: "up"
-                          })}
-                          onMouseLeave={() => setIsHovered(null)}
-                          outlineColor={
-                            (isHovered?.hovered === "up" && isHovered.id == post.id) 
-                              ? 'red' 
-                              : `${votes[post.id].userVote === null ? 'black' : 'white'}`
-                            }
+                        <span className='flex justify-center min-w-3'>{votes[post.id].count}</span>
+                        <div className={`rounded-full h-full py-2 px-2 cursor-pointer  ${!votes[post.id].userVote ? 'hover:bg-slate-300' : 'hover:bg-[rgba(0,0,0,0.2)]'}`}>
+                          <DownArrow
+                            height={"16px"}
+                            width={"16px"}
+                            color={`${votes[post.id].userVote === 'downvote' ? 'white' : ''}`}
+                            onClick={() => handleVote(post.id, "downvote")}
+                            onMouseEnter={() => setIsHovered({
+                              id: post.id,
+                              hovered: "down"
+                            })}
+                            onMouseLeave={() => setIsHovered(null)}
+                            outlineColor={
+                              (isHovered?.hovered === "down" && isHovered.id == post.id) 
+                                ? 'blue' 
+                                : `${votes[post.id].userVote === null ? 'black' : 'white'}`
+                              }
                           />
+                        </div>
                       </div>
-                      <span className='flex justify-center min-w-3'>{votes[post.id].count}</span>
-                      <div className={`rounded-full h-full py-2 px-2 cursor-pointer  ${!votes[post.id].userVote ? 'hover:bg-slate-300' : 'hover:bg-[rgba(0,0,0,0.2)]'}`}>
-                        <DownArrow
-                          height={"16px"}
-                          width={"16px"}
-                          color={`${votes[post.id].userVote === 'downvote' ? 'white' : ''}`}
-                          onClick={() => handleVote(post.id, "downvote")}
-                          onMouseEnter={() => setIsHovered({
-                            id: post.id,
-                            hovered: "down"
-                          })}
-                          onMouseLeave={() => setIsHovered(null)}
-                          outlineColor={
-                            (isHovered?.hovered === "down" && isHovered.id == post.id) 
-                              ? 'blue' 
-                              : `${votes[post.id].userVote === null ? 'black' : 'white'}`
-                            }
-                        />
+                      <div className='flex items-center w-full gap-x-4 [@media(min-width:600px)]:justify-normal px-1 [@media(min-width:600px)]:gap-x-5'>
+                        <div>{post.comment_count} {getCommentCountLabel(post.comment_count)}</div>
+                        <div>Share</div>
+                        <div>Report</div>
+                        <div className='hidden [@media(min-width:400px)]:block'>Save</div>
+                        <div className='hidden [@media(min-width:500px)]:block'>Award</div>
+                        <div className='hidden [@media(min-width:600px)]:block'>Hide</div>
+                        <img src={ellipsisIcon} className='w-6 h-6 [@media(min-width:600px)]:hidden'/>
                       </div>
                     </div>
-                    <div>{post.comment_count} {getCommentCountLabel(post.comment_count)}</div>
-                    <div>Share</div>
-                    <div className='hidden lg:block'>Award</div>
-                    <div className='hidden lg:block'>Hide</div>
-                    <div>Report</div>
-                    <img src={ellipsisIcon} className='w-6 h-6'/>
-                  </div>
-                </article>
+                  </article>
+                </div>
+
               ))}
             </main>
           </div>
@@ -412,7 +436,7 @@ const Home: React.FC = () => {
                             </div>
                             <p 
                               onClick={() => navigate(`/post/${post.post_id}/`)}
-                              className='text-gray-500 font-medium mt-2 leading-5 cursor-pointer hover:underline'>{post.title}</p>
+                              className='line-clamp-2 text-gray-500 font-medium mt-2 leading-5 cursor-pointer hover:underline'>{post.title}</p>
                             <div className='flex items-center gap-x-1 mt-2.5 text-xs text-slate-500'>
                               <span>{post.vote_count} {getVoteCountLabel(post.vote_count)}</span>
                               <Dot size={10}/>

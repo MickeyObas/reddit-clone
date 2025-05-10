@@ -71,3 +71,26 @@ input::-webkit-password-toggle-button {
   margin-bottom: 8px;
   border-radius: 4px;
 }
+
+
+/* SCROLLBAR */
+/* Firefox */
+.thin-scrollbar {
+  scrollbar-width: thin;         /* "auto", "thin", or "none" */
+  scrollbar-color: #b6b5b5 #f1f1f1; /* thumb and track colors */
+}
+
+/* Chrome, Edge, Safari */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;                    /* width for vertical scrollbar */
+  height: 6px;                   /* height for horizontal scrollbar */
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}

@@ -42,30 +42,30 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div
-    className={`border-t-0 z-30 lg:z-1 overflow-y-scroll fixed lg:sticky top-[60px] left-0 h-[calc(100vh-61px)] w-[69%] max-w-[280px] lg:w-full bg-white shadow-lg lg:shadow-none lg:border-r-[1px] lg:border-r-slate-300 transform ${
+    className={`select-none thin-scrollbar border-t-0 z-30 lg:z-1 overflow-y-scroll fixed lg:sticky top-[60px] left-0 h-[calc(100vh-61px)] w-[69%] max-w-[280px] lg:w-full bg-white shadow-lg lg:shadow-none lg:border-r-[1px] lg:border-r-slate-300 transform ${
       isSidebarOpen ? "translate-x-0 lg:translate-0" : "-translate-x-full lg:translate-0"
     } transition-transform duration-300 ease-in-out`}
     >
     {/* Sidebar Content */}
     <nav className="mt-2 px-6 flex flex-col pb-3">
-      <ul className="space-y-0 border-b border-b-gray-200 py-3">
-        <li className={`flex items-center px-4 py-0.5 hover:bg-gray-200 ${location.pathname === "/" ? "bg-gray-200" : ""}`}>
+      <ul className="space-y-0.5 border-b border-b-gray-200 py-3">
+        <li className={`rounded-lg cursor-pointer flex items-center px-4 py-0.5 hover:bg-gray-200 ${location.pathname === "/" ? "bg-gray-300" : ""}`}>
           <img className="w-5 h-5" src={homeIcon} alt="Home Icon" />
           <a href="/" className="ms-2.5 block p-2">Home</a>
         </li>
-        <li className='flex items-center px-4 py-0.5 hover:bg-gray-200'>
+        <li className='rounded-lg flex items-center px-4 py-0.5 hover:bg-gray-200 cursor-pointer'>
           <img className="w-5 h-5" src={popularIcon} alt="Home Icon" />
           <a href="#" className="ms-2.5 block p-2">Popular</a>
         </li>
-        <li className='flex items-center px-4 py-0.5 hover:bg-gray-200'>
+        <li className='rounded-lg flex items-center px-4 py-0.5 hover:bg-gray-200 cursor-pointer'>
           <img className="w-5 h-5" src={exploreIcon} alt="Home Icon" />
           <a href="#" className="ms-2.5 block p-2">Explore</a>
         </li>
-        <li className='flex items-center px-4 py-0.5 hover:bg-gray-200'>
+        <li className='rounded-lg flex items-center px-4 py-0.5 hover:bg-gray-200 cursor-pointer'>
           <img className="w-5 h-5" src={allIcon} alt="Home Icon" />
           <a href="#" className="ms-2.5 block p-2">All</a>
         </li>
-        <li className='flex items-center px-4 py-0.5 hover:bg-gray-200'>
+        <li className='rounded-lg flex items-center px-4 py-0.5 hover:bg-gray-200 cursor-pointer'>
           <img className="w-5 h-5" src={chatIcon} alt="Home Icon" />
           <a href="#" className="ms-2.5 block p-2">Chat</a>
         </li>
@@ -74,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             localStorage.clear();
             navigate('/login/')
           }} 
-          className='flex items-center px-4 py-0.5 hover:bg-gray-200'>
+          className='rounded-lg flex items-center px-4 py-0.5 hover:bg-gray-200 cursor-pointer'>
           <LogOut size={20} color='red'/>
           <a href="#" className="ms-2.5 block p-2 text-red-600">Logout</a>
         </li>
@@ -84,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <h1 className='uppercase text-[12px] tracking-wider'>Custom Feeds</h1>
           <img src={caretDownIcon} alt="" className='w-6 h-6'/>
         </div>
-        <li className='flex px-2 py-1 items-center'> 
+        <li className='rounded-lg flex px-2 py-1 items-center hover:bg-gray-200 cursor-pointer'> 
           <div className='w-8 h-8 flex justify-center items-center'>
             <img src={plusIcon} alt="" className='w-5 h-5'/>
           </div>
@@ -98,15 +98,16 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <li 
           onClick={() => setIsCommunityModalOpen(true)}
-          className='flex px-2 py-1 items-center'> 
+          className='rounded-lg cursor-pointer flex px-2 py-1 items-center hover:bg-gray-200'> 
           <div className='w-8 h-8 flex justify-center items-center'>
             <img src={plusIcon} alt="" className='w-5 h-5'/>
           </div>
           <span className='ms-2.5'>Create a community</span>
         </li>
+
         {communities && communities.map((community, idx) => (
           <Link key={idx} to={`community/${community.id}/`} onClick={() => setIsSidebarOpen(false)}>
-            <li className='flex px-2 py-1 items-center justify-between'> 
+            <li className='flex px-2 py-1 items-center justify-between hover:bg-gray-200 rounded-lg'> 
               <div className='w-8 h-8 rounded-full overflow-hidden'>
                 <img src={community.avatar ?? communityIcon} alt="" className='w-full h-full object-cover'/>
               </div>
@@ -123,37 +124,37 @@ const Sidebar: React.FC<SidebarProps> = ({
           <h1 className='uppercase text-[12px] tracking-wider'>Resources</h1>
           <img src={caretDownIcon} alt="" className='w-6 h-6'/>
         </div>
-        <li className='flex px-2 py-1 items-center'> 
+        <li className='flex px-2 py-1 items-center rounded-lg hover:bg-gray-200 cursor-pointer'> 
           <div className='w-8 h-8 flex items-center justify-center'>
             <img src={redditOutlineIcon} alt="" className='w-6 h-6'/>
           </div>
           <span className='ms-3.5'>About Reddit</span>
         </li>
-        <li className='flex px-2 py-1 items-center'> 
+        <li className='flex px-2 py-1 items-center rounded-lg hover:bg-gray-200 cursor-pointer'> 
           <div className='w-8 h-8 flex items-center justify-center'>
             <img src={advertiseIcon} alt="" className='w-6 h-6'/>
           </div>
           <span className='ms-3.5'>Advertise</span>
         </li>
-        <li className='flex px-2 py-1 items-center'> 
+        <li className='flex px-2 py-1 items-center rounded-lg hover:bg-gray-200 cursor-pointer'> 
           <div className='w-8 h-8 flex items-center justify-center'>
             <img src={helpIcon} alt="" className='w-6 h-6'/>
           </div>
           <span className='ms-3.5'>Help</span>
         </li>
-        <li className='flex px-2 py-1 items-center'> 
+        <li className='flex px-2 py-1 items-center rounded-lg hover:bg-gray-200 cursor-pointer'> 
           <div className='w-8 h-8 flex items-center justify-center'>
             <img src={blogIcon} alt="" className='w-6 h-6'/>
           </div>
           <span className='ms-3.5'>Blog</span>
         </li>
-        <li className='flex px-2 py-1 items-center'> 
+        <li className='flex px-2 py-1 items-center rounded-lg hover:bg-gray-200 cursor-pointer'> 
           <div className='w-8 h-8 flex items-center justify-center'>
             <img src={careersIcon} alt="" className='w-6 h-6'/>
           </div>
           <span className='ms-3.5'>Careers</span>
         </li>
-        <li className='flex px-2 py-1 items-center'> 
+        <li className='flex px-2 py-1 items-center rounded-lg hover:bg-gray-200 cursor-pointer'> 
           <div className='w-8 h-8 flex items-center justify-center'>
             <img src={pressIcon} alt="" className='w-6 h-6'/>
           </div>
@@ -161,19 +162,19 @@ const Sidebar: React.FC<SidebarProps> = ({
         </li>
       </ul>
       <ul className="space-y-0  py-3">
-        <li className='flex px-2 py-1 items-center'> 
+        <li className='flex px-2 py-1 items-center rounded-lg hover:bg-gray-200 cursor-pointer'> 
           <div className='w-8 h-8 flex items-center justify-center'>
             <img src={rulesIcon} alt="" className='w-6 h-6'/>
           </div>
           <span className='ms-3.5'>Reddit Rules</span>
         </li>
-        <li className='flex px-2 py-1 items-center'> 
+        <li className='flex px-2 py-1 items-center rounded-lg hover:bg-gray-200 cursor-pointer'> 
           <div className='w-8 h-8 flex items-center justify-center'>
             <img src={privacyPolicyIcon} alt="" className='w-6 h-6'/>
           </div>
           <span className='ms-3.5'>Privacy Policy</span>
         </li>
-        <li className='flex px-2 py-1 items-center'> 
+        <li className='flex px-2 py-1 items-center rounded-lg hover:bg-gray-200 cursor-pointer'> 
           <div className='w-8 h-8 flex items-center justify-center'>
             <img src={userAgreementIcon} alt="" className='w-6 h-6'/>
           </div>
