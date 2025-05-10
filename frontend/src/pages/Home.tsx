@@ -262,7 +262,7 @@ const Home: React.FC = () => {
             </header>
             <main className="homepage grid grid-cols-1">
               {posts && posts.map((post) => (
-                <div className='flex border-b border-b-slate-200'>
+                <div className='flex border-b border-b-slate-200 hover:bg-gray-white'>
                   <div className='hidden md:flex bg-gray-100 border border-gray-200 w-32 h-20 rounded-lg mt-3 ms-6 overflow-hidden items-center justify-center'>
                     {post.thumbnail ? (
                       <img src={post.thumbnail} alt="" className='w-full h-full object-cover '/>
@@ -270,7 +270,7 @@ const Home: React.FC = () => {
                       <><NotepadTextIcon color='gray'/></>
                     )}
                   </div>
-                  <article key={post?.id} className="feed grid grid-cols-1 px-5 py-3  w-full">
+                  <article key={post?.id} className="feed grid grid-cols-1 px-5 py-3 w-full hover:bg-gray-white">
                   {/* sfldfh */}
                     <div className="cursor-pointer" onClick={() => navigate(`post/${post.id}/`)}>
                       <div className='flex'>
