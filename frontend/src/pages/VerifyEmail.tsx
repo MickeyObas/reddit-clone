@@ -117,9 +117,9 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
   }, [codeResendCountdown])
 
   return (
-    <div className="container mx-auto p-5 h-screen">
-    <div className="flex flex-col h-full">
-      <div className="pt-10">
+    <div className="container mx-auto p-5 h-screen max-w-lg lg:max-w-xl flex items-center justify-center" >
+    <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg">
+      <div className="pt-10 md:pt-0">
         <h1 className="text-2xl font-bold text-center mb-4">Verify your email</h1>
         <p className="text-center">Enter the 6-digit code we sent to "{email}"</p>
         <FormInput
@@ -145,12 +145,12 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
           : isResending
             ? <span className="ms-3 text-xs opacity-50">Resending...</span>
             : <span 
-            className="ms-4 underline font-medium"
+            className="ms-4 underline font-medium cursor-pointer"
             onClick={handleResendClick}
             >Resend</span>}
         </p>
         <Button 
-          className="mt-auto"
+          className={`mt-auto ${!isVerifying && 'cursor-pointer'}`}
           onClick={handleContinueClick}
           disabled={!(code.length === 6)}
           isValid={code.length === 6}

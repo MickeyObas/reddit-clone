@@ -350,7 +350,7 @@ const Post = () => {
         </div>
         <div className='hidden md:flex flex-col w-full py-3 px-3'>
           {community && (
-            <div className='flex flex-col bg-gray-100'>
+            <div className='flex flex-col bg-gray-100 rounded-2xl'>
               <div className='py-4 px-2.5 border-b border-b-slate-300'>
                 <div className='flex items-center justify-between mb-2'>
                   <h2

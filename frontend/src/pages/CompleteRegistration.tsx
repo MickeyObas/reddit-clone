@@ -100,8 +100,8 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
   const isFormValid = isPassword1Valid && isPassword2Valid && (password1 === password2);
 
   return (
-    <div className="container mx-auto p-5 h-screen">
-      <div className="flex flex-col h-full">
+    <div className="container mx-auto p-5 h-screen  max-w-lg lg:max-w-xl flex items-center justify-center">
+      <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg">
         <div className="pt-10">
           <h1 className="text-2xl font-bold text-center">Complete Registration</h1>
           <p className="text-center my-3">Create a strong password for your new Reddit account.</p>
@@ -136,7 +136,7 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
           <p className="mt-2.5">Already a redditor? <a className="text-blue-400" href="/login">Log in</a></p>
         </div>
         <Button
-          className="mt-auto" 
+          className={`mt-auto lg:mt-2 ${(isFormValid && !isLoading) && 'cursor-pointer'}`} 
           onClick={handleClick}
           disabled={!isFormValid}
           label={`${isLoading ? 'Loading...' : 'Continue'}`}

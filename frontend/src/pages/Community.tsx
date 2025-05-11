@@ -7,7 +7,7 @@ import redditIcon from '../assets/icons/reddit-outline.png';
 
 import { CakeSlice, ChevronDown, Globe, Mail, NotepadTextIcon, Pin } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { fetchWithAuth, formatCommunity, formatDate, formatUsername, getCommentCountLabel, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 import { Post, PostDisplay} from '../types/post';
@@ -39,6 +39,7 @@ type LayoutContextType = {
 
 const Community = ({sort='latest'}) => {
   const { user } = useAuth();
+  const location = useLocation();
   const [community, setCommunity] = useState<Community | null>(null);
   const {setIsSidebarOpen, setIsCommunityModalOpen} = useOutletContext<LayoutContextType>();
   const [posts, setPosts] = useState<PostDisplay[]>([]);
@@ -226,7 +227,7 @@ const Community = ({sort='latest'}) => {
                             }}
                             className='ms-2 font-medium cursor-pointer hover:underline'
                             >{formatCommunity(community.name)}</span>
-                            {!post.is_member && (
+                            {(!post.is_member && !location.pathname.includes('community')) && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();

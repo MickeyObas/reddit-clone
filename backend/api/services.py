@@ -13,7 +13,8 @@ class VerificationService:
         if User.objects.filter(email=email).exists():
             raise ValueError("User has already verified email for registration")
         elif VerificationCode.objects.filter(email=email).exists():
-            raise ValueError("Verification code already exists")
+            VerificationCode.objects.filter(email=email).delete
+            # raise ValueError("Verification code already exists")
         code = generate_6_digit_code()
         subject = "Your verification code"
         message = f"Enter this code on reddit to confirm your email address -> {code}. If you did NOT request for this code, please ignore and report to Mickey, the developer."

@@ -7,7 +7,7 @@ import DownArrow from '../../assets/svgs/DownArrow';
 import { useState } from 'react';
 import { fetchWithAuth, formatCommunity, getCommentCountLabel, timeAgo } from '../../utils';
 import { BACKEND_URL } from '../../config';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { PostFeed } from '../../types/post';
 import redditIcon from '../../assets/icons/reddit-outline.png';
@@ -27,6 +27,7 @@ type PostItemProps = {
 const PostItem = ({post, onVote}: PostItemProps) => {
 
   const navigate = useNavigate();
+  const location = useLocation();
   const [isHovered, setIsHovered] = useState<hoverState | null>(null);
 
   const handleJoinCommunity = (communityId: number) => {
@@ -60,7 +61,7 @@ const PostItem = ({post, onVote}: PostItemProps) => {
         </div>
         <article key={post?.id} className="feed grid grid-cols-1 px-5 py-3 w-full hover:bg-gray-50">
         {/* sfldfh */}
-          <div className="cursor-pointer" onClick={() => navigate(`post/${post.id}/`)}>
+          <div className="cursor-pointer" onClick={() => navigate(`/post/${post.id}/`)}>
             <div className='flex'>
               <div className='left-of-panel flex text-xs items-center'>
                 <div className='w-4 h-4 rounded-full overflow-hidden'>
@@ -90,7 +91,7 @@ const PostItem = ({post, onVote}: PostItemProps) => {
                 <img src={dotIcon} alt="" className='w-2.5 h-2.5 mx-1'/>
                 <span>{timeAgo(post?.created_at)}</span>
               </div>
-              {!post.is_member && (
+              {(!post.is_member && !location.pathname.includes('community')) && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
