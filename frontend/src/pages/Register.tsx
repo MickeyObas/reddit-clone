@@ -23,8 +23,9 @@ const Register: React.FC = () => {
   const [isSendingEmail, setisSendingEmail] = useState(false);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    setIsValid(validateEmail(email));
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    setIsValid(validateEmail(newEmail));
   };
 
   const handleBlur = () => {
