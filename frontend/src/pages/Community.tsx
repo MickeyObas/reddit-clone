@@ -5,9 +5,9 @@ import DownArrow from '../assets/svgs/DownArrow';
 import ellipsisIcon from '../assets/icons/ellipsis.png';
 import redditIcon from '../assets/icons/reddit-outline.png';
 
-import { CakeSlice, ChevronDown, Globe, Mail, NotepadTextIcon, Pin } from 'lucide-react';
+import { CakeSlice, ChevronDown, Globe, NotepadTextIcon, Pin } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { fetchWithAuth, formatCommunity, formatDate, formatUsername, getCommentCountLabel, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 import { Post, PostDisplay} from '../types/post';
@@ -233,7 +233,7 @@ const Community = ({sort='latest'}) => {
                                 e.stopPropagation();
                                 handleJoinCommunity(community.id);
                                 navigate(`/community/${community.id}/`);
-                                toast.success(`Welcome, you have joined ${"r/" + post.community.name}!`, {
+                                toast.success(`Welcome, you have joined ${"r/" + community.name}!`, {
                                   position: 'top-right',
                                   duration: 10000
                                 })

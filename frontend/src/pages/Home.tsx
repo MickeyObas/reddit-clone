@@ -3,7 +3,7 @@ import ellipsisIcon from '../assets/icons/ellipsis.png';
 import dotIcon from '../assets/icons/dot.png';
 import columnsIcon from '../assets/icons/columns.png';
 import redditIcon from '../assets/icons/reddit.png';
-import { ChevronDown, Columns2, Columns3, Dot, Notebook, NotepadTextDashedIcon, NotepadTextIcon } from 'lucide-react';
+import { ChevronDown, Columns2, Columns3, Dot, NotepadTextIcon } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 import { fetchWithAuth, formatCommunity, getCommentCountLabel, getVoteCountLabel, timeAgo } from '../utils';
