@@ -93,7 +93,7 @@ const SettingsProfile = () => {
             onClick={() => 
               showModal(<DisplayNameModal hideModal={hideModal} updateProfile={updateProfile} currentDisplayName={profile?.display_name ?? ""}/>
               )}
-            className="flex justify-between gap-y-6">
+            className="flex justify-between gap-y-6 cursor-pointer">
             <div className="flex flex-col">
               <span className="text-[14px]">Display name</span>
               <span className="text-xs text-gray-500">Changing your display name won't change your username</span>
@@ -105,7 +105,7 @@ const SettingsProfile = () => {
           </div>
           <div 
             onClick={() => showModal(<AboutModal hideModal={hideModal} updateProfile={updateProfile} currentAbout={profile?.about_description ?? ''}/>)}
-            className="flex justify-between gap-y-6">
+            className="flex justify-between gap-y-6 cursor-pointer">
             <div className="flex flex-col">
               <span className="text-[14px]">About description</span>
             </div>
@@ -115,7 +115,7 @@ const SettingsProfile = () => {
           </div>
           <div
             onClick={() => showModal(<AvatarModal hideModal={hideModal} updateProfile={updateProfile} currentAvatar={profile?.avatar ?? null}/>)} 
-            className="flex justify-between gap-y-6">
+            className="flex justify-between gap-y-6 cursor-pointer">
             <div className="flex flex-col">
               <span className="text-[14px]">Avatar</span>
               <span className="text-xs text-gray-500">Edit your avatar or upload an image</span>
@@ -126,7 +126,7 @@ const SettingsProfile = () => {
           </div>
           <div 
             onClick={() => showModal(<BannerModal hideModal={hideModal} updateProfile={updateProfile} currentBanner={profile?.banner ?? null}/>)}
-            className="flex justify-between gap-y-6">
+            className="flex justify-between gap-y-6 cursor-pointer">
             <div className="flex flex-col">
               <span className="text-[14px]">Banner</span>
               <span className="text-xs text-gray-500">Upload a profile background image</span>

@@ -46,14 +46,14 @@ const BannerModal = ({hideModal, updateProfile, currentBanner}: BannerModalProps
       </div>
       <button
         onClick={hideModal} 
-        className="bg-gray-white w-full py-2.5 rounded-full font-semibold mt-6">Cancel</button>
+        className="bg-gray-white w-full py-2.5 rounded-full font-semibold mt-6 cursor-pointer">Cancel</button>
       <button 
         onClick={() => {
           if(!bannerFile) return;
           updateProfile('banner', bannerFile);
           hideModal();
         }}
-        className="text-white w-full py-2.5 rounded-full font-semibold mt-3 bg-blue-900">Save</button>
+        className="text-white w-full py-2.5 rounded-full font-semibold mt-3 bg-blue-900 cursor-pointer">Save</button>
     </>
   )
 }

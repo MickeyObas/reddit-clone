@@ -20,11 +20,11 @@ const ModalOverlay = ({ children, onClose }: ModalOverlayProps) => {
   return createPortal(
     <div
       onClick={handleClose} 
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs">
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 backdrop-blur-xs">
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`relative bg-white w-full max-w-md p-4 rounded-t-2xl shadow-lg ${isClosing ? 'animate-slide-down' : 'animate-slide-up'}`}>
-        <button onClick={handleClose} className="absolute top-4 right-4 text-lg flex justify-center items-center bg-gray-white rounded-full p-1">
+        className={`relative bg-white w-full max-w-md p-4 rounded-t-2xl md:rounded-b-2xl shadow-lg ${isClosing ? 'animate-slide-down' : 'animate-slide-up'}`}>
+        <button onClick={handleClose} className="cursor-pointer absolute top-4 right-4 text-lg flex justify-center items-center bg-gray-white rounded-full p-1">
           <X strokeWidth={1.5}/>
         </button>
         {children}

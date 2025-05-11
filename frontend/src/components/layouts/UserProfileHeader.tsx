@@ -67,6 +67,7 @@ const UserProfileHeader = ({profile}: {profile: Profile | null}) => {
             : 'h-[290px]'
           : 'h-14'}`}>
           <div
+            className="cursor-pointer"
             onClick={() => setIsAboutExpanded(!isAboutExpanded)}
           >
             <div className="bg-gray-100 text-gray-500 px-3 py-4.5 leading-5 flex items-center justify-between">
