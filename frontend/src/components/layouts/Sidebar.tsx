@@ -42,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div
-    className={`select-none thin-scrollbar border-t-0 z-30 lg:z-1 overflow-y-scroll fixed xl:sticky top-[60px] left-0 h-[calc(100vh-61px)] w-[69%] max-w-[280px] lg:w-full bg-white shadow-lg lg:shadow-none lg:border-r-[1px] lg:border-r-slate-300 transform ${
+    className={`select-none thin-scrollbar border-t-0 z-30 xl:z-1 overflow-y-scroll fixed xl:sticky top-[60px] left-0 h-[calc(100vh-61px)] w-[69%] max-w-[280px] lg:w-full bg-white shadow-lg lg:shadow-none lg:border-r-[1px] lg:border-r-slate-300 transform ${
       isSidebarOpen ? "translate-x-0 xl:translate-0" : "-translate-x-full xl:translate-0"
     } transition-transform duration-300 ease-in-out`}
     >

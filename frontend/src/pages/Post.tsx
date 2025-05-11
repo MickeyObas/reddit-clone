@@ -12,20 +12,26 @@ import { Navigation, Virtual } from 'swiper/modules';
 import type { Post } from '../types/post';
 import { CommentType } from '../types/comment';
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { fetchWithAuth, formatCommunity, formatUsername, timeAgo } from '../utils';
 import { BACKEND_URL } from '../config';
 
 import VoteBar from '../components/ui/VoteBar';
-import { AwardIcon, ChevronDown, MessageCircle, ShareIcon } from 'lucide-react';
+import { AwardIcon, ChevronDown, Dot, Globe, MessageCircle, ShareIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Comment from '../components/ui/Comment';
+import Sidebar from '../components/layouts/Sidebar';
 
 
 type PostVote = {
   count: number,
   userVote: string | null
 }
+
+type LayoutContextType = {
+  setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsCommunityModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
 
 const Post = () => {
   const naviagate = useNavigate();
@@ -38,6 +44,7 @@ const Post = () => {
   const [postLoading, setPostLoading] = useState(true);
   const { postId } = useParams();
   const formattedTimeAgo = useMemo(() => timeAgo(post?.created_at ?? ''), [post?.created_at]);
+  const {setIsSidebarOpen, setIsCommunityModalOpen} = useOutletContext<LayoutContextType>();
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -136,119 +143,188 @@ const Post = () => {
   if(postLoading) return <h1>Loading...</h1>
 
   return (
-    <div className="py-4 px-4 grid grid-cols-1 mb-60">
-      <div className="flex items-center text-xs">
-        <div className='w-8 h-8 me-2 overflow-hidden rounded-full'>
-          <img src={post?.community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
-        </div>
-        <div className='flex flex-col gap-y-0.5'>
-          <div className='flex'>
-            {/* TODO: Find fixes for such TS errors */}
-            <Link 
-              to={`/community/${post?.community.id}/`}
-              className='font-semibold me-2'>{post?.community.name && formatCommunity(post?.community.name)}</Link>
-            <span className='opacity-70'>{formattedTimeAgo}</span>
-          </div>
-          <span 
-            onClick={(e) => {
-              e.stopPropagation();
-              naviagate(`/user/${post?.owner.id}/`)
-            }}
-            className='text-blue-600 underline text-[11px] cursor-pointer'>{formatUsername(post?.owner.username ?? "Unknown User")}</span>
-        </div>
-        <img src={ellipsisIcon} alt="" className='w-6 h-6 ms-auto'/>
-      </div>
-      <h1 className='font-semibold text-[17px] mt-1'>{post?.title}</h1>
-      <p className='text-xs leading-5 mt-3'>{post?.body}</p>
-      {post?.media && post.media.length > 0 && (
-        <div className='bg-blue-300 aspect-[4/3] mt-3'>
-          <Swiper
-            modules={[Navigation, Virtual]}
-            className='w-full h-full object-contain'
-            navigation={true}
-            spaceBetween={50}
-            slidesPerView={1}
-            onSlideChange={() => console.log('slide change')}
-            onSwiper={(swiper) => console.log(swiper)}
-          >
-            {post.media.map((mediaItem, idx) => (
-              <SwiperSlide key={idx}>
-                <img src={mediaItem} alt="" className='w-full h-full object-cover' />
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-      )}
-      <div className='flex items-center mt-2 gap-x-2.5 py-2'>
-        <VoteBar 
-          vote={postVote.userVote}
-          onVote={handlePostVote}
-          initialCount={postVote?.count}
+    <div className="grid grid-cols-1 xl:grid-cols-[280px_1fr]">
+      <div className='hidden xl:block'>
+        <Sidebar 
+          isSidebarOpen={true}
+          setIsCommunityModalOpen={setIsCommunityModalOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
         />
-        <div className='bg-slate-200 flex items-center rounded-full px-3.5 gap-x-1.5'>
-          <div className='h-full py-2 flex items-center'>
-            <MessageCircle size={18}/>
-          </div>
-          <span>{post?.comment_count}</span>
-        </div>
-        <div className='bg-slate-200 flex items-center rounded-full px-3.5 gap-x-1.5'>
-          <div className='h-full py-2 items-center'>
-            <AwardIcon size={18}/>
-          </div>
-        </div>
-        <div className='bg-slate-200 flex items-center rounded-full px-3.5 gap-x-1.5'>
-          <div className='h-full py-2 items-center'>
-            <ShareIcon size={18}/>
-          </div>
-        </div>
       </div>
-      {!showCommentBox ? (
-        <button 
-          className='border border-slate-400 p-2 rounded-full text-sm mt-2 font-semibold'
-          onClick={() => setShowCommentBox(true)}
-          >Join the conversation</button>
-      ) : (
-        <div className='border border-slate-300 rounded-2xl px-2.5 py-2 mt-1.5'>
-          <textarea
-            ref={textAreaRef}
-            className='w-full outline-0 border-0 overflow-hidden resize-none' 
-            onChange={handleCommentChange}
-            placeholder='Join the conversation'
-            rows={4}
-            name="" 
-            id=""></textarea>
-          <div className='flex text-xs flex-row-reverse gap-x-2 font-medium pt-2'>
-            <button 
-              className='py-1.5 px-2 bg-blue-600 rounded-full text-white'
-              onClick={handleCommentClick}
-              >Comment</button>
-            <button 
-              className='py-1.5 px-2 bg-gray-white rounded-full'
-              onClick={() => setShowCommentBox(false)}
-              >Cancel</button>
+      <div className='grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_300px] md:gap-4 max-w-[1000px] mx-auto'>
+        <div className='xl:px-4 w-full py-3 px-4'>
+          <div className="flex items-center text-xs">
+            <div className='w-8 h-8 me-2 overflow-hidden rounded-full'>
+              <img src={post?.community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
+            </div>
+            <div className='flex flex-col gap-y-0.5'>
+              <div className='flex'>
+                {/* TODO: Find fixes for such TS errors */}
+                <Link 
+                  to={`/community/${post?.community.id}/`}
+                  className='font-semibold me-2'>{post?.community.name && formatCommunity(post?.community.name)}</Link>
+                <span className='opacity-70'>{formattedTimeAgo}</span>
+              </div>
+              <span 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  naviagate(`/user/${post?.owner.id}/`)
+                }}
+                className='text-blue-600 underline text-[11px] cursor-pointer'>{formatUsername(post?.owner.username ?? "Unknown User")}</span>
+            </div>
+            <img src={ellipsisIcon} alt="" className='w-6 h-6 ms-auto'/>
           </div>
-        </div>
-      )}
-      {post?.comments && post?.comments?.length > 0 && (
-        <div className='flex gap-x-2.5 text-xs mt-5'>
-        <span>Sort by:</span>
-        <div className='flex items-center'> 
-          <span className='me-1'>Best</span>
-          <ChevronDown size={14}/>
-        </div>
-      </div>
-      )}
-      
+          <h1 className='font-semibold text-[17px] mt-1'>{post?.title}</h1>
+          <p className='text-xs leading-5 mt-3'>{post?.body}</p>
+          {post?.media && post.media.length > 0 && (
+            <div className='bg-black aspect-[4/3] mt-3 max-h-[100vw] overflow-hidden w-full max-w-full md:rounded-lg select-none'>
+              <Swiper
+                modules={[Navigation, Virtual]}
+                className='w-full h-full'
+                navigation={true}
+                spaceBetween={50}
+                slidesPerView={1}
+                onSlideChange={() => console.log('slide change')}
+                onSwiper={(swiper) => console.log(swiper)}
+              >
+                {post.media.map((mediaItem, idx) => (
+                  <SwiperSlide key={idx} className='w-full h-full'>
+                    <div className='w-full h-full overflow-hidden'>
+                      <img src={mediaItem} alt="" className='w-full h-full object-contain' />
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+          )}
+          <div className='flex items-center mt-2 gap-x-2.5 py-2'>
+            <VoteBar 
+              vote={postVote.userVote}
+              onVote={handlePostVote}
+              initialCount={postVote?.count}
+            />
+            <div className='bg-slate-200 flex items-center rounded-full px-3.5 gap-x-1.5'>
+              <div className='h-full py-2 flex items-center'>
+                <MessageCircle size={18}/>
+              </div>
+              <span>{post?.comment_count}</span>
+            </div>
+            <div className='bg-slate-200 flex items-center rounded-full px-3.5 gap-x-1.5'>
+              <div className='h-full py-2 items-center'>
+                <AwardIcon size={18}/>
+              </div>
+            </div>
+            <div className='bg-slate-200 flex items-center rounded-full px-3.5 gap-x-1.5'>
+              <div className='h-full py-2 items-center'>
+                <ShareIcon size={18}/>
+              </div>
+            </div>
+          </div>
+          {!showCommentBox ? (
+            <button 
+              className='border border-slate-400 p-2 rounded-full text-sm mt-2 font-semibold w-full'
+              onClick={() => setShowCommentBox(true)}
+              >Join the conversation</button>
+          ) : (
+            <div className='border border-slate-300 rounded-2xl px-2.5 py-2 mt-1.5'>
+              <textarea
+                ref={textAreaRef}
+                className='w-full outline-0 border-0 overflow-hidden resize-none' 
+                onChange={handleCommentChange}
+                placeholder='Join the conversation'
+                rows={4}
+                name="" 
+                id=""></textarea>
+              <div className='flex text-xs flex-row-reverse gap-x-2 font-medium pt-2'>
+                <button 
+                  className='py-1.5 px-2 bg-blue-600 rounded-full text-white'
+                  onClick={handleCommentClick}
+                  >Comment</button>
+                <button 
+                  className='py-1.5 px-2 bg-gray-white rounded-full'
+                  onClick={() => setShowCommentBox(false)}
+                  >Cancel</button>
+              </div>
+            </div>
+          )}
+          {post?.comments && post?.comments?.length > 0 && (
+            <div className='flex gap-x-2.5 text-xs mt-5'>
+            <span>Sort by:</span>
+            <div className='flex items-center'> 
+              <span className='me-1'>Best</span>
+              <ChevronDown size={14}/>
+            </div>
+          </div>
+          )}
 
-      {/* Comments */}
-      <div className='flex flex-col mt-4'>
-        {post?.comments && post.comments.map((comment: CommentType) => (
-          <Comment 
-            key={comment.id}
-            comment={comment}
-            setPost={setPost}
-          />
-        ))}
+          {/* Comments */}
+          <div className='flex flex-col mt-4'>
+            {post?.comments && post.comments.map((comment: CommentType) => (
+              <Comment 
+                key={comment.id}
+                comment={comment}
+                setPost={setPost}
+              />
+            ))}
+          </div>
+        </div>
+        <div className='hidden md:flex flex-col w-full py-3 px-3'>
+          <div className='bg-gray-white py-4 px-2 rounded-2xl'>
+            <div className='flex items-center justify-between mb-2'>
+              <h2 className='text-lg font-bold'>r/channelname</h2>
+              <button className='bg-blue-700 text-white rounded-full px-5 py-1'>Join</button>
+            </div>
+            <p className='font-semibold'>Channel Name again</p>
+            <p>Channel description and stuff</p>
+            <div className='flex gap-x-1 items-center mt-1.5'>
+              <Globe size={18} color='gray'/>
+              <span className='text-gray-500'>Public</span>
+            </div>
+            <div className='flex justify-between items-center'>
+              <div className='flex flex-col mt-2.5'>
+                <span className='font-bold'>14M</span>
+                <span className='text-xs'>Members</span>
+              </div>
+              <div className='flex flex-col mt-2.5'>
+                <span className='font-bold'>14M</span>
+                <span className='text-xs'>Members</span>
+              </div>
+              <div className='flex flex-col mt-2.5'>
+                <span className='font-bold'>14M</span>
+                <span className='text-xs'>Members</span>
+              </div>
+            </div>
+          </div>
+          <div className='mt-8'>
+            {Array(10).fill('').map(() => (
+              <div className='flex flex-col border-b border-b-slate-200 px-4 pb-3 last-of-type:border-b-0 last-of-type:pb-1 py-2'>
+              <div className='flex gap-x-2 justify-between'>
+                <div className='flex flex-col w-2/3'>
+                  <div
+                    // onClick={() => navigate(`/community/${post.community_id}/`)} 
+                    className='flex gap-x-2.5 items-center group cursor-pointer'>
+                    <div className='bg-red-300 w-6 h-6 rounded-full overflow-hidden flex items-center justify-center'>
+                      <img src={redditIcon} alt="" className='w-full h-full object-cover'/>
+                    </div>
+                    <span className='text-gray-500 text-xs flex items-center group-hover:underline'>r/community</span>
+                  </div>
+                  <p 
+                    // onClick={() => navigate(`/post/${post.post_id}/`)}
+                    className='line-clamp-2 text-gray-500 font-medium mt-2 leading-5 cursor-pointer hover:underline'>post title</p>
+                </div>
+                <div className='bg-red-400 w-18 h-18 rounded-lg max-w-25 overflow-hidden'>
+                  <img src={redditIcon} alt="" className='w-full h-full object-cover'/>
+                </div>
+              </div>
+              <div className='flex items-center gap-x-1 mt-2.5 text-xs text-slate-500'>
+                <span>5 upvotes</span>
+                <Dot size={10}/>
+                <span>5 comments</span>
+              </div>
+            </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
