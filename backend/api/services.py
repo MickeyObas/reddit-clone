@@ -11,7 +11,7 @@ class VerificationService:
     @staticmethod
     def send_verification_code(email):
         if User.objects.filter(email=email).exists():
-            raise ValueError("User has already verified email for registration")
+            raise ValueError("Account with this email already exists")
         elif VerificationCode.objects.filter(email=email).exists():
             VerificationCode.objects.filter(email=email).delete
             # raise ValueError("Verification code already exists")
