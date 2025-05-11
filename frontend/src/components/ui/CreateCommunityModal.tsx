@@ -124,7 +124,7 @@ const CreateCommunityModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex flex-col items-center justify-center z-50 px-2">
-      <div className="bg-white rounded-xl w-full flex flex-col py-6 px-3.5">
+      <div className="bg-white rounded-xl w-full flex flex-col py-6 px-3.5 max-w-md xl:max-w-lg">
         {step === 0 && (
           <StepBasic 
             formData={formData}
@@ -170,23 +170,23 @@ const CreateCommunityModal = ({
               {step === 0 ? (
                 <button 
                 onClick={() => setIsCommunityModalOpen(false)}
-                className="bg-gray-white py-3 px-3.5 rounded-full font-semibold">Cancel</button>
+                className="bg-gray-white py-3 px-3.5 rounded-full font-semibold cursor-pointer">Cancel</button>
               ) : (
                 <button
                 onClick={previousStep} 
-                className="bg-gray-white py-3 px-3.5 rounded-full font-semibold">Back</button>
+                className="bg-gray-white py-3 px-3.5 rounded-full font-semibold cursor-pointer">Back</button>
               )}
               
               {step === 3 ? (
                 <button
                 onClick={handleCreateCommunity} 
-                className={`py-3 px-3.5 rounded-full font-semibold ${stepValidity[step] ? 'bg-blue-700 text-white' : 'bg-gray-white text-gray-400'}`}
+                className={`cursor-pointer py-3 px-3.5 rounded-full font-semibold ${stepValidity[step] ? 'bg-blue-700 text-white' : 'bg-gray-white text-gray-400'}`}
                 disabled={!stepValidity[step]}
                 >{!isLoading ? "Create community" : "Creating your community"}</button>
               ) : (
                 <button
                 onClick={nextStep} 
-                className={`py-3 px-3.5 rounded-full font-semibold ${stepValidity[step] ? 'bg-blue-700 text-white' : 'bg-gray-white text-gray-400'}`}
+                className={`cursor-pointer py-3 px-3.5 rounded-full font-semibold ${stepValidity[step] ? 'bg-blue-700 text-white' : 'bg-gray-white text-gray-400'}`}
                 disabled={!stepValidity[step]}
                 >Next</button>
               )}
@@ -209,10 +209,15 @@ const StepBasic = ({
 
    // Handlers
   const handleFormInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if(e.target.name === "name" && e.target.value.length > 15){
-      return;
-    };
-    setFormData({...formData, [e.target.name]: e.target.value});
+    if(e.target.name === "name"){
+      if(e.target.value.length > 15 || e.target.value[0] === " "){
+        return;
+      }
+      const newCommunityName = e.target.value.replace(/\s+/g, '');;
+      setFormData({...formData, name: newCommunityName})
+    }else{
+      setFormData({...formData, [e.target.name]: e.target.value});
+    }
   };
 
   const isCommunityNameLegal = async (communityName: string) => {
@@ -242,7 +247,7 @@ const StepBasic = ({
   const handleNameBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
     const name = e.target.value.trim();
     if(name.length < 3){
-      setError((prev) => ({...prev, name: "Please lengthen the text to 3 characters or more"}));
+      setError((prev) => ({...prev, name: "Please lengthen the text to 3-15 characters"}));
       return;
     }else if(!await isCommunityNameLegal(name)){
       return;
@@ -286,6 +291,7 @@ const StepBasic = ({
         onChange={handleFormInputChange}
         onBlur={handleNameBlur}
         error={error.name}
+        onPaste={(e) => e.preventDefault()}
       />
       <div className="mt-5"> 
         <textarea
@@ -539,7 +545,7 @@ const StepTopics = ({
           const topic = findTopicById(topicId);
           return (
             topic && (
-              <div key={idx} className='border-2 border-gray-200 py-1 px-2 text-xs font-semibold flex gap-x-1.5 rounded-md'>
+              <div key={idx} className='border-2 border-gray-200 py-1 px-2 text-xs font-semibold flex gap-x-1.5 rounded-md cursor-pointer'>
                 <span>{topic?.name}</span>
                 <LucideXCircle 
                   onClick={() => handleTopicCancel(topic.id)}
@@ -549,7 +555,7 @@ const StepTopics = ({
           )
         })}
       </div>
-      <div className='mt-8 mb-5 flex flex-col gap-y-5 h-50 overflow-y-auto px-1'>
+      <div className='mt-8 mb-5 flex flex-col gap-y-5 h-50 overflow-y-auto px-1 select-none'>
         {filteredCategories && filteredCategories.map((category, idx) => (
           category.topics.length > 0 && (
             <div key={idx} className='flex flex-col'>
@@ -562,7 +568,7 @@ const StepTopics = ({
                   <div
                     key={idx}
                     onClick={() => handleTopicClick(topic.id)} 
-                    className={`p-2 rounded-full font-medium flex items-center gap-x-1 ${formData.topics.includes(topic.id) ? 'bg-slate-300' : 'bg-gray-white '}`}>
+                    className={`cursor-pointer p-2 rounded-full font-medium flex items-center gap-x-1 ${formData.topics.includes(topic.id) ? 'bg-slate-300' : 'bg-gray-white '}`}>
                       <span>{topic.name}</span>
                       {formData.topics.includes(topic.id) && (
                         <LucideXCircle 
@@ -608,7 +614,7 @@ const StepSettings = ({
       <div className='flex flex-col mt-7'>
         <div
           onClick={() => changeCommunityType('public')} 
-          className={`flex px-4 py-3 items-center ${formData.type === 'public' && 'bg-gray-white'}`}>
+          className={`cursor-pointer flex px-4 py-3 items-center ${formData.type === 'public' && 'bg-gray-white'}`}>
           <Globe fill='black' stroke='#efebee'/>
           <div className='flex flex-col ms-3.5'>
             <span className='font-medium'>Public</span>
@@ -618,14 +624,14 @@ const StepSettings = ({
             readOnly={true}
             type="radio" 
             name="" id="" 
-            className='ms-auto' 
+            className='ms-auto cursor-pointer' 
             checked={formData.type === 'public'}
             // onClick={() => changeCommunityType('public')} 
             />
         </div>
         <div
           onClick={() => changeCommunityType('restricted')}  
-          className={`flex px-4 py-3 items-center ${formData.type === 'restricted' && 'bg-gray-white'}`}>
+          className={`cursor-pointer flex px-4 py-3 items-center ${formData.type === 'restricted' && 'bg-gray-white'}`}>
           <Eye />
           <div className='flex flex-col ms-3.5'>
             <span className='font-medium'>Restricted</span>
@@ -636,14 +642,14 @@ const StepSettings = ({
             type="radio" 
             name="" 
             id="" 
-            className='ms-auto'
+            className='ms-auto cursor-pointer'
             checked={formData.type === 'restricted'}
             // onClick={() => changeCommunityType('restricted')}  
             />
         </div>
         <div
           onClick={() => changeCommunityType('private')}  
-          className={`flex px-4 py-3 items-center ${formData.type === 'private' && 'bg-gray-white'}`}>
+          className={`cursor-pointer flex px-4 py-3 items-center ${formData.type === 'private' && 'bg-gray-white'}`}>
           <Lock size={20}/>
           <div className='flex flex-col ms-3.5'>
             <span className='font-medium'>Private</span>
@@ -654,7 +660,7 @@ const StepSettings = ({
             type="radio" 
             name="" 
             id="" 
-            className='ms-auto'
+            className='ms-auto cursor-pointer'
             checked={formData.type === 'private'}
             // onClick={() => changeCommunityType('private')}  
             />
@@ -663,7 +669,7 @@ const StepSettings = ({
       <hr className='my-4 border-gray-300 border-[1px]'/>
         <div
           onClick={() => setFormData((prev) => ({...prev,  isForMature: !formData.isForMature}))} 
-          className='flex px-4 py-3 items-center'>
+          className='flex px-4 py-3 items-center cursor-pointer'>
           <div>
             <div className='w-4 h-4 bg-black rotate-45 rounded-sm flex justify-center items-center'>
                 <span className='-rotate-45 text-[11px] text-white font-medium'>18</span>

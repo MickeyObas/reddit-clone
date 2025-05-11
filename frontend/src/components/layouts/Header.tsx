@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
           <img 
             src={redditIcon}
             alt="Reddit icon" 
-            className='h-9 w-9 ms-5 xl:ms-0'
+            className='h-9 w-9 ms-5 xl:ms-0 cursor-pointer'
             onClick={() => navigate('/')}
             />
         </div>
@@ -44,14 +44,19 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
             placeholder='Search Reddit'
           />
         </div>
-        <div className='flex items-center'>
+        <div 
+          onClick={() => navigate('create-post/')}
+          className='flex items-center'>
           <img src={searchIcon} alt="Search icon" className='h-7 w-7 ms-3 cursor-pointer'/>
-          <img 
+          <div className='flex items-center justify-center gap-x-2 cursor-pointer'>
+            <img 
             src={plusIcon}
             alt="Plus icon" 
-            className='h-[18px] w-[18px] ms-5 cursor-pointer'
-            onClick={() => navigate('create-post/')}
+            className='h-[18px] w-[18px] ms-5'
             />
+            <span className='hidden lg:block'>Create</span>
+          </div>
+          
           <img src={notificationIcon} alt="Plus icon" className='w-6 ms-5 cursor-pointer'/>
           <div className='w-8 h-8 rounded-full ms-2 overflow-hidden cursor-pointer'>
             {/* Ignore this, temp patch  */}
