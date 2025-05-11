@@ -150,7 +150,7 @@ export const CommunityHeader = ({community}: {community: Community | null}) => {
 }
 
 
-const RuleItem = ({rule, idx}: {rule: CommunityRule, idx: number}) => {
+export const RuleItem = ({rule, idx}: {rule: CommunityRule, idx: number}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (

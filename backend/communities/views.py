@@ -101,6 +101,28 @@ def community_post_feed(request, pk):
     
     except Community.DoesNotExist:
         return Response({'error': 'Community does not exist.'}, status=404)
+    
+
+@api_view(['GET'])
+def community_popular_posts_list(request, pk):
+    try:
+        community = Community.objects.get(id=pk)
+        posts = (
+            Post.objects
+            .filter(community=community)
+            .select_related('community')
+            .annotate(vote_count=Coalesce(Sum('vote__type'), Value(0)))
+            .order_by('-vote_count')[:5]
+        )
+        serializer = PostDisplaySerializer(posts, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    except Community.DoesNotExist:
+        return Response({'error': 'Community does not exist'}, status=404)
+    
+    except Exception as e:
+        print(e)
+        return Response({'error': str(e)})    
 
 
 @api_view(['POST'])

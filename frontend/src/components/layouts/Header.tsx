@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
             onClick={() => navigate('/')}
             />
         </div>
-        <div className='hidden lg:flex items-center bg-gray-white rounded-full px-4 w-[560px] hover:bg-gray-300'>
+        <div className='hidden lg:flex items-center bg-gray-white rounded-full px-4 w-[560px] hover:bg-gray-300 cursor-pointer'>
           <div className=''>
             <Search size={16}/>
           </div>
@@ -45,15 +45,15 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
           />
         </div>
         <div className='flex items-center'>
-          <img src={searchIcon} alt="Search icon" className='h-7 w-7 ms-3'/>
+          <img src={searchIcon} alt="Search icon" className='h-7 w-7 ms-3 cursor-pointer'/>
           <img 
             src={plusIcon}
             alt="Plus icon" 
-            className='h-[18px] w-[18px] ms-5'
+            className='h-[18px] w-[18px] ms-5 cursor-pointer'
             onClick={() => navigate('create-post/')}
             />
-          <img src={notificationIcon} alt="Plus icon" className='w-6 ms-5'/>
-          <div className='w-8 h-8 rounded-full ms-2 overflow-hidden'>
+          <img src={notificationIcon} alt="Plus icon" className='w-6 ms-5 cursor-pointer'/>
+          <div className='w-8 h-8 rounded-full ms-2 overflow-hidden cursor-pointer'>
             {/* Ignore this, temp patch  */}
             <img onClick={() => navigate(`/user/${user?.id}/`)} src={user?.avatar ? user.avatar : defaultRedditProfileIcon} alt="" className='w-full h-full object-cover'/>
           </div>

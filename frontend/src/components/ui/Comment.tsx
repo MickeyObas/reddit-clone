@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { fetchWithAuth, timeAgo } from '../../utils';
 import { CommentType } from '../../types/comment';
 import { Post } from '../../types/post';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { BACKEND_URL } from '../../config';
 
 
@@ -25,6 +25,7 @@ type CommentVote = {
 
 
 const Comment = ({comment, setPost}: CommentProps) => {
+  const navigate = useNavigate();
   const { postId } = useParams();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
@@ -125,7 +126,9 @@ const Comment = ({comment, setPost}: CommentProps) => {
         <div className='w-6 h-6 flex items-center justify-center me-2 rounded-full overflow-hidden'>
           <img src={comment.owner.avatar ?? redditIcon} alt="" className='w-full h-full object-cover' />
         </div>
-        <span className='font-bold'>{comment.owner.username}</span>
+        <span
+          onClick={() => navigate(`/user/${comment.owner.id}/`)} 
+          className='font-bold hover:text-blue-900 cursor-pointer'>{comment.owner.username}</span>
         <Dot size={16} />
         <span className='text-slate-500'>{formattedTimeAgo}</span>
       </div>
@@ -181,11 +184,11 @@ const Comment = ({comment, setPost}: CommentProps) => {
                 id=""></textarea>
               <div className='flex text-xs flex-row-reverse gap-x-2 font-medium pt-2'>
                 <button 
-                  className='py-1.5 px-2 bg-blue-600 rounded-full text-white'
+                  className='py-1.5 px-2 bg-blue-600 rounded-full text-white cursor-pointer'
                   onClick={() => handleReplyCommentClick(comment.id)}
                   >Comment</button>
                 <button 
-                  className='py-1.5 px-2 bg-gray-white rounded-full'
+                  className='py-1.5 px-2 bg-gray-white rounded-full cursor-pointer'
                   onClick={() => setShowReplyBox(false)}
                   >Cancel</button>
               </div>

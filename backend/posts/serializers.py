@@ -10,7 +10,7 @@ from communities.models import Community
 from votes.models import Vote
 from accounts.serializers import UserSerializer
 from comments.serializers import CommentSerializer
-from communities.serializers import CommunityDisplaySerializer
+from communities.serializers import CommunityDisplaySerializer, CommunitySerializer
 
 
 class PostMediaSerializer(serializers.ModelSerializer):
@@ -25,6 +25,21 @@ class PostMediaSerializer(serializers.ModelSerializer):
         instance = PostMedia(**attrs)
         instance.full_clean()
         return attrs
+    
+
+# class PostCommunityDetailedSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Community
+#         fields = [
+#             'id',
+#             'avatar',
+#             'name',
+#             'subtitle',
+#             'description',
+#             'rules',
+#             'topics'
+#         ]
+
 
 class PostSerializer(serializers.ModelSerializer):
     media = serializers.SerializerMethodField()
@@ -127,7 +142,9 @@ class PostSerializer(serializers.ModelSerializer):
     
 
     def get_community(self, obj):
-        return CommunityDisplaySerializer(obj.community, context={'request': self.context['request']}).data 
+        request = self.context['request']
+        if request:
+            return CommunityDisplaySerializer(obj.community, context={'request': self.context['request']}).data 
 
 class PostDisplaySerializer(serializers.ModelSerializer):
 
@@ -233,3 +250,5 @@ class RecentlyViewedPostSerializer(serializers.ModelSerializer):
         if not media_files:
             return None
         return request.build_absolute_uri(media_files[0].file.url)
+    
+

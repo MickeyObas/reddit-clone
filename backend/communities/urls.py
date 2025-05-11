@@ -10,5 +10,6 @@ urlpatterns = [
     path('<int:pk>/join/', views.community_join),
     path('<int:pk>/leave/', views.community_leave),
     path('<int:pk>/posts/', views.community_post_feed),
+    path('<int:pk>/popular-posts/', views.community_popular_posts_list),
     path('check-community-name/', views.community_name_legal)
 ]
