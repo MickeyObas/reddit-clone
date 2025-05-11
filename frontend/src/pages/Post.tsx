@@ -435,7 +435,7 @@ const Post = () => {
                               <div
                                 onClick={() => navigate(`/community/${community.id}/`)} 
                                 className='flex gap-x-2.5 items-center group cursor-pointer'>
-                                <div className='bg-red-300 w-6 h-6 rounded-full overflow-hidden flex items-center justify-center'>
+                                <div className='w-6 h-6 rounded-full overflow-hidden flex items-center justify-center'>
                                   <img src={community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
                                 </div>
                                 <span className='text-gray-500 text-xs flex items-center group-hover:underline'>{formatCommunity(community.name)}</span>
@@ -461,7 +461,7 @@ const Post = () => {
                           <div 
                             onClick={() => navigate(`/community/${community.id}/`)}
                             className='flex gap-x-2.5 items-center group cursor-pointer'>
-                            <div className='bg-red-300 w-6 h-6 rounded-full overflow-hidden flex items-center justify-center'>
+                            <div className='w-6 h-6 rounded-full overflow-hidden flex items-center justify-center'>
                               <img src={community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
                             </div>
                             <span className='text-gray-500 text-xs flex items-center group-hover:underline'>{formatCommunity(community.name)}</span>

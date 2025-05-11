@@ -45,10 +45,11 @@ const Header: React.FC<HeaderProps> = ({isSidebarOpen, setIsSidebarOpen}) => {
           />
         </div>
         <div 
-          onClick={() => navigate('create-post/')}
           className='flex items-center'>
           <img src={searchIcon} alt="Search icon" className='h-7 w-7 ms-3 cursor-pointer'/>
-          <div className='flex items-center justify-center gap-x-2 cursor-pointer'>
+          <div 
+            onClick={() => navigate('create-post/')}
+            className='flex items-center justify-center gap-x-2 cursor-pointer'>
             <img 
             src={plusIcon}
             alt="Plus icon" 

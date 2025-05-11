@@ -8,10 +8,15 @@ import { CakeSlice, Globe, ChevronUp, ChevronDown, Mail, PlusIcon, Ellipsis, Col
 import { BACKEND_URL } from "../config";
 import { useAuth } from "../contexts/AuthContext";
 import { useMemo, useState, useEffect} from "react"
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { fetchWithAuth, formatDate, formatUsername } from "../utils"
 import { Community, CommunityRule } from '../types/community';
+import Sidebar from '../components/layouts/Sidebar';
 
+type LayoutContextType = {
+  setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsCommunityModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
 
 export const CommunityHeader = ({community}: {community: Community | null}) => {
   const navigate = useNavigate();
@@ -90,16 +95,17 @@ export const CommunityHeader = ({community}: {community: Community | null}) => {
         <div className='flex items-center gap-x-2'>
           <Link
             to={`/community/${community.id}/`}
-            className={`py-2.5 px-3.5 rounded-full ${location.pathname === `/community/${community.id}/` ? 'bg-slate-300' : ''}`}>
+            className={`hover:bg-slate-300 py-2.5 px-3.5 rounded-full ${location.pathname === `/community/${community.id}/` ? 'bg-slate-300' : ''}`}>
             Feed
           </Link>
           <Link
             to={`/community/${community.id}/about/`}
-            className={`py-2.5 px-3.5 rounded-full ${location.pathname.includes('about') ? 'bg-slate-300' : ''}`}>
+            className={`lg:hidden py-2.5 px-3.5 rounded-full ${location.pathname.includes('about') ? 'bg-slate-300' : ''}`}>
             About
           </Link>
         </div>
-        <div className='flex items-center'>
+        {!location.pathname.includes('about') && (
+          <div className='flex items-center'>
           <div
             className="flex flex-col relative cursor-pointer rounded-2xl select-none" 
             onClick={() => toggleDropdown('sort')}>
@@ -144,6 +150,7 @@ export const CommunityHeader = ({community}: {community: Community | null}) => {
             </div>
           </div>
         </div>
+        )}
       </div>
     </>
   )
@@ -179,28 +186,28 @@ export const AboutCommunity = () => {
   const [community, setCommunity] = useState<Community | null>(null);
   const { communityId } = useParams();
   const [loading, setLoading] = useState(true);
+  const {setIsSidebarOpen, setIsCommunityModalOpen} = useOutletContext<LayoutContextType>();
 
-
-   useEffect(() => {
-      const fetchCommunity = async () => {
-        try{
-          setLoading(true)
-          const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/`, {
-            method: 'GET'
-          });
-          if(!response?.ok) console.error("Whoopps, something went wrong.");
-          else{
-            const data = await response?.json();
-            setCommunity(data);
-          }
-        }catch(err){
-          console.error(err);
-        }finally{
-          setLoading(false);
+  useEffect(() => {
+    const fetchCommunity = async () => {
+      try{
+        setLoading(true)
+        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/`, {
+          method: 'GET'
+        });
+        if(!response?.ok) console.error("Whoopps, something went wrong.");
+        else{
+          const data = await response?.json();
+          setCommunity(data);
         }
-      };
-      fetchCommunity();
-    }, [communityId])
+      }catch(err){
+        console.error(err);
+      }finally{
+        setLoading(false);
+      }
+    };
+    fetchCommunity();
+  }, [communityId])
 
   const { user } = useAuth();
   const formattedDate = useMemo(() => {
@@ -212,103 +219,114 @@ export const AboutCommunity = () => {
   if(loading) return <h1>Loading...</h1>
 
   return (
-    <div>
-      <div
-        className="bg-gray-white h-16 w-full overflow-hidden"
-      >
-        {community?.banner && <img src={community?.banner} alt="" className="object-cover w-full h-full" />}
+    <div className='grid grid-cols-1 xl:grid-cols-[280px_1fr] lg:p-6 lg:rounded-2xl'>
+      <div className='hidden xl:block'>
+        <Sidebar 
+          isSidebarOpen={true}
+          setIsCommunityModalOpen={setIsCommunityModalOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+        />
       </div>
-      <div className="grid grid-cols-1">
-        <CommunityHeader community={community}/>
-        <div className='bg-slate-50 flex flex-col mt-10'>
-          <div className='px-3 py-3 border-b border-b-slate-300'>
-            <h3 className='uppercase font-semibold'>About Community</h3>
-            {community?.subtitle && (
-              <h3 className='font-bold mt-5'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti, odit?</h3>
-            )}
-            <p className='mt-1 leading-6 mb-2.5'>{community?.description}</p>
-            <div className='text-sm flex gap-x-1.5 mb-2'>
-              <CakeSlice transform='scale(-1 1)' size={22} strokeWidth={1} />
-              <span>Created {formattedDate}</span>
-            </div>
-            <div className='text-sm flex gap-x-1.5'>
-              <Globe size={22} strokeWidth={1} />
-              <span>Public</span>
-            </div>
-          </div>
+      <div className="flex flex-col">
+        <div
+        className="bg-gray-white h-16 w-full overflow-hidden"
+        >
+          {community?.banner && <img src={community?.banner} alt="" className="object-cover w-full h-full" />}
         </div>
-
-        <div className='bg-slate-50 flex flex-col'>
-          <div className='px-3 py-6 border-b border-b-slate-300'>
-            <h3 className='uppercase font-semibold mb-3'>User Flair</h3>
-            <div className='flex items-center gap-x-2.5'>
-              <div className='rounded-full overflow-hidden w-8 h-8'>
-                <img src={defaultRedditProfileIcon} alt="" />
+        <div className='grid grid-cols-1 lg:grid-cols-[1fr_350px]'>
+          <div className='max-w-5xl'>
+            <CommunityHeader community={community}/>
+            <div className='bg-slate-50 flex flex-col mt-10'>
+              <div className='px-3 py-3 border-b border-b-slate-300'>
+                <h3 className='uppercase font-semibold'>About Community</h3>
+                {community?.subtitle && (
+                  <h3 className='font-bold mt-5'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti, odit?</h3>
+                )}
+                <p className='mt-1 leading-6 mb-2.5'>{community?.description}</p>
+                <div className='text-sm flex gap-x-1.5 mb-2'>
+                  <CakeSlice transform='scale(-1 1)' size={22} strokeWidth={1} />
+                  <span>Created {formattedDate}</span>
+                </div>
+                <div className='text-sm flex gap-x-1.5'>
+                  <Globe size={22} strokeWidth={1} />
+                  <span>Public</span>
+                </div>
               </div>
-              <h3>{user?.username}</h3>
-            </div>            
-          </div>
-        </div>
-
-        <div className='bg-slate-50 flex flex-col'>
-          <div className='px-3 py-6 border-b border-b-slate-300'>
-            <h3 className='uppercase font-semibold mb-3'>Community Bookmarks</h3>
-            {/* <div className='flex flex-col gap-y-2.5'>
-              {Array.from({length: 5}).map((_, index) => (
-                <Link key={index} to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
-              ))}
-            </div> */}
-            <p>No bookmarks configured.</p>
-          </div>
-        </div>
-
-        <div className='bg-slate-50 flex flex-col'>
-          <div className='px-3 py-6 border-b border-b-slate-300'>
-            <h3 className='uppercase font-semibold mb-3'>Rules</h3>
-            {community && community?.rules?.length > 0 ? (
-            <ol className='list-decimal px-7 flex flex-col'>
-              {community?.rules.map((rule, idx) => (
-                <RuleItem key={idx} rule={rule} idx={idx}/>
-              ))}
-            </ol>                
-            ) : (
-              <h1>No specific rules set. The community expects members to follow general Reddit guidelines.</h1>
-            )}
-          </div>
-        </div>
-
-        <div className='bg-slate-50 flex flex-col'>
-          <div className='px-3 py-6 border-b border-b-slate-300'>
-            <h3 className='uppercase font-semibold mb-3'>Moderators</h3>
-            <div className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline flex justify-center gap-x-2 items-center mb-4'>
-              <Mail size={20} />
-              <span>Message Mods</span>
             </div>
-            {community?.moderators && community?.moderators?.length > 0 ? (
-              <div className='flex flex-col gap-y-2.5'>
-                {community?.moderators && community?.moderators.map((moderator, idx) => (
-                  <div key={idx} className='flex items-center gap-x-2'>
-                    <div className='h-8 w-8'>
-                      <img src={redditIcon} alt="" />
-                    </div>
-                    <div className='flex flex-col'>
-                      <div className='flex gap-x-2'>
-                        <h2>{formatUsername(moderator.username)}</h2>
-                        <div className='bg-black text-white rounded-full px-1.5 '>
-                          CREATOR
+
+            <div className='bg-slate-50 flex flex-col'>
+              <div className='px-3 py-6 border-b border-b-slate-300'>
+                <h3 className='uppercase font-semibold mb-3'>User Flair</h3>
+                <div className='flex items-center gap-x-2.5'>
+                  <div className='rounded-full overflow-hidden w-8 h-8'>
+                    <img src={defaultRedditProfileIcon} alt="" />
+                  </div>
+                  <h3>{user?.username}</h3>
+                </div>            
+              </div>
+            </div>
+
+            <div className='bg-slate-50 flex flex-col'>
+              <div className='px-3 py-6 border-b border-b-slate-300'>
+                <h3 className='uppercase font-semibold mb-3'>Community Bookmarks</h3>
+                {/* <div className='flex flex-col gap-y-2.5'>
+                  {Array.from({length: 5}).map((_, index) => (
+                    <Link key={index} to='' className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline'>Lorem, ipsum.</Link>
+                  ))}
+                </div> */}
+                <p>No bookmarks configured.</p>
+              </div>
+            </div>
+
+            <div className='bg-slate-50 flex flex-col'>
+              <div className='px-3 py-6 border-b border-b-slate-300'>
+                <h3 className='uppercase font-semibold mb-3'>Rules</h3>
+                {community && community?.rules?.length > 0 ? (
+                <ol className='list-decimal px-7 flex flex-col'>
+                  {community?.rules.map((rule, idx) => (
+                    <RuleItem key={idx} rule={rule} idx={idx}/>
+                  ))}
+                </ol>                
+                ) : (
+                  <h1>No specific rules set. The community expects members to follow general Reddit guidelines.</h1>
+                )}
+              </div>
+            </div>
+
+            <div className='bg-slate-50 flex flex-col'>
+              <div className='px-3 py-6 border-b border-b-slate-300'>
+                <h3 className='uppercase font-semibold mb-3'>Moderators</h3>
+                <div className='bg-gray-white rounded-full text-center p-2 font-semibold cursor-pointer hover:bg-gray-300 hover:underline flex justify-center gap-x-2 items-center mb-4'>
+                  <Mail size={20} />
+                  <span>Message Mods</span>
+                </div>
+                {community?.moderators && community?.moderators?.length > 0 ? (
+                  <div className='flex flex-col gap-y-2.5'>
+                    {community?.moderators && community?.moderators.map((moderator, idx) => (
+                      <div key={idx} className='flex items-center gap-x-2'>
+                        <div className='h-8 w-8'>
+                          <img src={redditIcon} alt="" />
+                        </div>
+                        <div className='flex flex-col'>
+                          <div className='flex gap-x-2'>
+                            <h2>{formatUsername(moderator.username)}</h2>
+                            <div className='bg-black text-white rounded-full px-1.5 '>
+                              CREATOR
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <h1>No moderators.</h1>
+                )}
               </div>
-            ) : (
-              <h1>No moderators.</h1>
-            )}
+            </div>
           </div>
+          <div></div>
         </div>
       </div>
     </div>
-    
   )
 }
