@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BACKEND_URL } from "../config";
 import { FormInput } from "../components/ui/FormInput";
 import { Button } from "../components/ui/Button";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 interface VerifyEmailProps{
   email: string,
@@ -17,6 +18,7 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
   const [canResend, setCanResend] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const navigate = useNavigate();
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -28,7 +30,7 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
 
   const handleBlur = ()=> {
     if(code && code.length < 6){
-      setError(`Please lengthen this text to 6 characters or more (You are currently using ${code.length} character${code.length > 1 ? 's' : ''}).`);
+      setError(`Incomplete code. ${6 - code.length} character${6 - code.length > 1 ? 's' : ''} left.`);
     }
   }
   
@@ -103,6 +105,20 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
     }
   }
 
+  const codeInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCodeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!codeInputRef.current?.value) return;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // emailInputRef.current?.blur();
+      handleBlur();
+      if(code.length === 6 && !error){
+        handleContinueClick();
+      }
+    }
+  };
+
   useEffect(() => {
     if(codeResendCountdown <= 0){
       setCanResend(true);
@@ -117,46 +133,59 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
   }, [codeResendCountdown])
 
   return (
-    <div className="container mx-auto p-5 h-screen max-w-lg lg:max-w-xl flex items-center justify-center" >
-    <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg">
-      <div className="pt-10 md:pt-0">
-        <h1 className="text-2xl font-bold text-center mb-4">Verify your email</h1>
-        <p className="text-center">Enter the 6-digit code we sent to "{email}"</p>
-        <FormInput
-          containerClassName="mt-8" 
-          minLength={6}
-          maxLength={6}
-          inputMode="numeric"
-          placeholder="Verification code *"
-          value={code}
-          onChange={handleCodeChange}
-          onBlur={handleBlur}
-          onFocus={handleFocus}
-          autoComplete="verification-code"
-          name="verification-code"
-          error={error}
-          isValid={code.length === 6}
-        />
-      </div>
-      <div className="mt-auto">
-        <p className="text-center mb-8">Didn't get an email?{
-          !canResend 
-          ? <span className="ms-3 text-xs opacity-50">Resend in {codeResendCountdown} seconds</span>
-          : isResending
-            ? <span className="ms-3 text-xs opacity-50">Resending...</span>
-            : <span 
-            className="ms-4 underline font-medium cursor-pointer"
-            onClick={handleResendClick}
-            >Resend</span>}
-        </p>
+    <div className="container mx-auto p-5 h-screen max-w-lg flex items-center justify-center" >
+    <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg justify-between">
+      <div>
+        <div className="pt-4 md:pt-0">
+          <h1 className="text-2xl font-bold text-center mb-4">Verify your email</h1>
+          <p className="text-center">Enter the 6-digit code we sent to "{email}"</p>
+          <FormInput
+            ref={codeInputRef}
+            containerClassName="mt-8" 
+            minLength={6}
+            maxLength={6}
+            inputMode="numeric"
+            placeholder="Verification code *"
+            value={code}
+            onChange={handleCodeChange}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            autoComplete="verification-code"
+            name="verification-code"
+            error={error}
+            isValid={code.length === 6}
+            onKeyDown={handleCodeKeyDown}
+          />
+        </div>
+      </div> 
+
+      <div>
+        <div className="md:mt-4">
+          <p className="text-center mb-3">Didn't get an email?{
+            !canResend 
+            ? <span className="ms-3 text-xs opacity-50">Resend in {codeResendCountdown} seconds</span>
+            : isResending
+              ? <span className="ms-3 text-xs opacity-50">Resending...</span>
+              : <span 
+              className="ms-4 underline font-medium cursor-pointer"
+              onClick={handleResendClick}
+              >Resend</span>}
+          </p>
+          <p className="text-center mb-8">Typed in the wrong email?
+            <span 
+              onClick={() => navigate('/register/')}
+              className="ms-4 cursor-pointer font-medium underline text-red-600">Go back</span>
+          </p>
+        </div>
         <Button 
-          className={`mt-auto ${!isVerifying && 'cursor-pointer'}`}
+          className={`mt-2 md:mt-4 ${!isVerifying && 'cursor-pointer'}`}
           onClick={handleContinueClick}
           disabled={!(code.length === 6)}
           isValid={code.length === 6}
           label={`${isVerifying ? 'Loading...' : 'Continue'}`}
         />
-      </div> 
+      </div>
+
     </div>
   </div>
   )

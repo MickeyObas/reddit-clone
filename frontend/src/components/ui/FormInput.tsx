@@ -1,5 +1,6 @@
 import exclamationIcon from '../../assets/icons/exclamation-mark.png';
 import checkIcon from '../../assets/icons/check.png';
+import { RefObject } from 'react';
 
 interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string,
@@ -7,6 +8,7 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   value?: string,
   isValid: boolean,
   error?: string,
+  ref?: RefObject<HTMLInputElement | null>
 }
 
 export const FormInput: React.FC<FormInputProps> = ({

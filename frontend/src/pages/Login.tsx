@@ -1,4 +1,4 @@
-import { JSX, useState } from "react";
+import { JSX, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Assets
@@ -103,10 +103,27 @@ const Login = (): JSX.Element => {
     }
   }
 
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      passwordInputRef.current?.focus();
+    }
+  };
+
+  const handlePasswordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    passwordInputRef.current?.blur();
+    handleContinue();
+  }
+};
+
   return (
     <div className="container max-w-lg mx-auto p-5 h-screen flex items-center justify-center">
-      <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg">
-        <div className="pt-10 md:pt-0">
+      <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg justify-between">
+        <div className="pt-4 md:pt-0">
           <h1 className="text-2xl font-bold text-center">Log In</h1>
           <p className="text-center my-3">By continuing, you agree to our <span className="text-blue-400">User Agreement</span> and acknowledge that you understand the <span className="text-blue-400">Privacy Policy</span>.</p>
           <p className="text-center text-xs">Login via Apple & Google is currently not available</p>
@@ -140,6 +157,7 @@ const Login = (): JSX.Element => {
             onChange={handleEmailOrUsernameChange}
             onBlur={handleEmailOrUsernameBlur}
             onFocus={handlEmailorUsernameFocus}
+            onKeyDown={handleEmailKeyDown}
           />
           <FormInput 
             type="password"
@@ -150,16 +168,20 @@ const Login = (): JSX.Element => {
             onChange={handlePasswordChange}
             onBlur={handlePasswordBlur}
             onFocus={handlePasswordFocus}
+            ref={passwordInputRef}
+            onKeyDown={handlePasswordKeyDown}
           />
           <p className="mt-2.5">New to Reddit? <a className="text-blue-400" href="/register">Sign Up</a></p>
         </div>
+        <div>
         <Button 
           onClick={handleContinue}
           disabled={!isFormValid}
           isValid={isFormValid}
           label={`${isLoading ? 'Loading...' : 'Continue'}`}
-          className="mt-auto md:mt-2 cursor-pointer"
+          className="mt-2 md:mt-4 cursor-pointer"
         />
+        </div>
       </div>
     </div>
   )

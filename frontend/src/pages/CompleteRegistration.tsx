@@ -2,7 +2,7 @@
 import { FormInput } from "../components/ui/FormInput";
 import { Button } from "../components/ui/Button";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../config";
 import toast from "react-hot-toast";
@@ -99,10 +99,27 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
 
   const isFormValid = isPassword1Valid && isPassword2Valid && (password1 === password2);
 
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const passwordConfirmInputRef = useRef<HTMLInputElement>(null);
+  const handlePasswordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      passwordConfirmInputRef.current?.focus();
+    }
+  };
+  const handlePasswordConfirmKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // passwordInputRef.current?.blur();
+      handlePassword2Blur();
+      if(isFormValid) handleClick();
+    }
+  };
+
   return (
-    <div className="container mx-auto p-5 h-screen  max-w-lg lg:max-w-xl flex items-center justify-center">
-      <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg">
-        <div className="pt-10">
+    <div className="container mx-auto p-5 h-screen max-w-lg lg:max-w-xl flex items-center justify-center overflow-hidden">
+      <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg justify-between">
+        <div className="pt-4 md:pt-0">
           <h1 className="text-2xl font-bold text-center">Complete Registration</h1>
           <p className="text-center my-3">Create a strong password for your new Reddit account.</p>
           <FormInput
@@ -114,6 +131,7 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
             isValid={true} // Is immutable and always valid
           />
           <FormInput 
+            ref={passwordInputRef}
             type="password"
             placeholder="Password *"
             value={password1}
@@ -122,8 +140,10 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
             onFocus={handlePassword1Focus}
             error={error.password1}
             isValid={isPassword1Valid}
+            onKeyDown={handlePasswordKeyDown}
           />
           <FormInput 
+            ref={passwordConfirmInputRef}
             type="password"
             placeholder="Confirm Password*"
             value={password2}
@@ -132,16 +152,19 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
             onFocus={handlePassword2Focus}
             error={error.password2}
             isValid={isPassword2Valid}
+            onKeyDown={handlePasswordConfirmKeyDown}
           />
           <p className="mt-2.5">Already a redditor? <a className="text-blue-400" href="/login">Log in</a></p>
         </div>
-        <Button
-          className={`mt-auto lg:mt-2 ${(isFormValid && !isLoading) && 'cursor-pointer'}`} 
-          onClick={handleClick}
-          disabled={!isFormValid}
-          label={`${isLoading ? 'Loading...' : 'Continue'}`}
-          isValid={isFormValid}
-        />
+        <div>
+          <Button
+            className={`mt-auto md:mt-4 ${(isFormValid && !isLoading) && 'cursor-pointer'}`} 
+            onClick={handleClick}
+            disabled={!isFormValid}
+            label={`${isLoading ? 'Loading...' : 'Continue'}`}
+            isValid={isFormValid}
+          />
+        </div>
       </div>
     </div>
   )

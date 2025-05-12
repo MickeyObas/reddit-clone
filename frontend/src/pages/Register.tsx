@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { validateEmail } from "../utils";
 
 // Assets
@@ -46,7 +46,7 @@ const Register: React.FC = () => {
     setError("");
   };
 
-  const handleClick = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleClick = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.KeyboardEvent<HTMLInputElement>) => {
     console.log(e);
 
     try{
@@ -79,11 +79,26 @@ const Register: React.FC = () => {
     }
   }
 
+  const emailInputRef = useRef<HTMLInputElement>(null);
+
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!emailInputRef.current?.value) return;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // emailInputRef.current?.blur();
+      handleBlur();
+      if(validateEmail(emailInputRef.current?.value)){
+        handleClick(e);
+      }
+    }
+  };
+
+
   if(step === 1){
     return (
-      <div className="container max-w-lg mx-auto p-5 h-screen flex items-center justify-center">
-        <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg">
-          <div className="pt-10 md:pt-0">
+      <div className="container max-w-lg mx-auto p-5 h-screen flex items-center justify-center overflow-hidden">
+        <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg justify-between">
+          <div className="pt-4 md:pt-0">
             <h1 className="text-2xl font-bold text-center">Sign Up</h1>
             <p className="text-center my-3">By continuing, you agree to our <span className="text-blue-400">User Agreement</span> and acknowledge that you understand the <span className="text-blue-400">Privacy Policy</span>.</p>
             <p className="text-center text-xs">Registration via Apple & Google is currently not available</p>
@@ -115,16 +130,20 @@ const Register: React.FC = () => {
               onFocus={handleFocus}
               error={error}
               isValid={isValid}
+              ref={emailInputRef}
+              onKeyDown={handleEmailKeyDown}
             />
             <p className="mt-2.5">Already a redditor? <a className="text-blue-400" href="/login">Log in</a></p>
           </div>
-          <Button 
+          <div>
+            <Button 
             onClick={handleClick}
             disabled={!isValid}
             isValid={isValid}
             label={`${isSendingEmail ? 'Loading...' : 'Continue'}`}
-            className="mt-auto md:mt-2 cursor-pointer"
+            className="mt-2 md:mt-4 cursor-pointer"
           />
+          </div>
         </div>
       </div>
     )

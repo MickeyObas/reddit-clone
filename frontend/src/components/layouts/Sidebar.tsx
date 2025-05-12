@@ -49,7 +49,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     {/* Sidebar Content */}
     <nav className="mt-2 px-6 flex flex-col pb-3">
       <ul className="space-y-0.5 border-b border-b-gray-200 py-3">
-        <li className={`rounded-lg cursor-pointer flex items-center px-4 py-0.5 hover:bg-gray-200 ${location.pathname === "/" ? "bg-gray-300" : ""}`}>
+        <li className={`rounded-lg cursor-pointer flex items-center px-4 py-0.5 hover:bg-gray-200 ${location.pathname === "/" ? "bg-gray-300" : ""}`} onClick={() => {
+          navigate('/');
+          setIsSidebarOpen(false);
+        }}>
           <img className="w-5 h-5" src={homeIcon} alt="Home Icon" />
           <a href="/" className="ms-2.5 block p-2">Home</a>
         </li>
