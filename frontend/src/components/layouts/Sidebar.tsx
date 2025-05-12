@@ -106,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </li>
 
         {communities && communities.map((community, idx) => (
-          <Link key={idx} to={`community/${community.id}/`} onClick={() => setIsSidebarOpen(false)}>
+          <Link key={idx} to={`/community/${community.id}/`} onClick={() => setIsSidebarOpen(false)}>
             <li className='flex px-2 py-1 items-center justify-between hover:bg-gray-200 rounded-lg'> 
               <div className='w-8 h-8 rounded-full overflow-hidden'>
                 <img src={community.avatar ?? communityIcon} alt="" className='w-full h-full object-cover'/>
