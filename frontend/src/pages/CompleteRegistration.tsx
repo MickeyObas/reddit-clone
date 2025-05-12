@@ -110,7 +110,7 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
   const handlePasswordConfirmKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      // passwordInputRef.current?.blur();
+      passwordConfirmInputRef.current?.blur();
       handlePassword2Blur();
       if(isFormValid) handleClick();
     }
@@ -154,7 +154,7 @@ const CompleteRegistration: React.FC<{email: string}> = ({email}) => {
             isValid={isPassword2Valid}
             onKeyDown={handlePasswordConfirmKeyDown}
           />
-          <p className="mt-2.5">Already a redditor? <a className="text-blue-400" href="/login">Log in</a></p>
+          <p className="my-2.5">Already a redditor? <a className="text-blue-400" href="/login">Log in</a></p>
         </div>
         <div>
           <Button

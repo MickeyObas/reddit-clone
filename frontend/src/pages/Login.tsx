@@ -171,7 +171,7 @@ const Login = (): JSX.Element => {
             ref={passwordInputRef}
             onKeyDown={handlePasswordKeyDown}
           />
-          <p className="mt-2.5">New to Reddit? <a className="text-blue-400" href="/register">Sign Up</a></p>
+          <p className="my-2.5">New to Reddit? <a className="text-blue-400" href="/register">Sign Up</a></p>
         </div>
         <div>
         <Button 

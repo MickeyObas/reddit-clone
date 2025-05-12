@@ -133,7 +133,7 @@ const Register: React.FC = () => {
               ref={emailInputRef}
               onKeyDown={handleEmailKeyDown}
             />
-            <p className="mt-2.5">Already a redditor? <a className="text-blue-400" href="/login">Log in</a></p>
+            <p className="my-2.5">Already a redditor? <a className="text-blue-400" href="/login">Log in</a></p>
           </div>
           <div>
             <Button 

@@ -173,7 +173,7 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
           </p>
           <p className="text-center mb-8">Typed in the wrong email?
             <span 
-              onClick={() => navigate('/register/')}
+              onClick={() => navigate(-1)}
               className="ms-4 cursor-pointer font-medium underline text-red-600">Go back</span>
           </p>
         </div>

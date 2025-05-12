@@ -5,21 +5,39 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.core.cache import cache
 from django.utils import timezone
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from datetime import datetime
 
 
 class VerificationService:
     @staticmethod
     def send_verification_code(email):
-        if User.objects.filter(email=email).exists():
-            raise ValueError("Account with this email already exists")
-        elif VerificationCode.objects.filter(email=email).exists():
-            VerificationCode.objects.filter(email=email).delete
-            # raise ValueError("Verification code already exists")
-        code = generate_6_digit_code()
-        subject = "Your verification code"
-        message = f"Enter this code on reddit to confirm your email address -> {code}. If you did NOT request for this code, please ignore and report to Mickey, the developer."
-        send_mail(subject, message, settings.EMAIL_HOST_USER, [email])
-        VerificationCode.objects.create(email=email, code=code)
+        try:
+            if User.objects.filter(email=email).exists():
+                raise ValueError("Account with this email already exists")
+            elif VerificationCode.objects.filter(email=email).exists():
+                VerificationCode.objects.filter(email=email).delete
+                # raise ValueError("Verification code already exists")
+
+            code = generate_6_digit_code()
+            subject = "Your verification code"
+            from_email = settings.EMAIL_HOST_USER
+
+            html_content = render_to_string("emails/verification_email.html", {
+                "code": code,
+                "current_year": datetime.now().year
+            })
+            text_content = f"Enter this code on reddit to confirm your email address -> {code}. If you did NOT request for this code, please ignore and report to Mickey, the developer."
+            email_message = EmailMultiAlternatives(subject, text_content, from_email, [email])
+            email_message.attach_alternative(html_content, "text/html")
+            email_message.send()
+
+            VerificationCode.objects.create(email=email, code=code)
+        
+        except Exception as e:
+            print(e)
+            raise ValueError(e)
 
     @staticmethod
     def resend_verification_code(email):
