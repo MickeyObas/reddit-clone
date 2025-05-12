@@ -121,8 +121,8 @@ const Login = (): JSX.Element => {
 };
 
   return (
-    <div className="container max-w-lg mx-auto p-5 min-h-screen flex md:items-center md:justify-center overflow-hidden">
-      <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg justify-between">
+    <div className="container max-w-lg mx-auto p-5 h-screen flex md:items-center md:justify-center overflow-hidden">
+      <div className="flex flex-col md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg justify-between">
         <div className="pt-4 md:pt-0">
           <h1 className="text-2xl font-bold text-center">Log In</h1>
           <p className="text-center my-3">By continuing, you agree to our <span className="text-blue-400">User Agreement</span> and acknowledge that you understand the <span className="text-blue-400">Privacy Policy</span>.</p>
@@ -174,13 +174,13 @@ const Login = (): JSX.Element => {
           <p className="my-2.5">New to Reddit? <a className="text-blue-400" href="/register">Sign Up</a></p>
         </div>
         <div>
-        <Button 
-          onClick={handleContinue}
-          disabled={!isFormValid}
-          isValid={isFormValid}
-          label={`${isLoading ? 'Loading...' : 'Continue'}`}
-          className="mt-2 md:mt-4 cursor-pointer"
-        />
+          <Button 
+            onClick={handleContinue}
+            disabled={!isFormValid}
+            isValid={isFormValid}
+            label={`${isLoading ? 'Loading...' : 'Continue'}`}
+            className="mt-2 md:mt-4 cursor-pointer"
+          />
         </div>
       </div>
     </div>
