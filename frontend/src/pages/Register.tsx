@@ -96,7 +96,7 @@ const Register: React.FC = () => {
 
   if(step === 1){
     return (
-      <div className="container relative max-w-lg mx-auto p-5 h-[80vh] flex flex-col md:items-center md:justify-center overflow-hidden">
+      <div className="relative max-w-lg mx-auto p-5 h-dvh md:h-screen flex flex-col md:items-center md:justify-center overflow-hidden">
         <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg">
           <div className="pt-4 md:pt-0">
             <h1 className="text-2xl font-bold text-center">Sign Up</h1>
@@ -135,7 +135,7 @@ const Register: React.FC = () => {
             />
             <p className="my-2.5">Already a redditor? <a className="text-blue-400" href="/login">Log in</a></p>
           </div>
-          <div className="mt-auto absolute bottom-0 w-full left-0 py-6 px-4 md:p-0 md:relative">
+          <div className="mt-auto">
             <Button 
             onClick={handleClick}
             disabled={!isValid}
