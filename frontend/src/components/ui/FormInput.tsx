@@ -23,7 +23,7 @@ export const FormInput: React.FC<FormInputProps> = ({
     <div className={`${containerClassName}`}>
       <div className="relative w-full">
         <input 
-          className={`peer bg-gray-white p-4 border-0 outline-0 rounded-2xl w-full focus:outline-2 focus:outline-blue-500 ${error && 'outline-deep-red outline-2'} ${className}`}
+          className={`text-[16px] peer bg-gray-white p-4 border-0 outline-0 rounded-2xl w-full focus:outline-2 focus:outline-blue-500 ${error && 'outline-deep-red outline-2'} ${className}`}
           value={value}
           {...rest}
           />
