@@ -133,7 +133,7 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
   }, [codeResendCountdown])
 
   return (
-    <div className="container mx-auto p-5 h-screen max-w-lg flex items-center justify-center" >
+    <div className="container mx-auto p-5 h-dvh md:h-screen max-w-lg flex items-center justify-center" >
     <div className="flex flex-col h-full md:h-auto md:p-6 md:shadow-[0_0_7px_1px_rgba(0,0,0,0.25)] md:rounded-lg justify-between">
       <div>
         <div className="pt-4 md:pt-0">
