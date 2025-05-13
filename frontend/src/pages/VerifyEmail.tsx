@@ -111,7 +111,7 @@ const VerifyEmail: React.FC<VerifyEmailProps> = ({email, setStep}) => {
     if (!codeInputRef.current?.value) return;
     if (e.key === 'Enter') {
       e.preventDefault();
-      // emailInputRef.current?.blur();
+      codeInputRef.current?.blur();
       handleBlur();
       if(code.length === 6 && !error){
         handleContinueClick();

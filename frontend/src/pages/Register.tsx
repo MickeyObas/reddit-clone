@@ -85,7 +85,7 @@ const Register: React.FC = () => {
     if (!emailInputRef.current?.value) return;
     if (e.key === 'Enter') {
       e.preventDefault();
-      // emailInputRef.current?.blur();
+      emailInputRef.current?.blur();
       handleBlur();
       if(validateEmail(emailInputRef.current?.value)){
         handleClick(e);
