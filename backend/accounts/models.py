@@ -1,13 +1,12 @@
+from django.conf import settings
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from django.conf import settings
 
-from .managers import (
-    CustomUserManager
-)
 from api.models import TimeStampedModel
+
+from .managers import CustomUserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
@@ -26,9 +25,8 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     objects = CustomUserManager()
 
     class Meta:
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
+        verbose_name = "User"
+        verbose_name_plural = "Users"
 
     def __str__(self):
         return self.email
-    

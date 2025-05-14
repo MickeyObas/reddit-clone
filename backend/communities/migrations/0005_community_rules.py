@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('communities', '0004_community_members_community_moderators_and_more'),
+        ("communities", "0004_community_members_community_moderators_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='community',
-            name='rules',
+            model_name="community",
+            name="rules",
             field=models.JSONField(default=list),
         ),
     ]

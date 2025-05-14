@@ -9,7 +9,7 @@ class TopicCategory(TimeStampedModel):
 
     def __str__(self):
         return self.name
-    
+
 
 class Topic(TimeStampedModel):
     name = models.CharField(max_length=100)

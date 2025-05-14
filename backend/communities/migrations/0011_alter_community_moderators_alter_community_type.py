@@ -7,19 +7,31 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('communities', '0010_community_topics'),
+        ("communities", "0010_community_topics"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='community',
-            name='moderators',
-            field=models.ManyToManyField(blank=True, null=True, related_name='communities_modding', to=settings.AUTH_USER_MODEL),
+            model_name="community",
+            name="moderators",
+            field=models.ManyToManyField(
+                blank=True,
+                null=True,
+                related_name="communities_modding",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='community',
-            name='type',
-            field=models.CharField(choices=[('public', 'Public'), ('restricted', 'Restricted'), ('private', 'Private')], default='public'),
+            model_name="community",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("public", "Public"),
+                    ("restricted", "Restricted"),
+                    ("private", "Private"),
+                ],
+                default="public",
+            ),
         ),
     ]

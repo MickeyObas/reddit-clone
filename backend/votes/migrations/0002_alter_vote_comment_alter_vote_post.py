@@ -7,20 +7,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('comments', '0001_initial'),
-        ('posts', '0002_postmedia_file_alter_postmedia_type'),
-        ('votes', '0001_initial'),
+        ("comments", "0001_initial"),
+        ("posts", "0002_postmedia_file_alter_postmedia_type"),
+        ("votes", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='vote',
-            name='comment',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='comments.comment'),
+            model_name="vote",
+            name="comment",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="comments.comment",
+            ),
         ),
         migrations.AlterField(
-            model_name='vote',
-            name='post',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='posts.post'),
+            model_name="vote",
+            name="post",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="posts.post",
+            ),
         ),
     ]

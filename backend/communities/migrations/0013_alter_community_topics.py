@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('communities', '0012_alter_community_moderators'),
-        ('topics', '0001_initial'),
+        ("communities", "0012_alter_community_moderators"),
+        ("topics", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='community',
-            name='topics',
-            field=models.ManyToManyField(blank=True, to='topics.topic'),
+            model_name="community",
+            name="topics",
+            field=models.ManyToManyField(blank=True, to="topics.topic"),
         ),
     ]

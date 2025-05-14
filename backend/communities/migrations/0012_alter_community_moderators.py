@@ -7,14 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('communities', '0011_alter_community_moderators_alter_community_type'),
+        ("communities", "0011_alter_community_moderators_alter_community_type"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='community',
-            name='moderators',
-            field=models.ManyToManyField(blank=True, related_name='communities_modding', to=settings.AUTH_USER_MODEL),
+            model_name="community",
+            name="moderators",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="communities_modding",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

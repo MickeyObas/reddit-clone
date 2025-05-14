@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profiles', '0004_alter_profile_avatar_alter_profile_banner'),
+        ("profiles", "0004_alter_profile_avatar_alter_profile_banner"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='gender',
-            field=models.CharField(blank=True, default='M', max_length=1, null=True),
+            model_name="profile",
+            name="gender",
+            field=models.CharField(blank=True, default="M", max_length=1, null=True),
         ),
         migrations.AddField(
-            model_name='profile',
-            name='is_mature',
+            model_name="profile",
+            name="is_mature",
             field=models.BooleanField(default=False),
         ),
     ]

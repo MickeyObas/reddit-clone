@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('posts', '0003_alter_post_options'),
-        ('tags', '0001_initial'),
+        ("posts", "0003_alter_post_options"),
+        ("tags", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='post',
-            name='flairs',
-            field=models.ManyToManyField(blank=True, to='tags.flair'),
+            model_name="post",
+            name="flairs",
+            field=models.ManyToManyField(blank=True, to="tags.flair"),
         ),
     ]

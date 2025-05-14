@@ -7,24 +7,41 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Community',
+            name="Community",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=24)),
-                ('type', models.CharField(choices=[('PUBLIC', 'Public'), ('RESTRICTED', 'Restricted'), ('PRIVATE', 'Private')], default='PUBLIC')),
-                ('description', models.TextField()),
-                ('avatar', models.ImageField(upload_to='community-icons')),
-                ('banner', models.ImageField(upload_to='community-banners')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=24)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("PUBLIC", "Public"),
+                            ("RESTRICTED", "Restricted"),
+                            ("PRIVATE", "Private"),
+                        ],
+                        default="PUBLIC",
+                    ),
+                ),
+                ("description", models.TextField()),
+                ("avatar", models.ImageField(upload_to="community-icons")),
+                ("banner", models.ImageField(upload_to="community-banners")),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

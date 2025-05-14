@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('communities', '0008_community_subtitle'),
+        ("communities", "0008_community_subtitle"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='community',
-            name='is_mature',
+            model_name="community",
+            name="is_mature",
             field=models.BooleanField(default=True),
         ),
     ]

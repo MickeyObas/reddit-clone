@@ -17,7 +17,7 @@ class VerificationCode(TimeStampedModel):
     is_approved = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ['email', 'code']
+        unique_together = ["email", "code"]
 
     def save(self, *args, **kwargs):
         if not self.expiry_time:

@@ -6,19 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('posts', '0001_initial'),
+        ("posts", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='postmedia',
-            name='file',
-            field=models.FileField(default='', upload_to='post_media/'),
+            model_name="postmedia",
+            name="file",
+            field=models.FileField(default="", upload_to="post_media/"),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='postmedia',
-            name='type',
-            field=models.CharField(blank=True, default='IMAGE', max_length=5),
+            model_name="postmedia",
+            name="type",
+            field=models.CharField(blank=True, default="IMAGE", max_length=5),
         ),
     ]

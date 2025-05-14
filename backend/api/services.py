@@ -1,13 +1,15 @@
+from datetime import datetime
+
+from django.conf import settings
+from django.core.cache import cache
+from django.core.mail import EmailMultiAlternatives, send_mail
+from django.template.loader import render_to_string
+from django.utils import timezone
+
+from accounts.models import User
+
 from .models import VerificationCode
 from .utils import generate_6_digit_code
-from accounts.models import User
-from django.conf import settings
-from django.core.mail import send_mail
-from django.core.cache import cache
-from django.utils import timezone
-from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
-from datetime import datetime
 
 
 class VerificationService:
@@ -24,17 +26,19 @@ class VerificationService:
             subject = "Your verification code"
             from_email = settings.EMAIL_HOST_USER
 
-            html_content = render_to_string("emails/verification_email.html", {
-                "code": code,
-                "current_year": datetime.now().year
-            })
+            html_content = render_to_string(
+                "emails/verification_email.html",
+                {"code": code, "current_year": datetime.now().year},
+            )
             text_content = f"Enter this code on reddit to confirm your email address -> {code}. If you did NOT request for this code, please ignore and report to Mickey, the developer."
-            email_message = EmailMultiAlternatives(subject, text_content, from_email, [email])
+            email_message = EmailMultiAlternatives(
+                subject, text_content, from_email, [email]
+            )
             email_message.attach_alternative(html_content, "text/html")
             email_message.send()
 
             VerificationCode.objects.create(email=email, code=code)
-        
+
         except Exception as e:
             print(e)
             raise ValueError(e)
@@ -43,7 +47,9 @@ class VerificationService:
     def resend_verification_code(email):
         cache_key = f"sent_token_{email}"
         if cache.get(cache_key):
-            raise ValueError('Too many requests. Please wait before requesting a new code')
+            raise ValueError(
+                "Too many requests. Please wait before requesting a new code"
+            )
         cache.set(cache_key, True, 60)
         VerificationCode.objects.filter(email=email).delete()
         VerificationService.send_verification_code(email=email)
@@ -52,12 +58,11 @@ class VerificationService:
     def verify_email(email, user_code):
         try:
             code_entry = VerificationCode.objects.get(
-                email=email,
-                code=user_code,
-                is_approved=False
+                email=email, code=user_code, is_approved=False
             )
             if timezone.now() > code_entry.expiry_time:
-                raise ValueError('Code expired. Please tap on "Resend" to get a new verification code sent to your email.'
+                raise ValueError(
+                    'Code expired. Please tap on "Resend" to get a new verification code sent to your email.'
                 )
             code_entry.is_approved = True
             code_entry.save()

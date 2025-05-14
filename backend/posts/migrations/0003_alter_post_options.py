@@ -6,13 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('posts', '0002_postmedia_file_alter_postmedia_type'),
+        ("posts", "0002_postmedia_file_alter_postmedia_type"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='post',
-            options={'ordering': ['-created_at']},
-            
+            name="post",
+            options={"ordering": ["-created_at"]},
         ),
     ]

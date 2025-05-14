@@ -1,12 +1,13 @@
 from rest_framework import serializers
 
-from .models import Profile
 from accounts.serializers import UserSerializer
+
+from .models import Profile
 
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    
+
     class Meta:
         model = Profile
         fields = [
@@ -17,7 +18,5 @@ class ProfileSerializer(serializers.ModelSerializer):
             "avatar",
             "banner",
             "is_mature",
-            "created_at"
+            "created_at",
         ]
-
-    
