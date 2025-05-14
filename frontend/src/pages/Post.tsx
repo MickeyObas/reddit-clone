@@ -264,8 +264,6 @@ const Post = () => {
                 navigation={true}
                 spaceBetween={50}
                 slidesPerView={1}
-                onSlideChange={() => console.log('slide change')}
-                onSwiper={(swiper) => console.log(swiper)}
               >
                 {post.media.map((mediaItem, idx) => (
                   <SwiperSlide key={idx} className='w-full h-full'>
