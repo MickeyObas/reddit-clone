@@ -184,7 +184,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <span className='ms-3.5'>User Agreement</span>
         </li>
       </ul>
-      <span className='text-[10px] text-center mt-6'>Reddit Clone, Inc. &copy;2025. All rights reserved.</span>
+      <span className='text-[10px] text-center mt-6'>Reddit Clone. &copy;2025. MickeyTheBrave</span>
     </nav>
   </div>
   )
