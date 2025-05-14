@@ -38,17 +38,6 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_replies(self, obj):
         request = self.context["request"]
 
-        """
-        if hasattr(obj, 'replies'):
-            replies = sorted(obj.replies.all(), key=lambda x: x.created_at, reverse=True)
-            return CommentSerializer(
-                replies,
-                many=True,
-                context={'request': self.context.get('request')}
-            ).data
-        return []
-        """
-
         return CommentSerializer(
             obj.replies.select_related("owner", "owner__profile", "commentmedia")
             .prefetch_related(
@@ -79,13 +68,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
         if hasattr(obj, "user_votes") and obj.user_votes:
             return obj.user_votes[0].vote_type_name.lower()
-
-        # vote = Vote.objects.filter(
-        #     comment=obj,
-        #     owner=user
-        # )
-        # if vote.exists():
-        #     return vote.first().vote_type_name.lower()
 
         return None
 
@@ -128,8 +110,8 @@ class FeedCommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = [
             "id",
-            "parent",  # owner, None
-            "post",  # title, owner(is_creator?), channel
+            "parent",
+            "post", 
             "body",
             "created_at",
             "vote_count",

@@ -22,20 +22,6 @@ class PostMediaSerializer(serializers.ModelSerializer):
         return attrs
 
 
-# class PostCommunityDetailedSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Community
-#         fields = [
-#             'id',
-#             'avatar',
-#             'name',
-#             'subtitle',
-#             'description',
-#             'rules',
-#             'topics'
-#         ]
-
-
 class PostSerializer(serializers.ModelSerializer):
     media = serializers.SerializerMethodField()
     owner = UserSerializer(read_only=True)

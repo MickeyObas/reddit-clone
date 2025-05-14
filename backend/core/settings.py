@@ -154,8 +154,8 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
-# CORS
 
+# CORS
 
 CORS_ALLOWED_ORIGINS = [
     "https://reddit-clone-seven-eta.vercel.app",
@@ -167,8 +167,6 @@ CORS_ALLOWED_ORIGINS = [
 # MEDIA
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
-# MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 if DEBUG:
     STORAGES = {

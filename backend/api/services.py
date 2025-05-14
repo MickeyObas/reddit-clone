@@ -20,7 +20,6 @@ class VerificationService:
                 raise ValueError("Account with this email already exists")
             elif VerificationCode.objects.filter(email=email).exists():
                 VerificationCode.objects.filter(email=email).delete
-                # raise ValueError("Verification code already exists")
 
             code = generate_6_digit_code()
             subject = "Your verification code"

@@ -1,7 +1,5 @@
 from django.db import models
 
-# This module will host tags, flairs and topics for now
-
 
 class Tag(models.Model):
     name = models.CharField(max_length=80)
