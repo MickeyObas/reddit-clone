@@ -443,7 +443,7 @@ const CreatePost = () => {
             onFocus={() => handleFocus('content')}
             onBlur={() => handleBlur('content', post.content)}
             className='text-[16px] w-full border border-gray-300 px-3 py-3 rounded-2xl resize-none overflow-hidden focus:outline-slate-400'
-            placeholder='Body'
+            placeholder='Body [OPTIONAL]'
             rows={3}></textarea>
             <div className='flex justify-between text-xs px-3 mt-1 min-h-5'>
             {/* {error.content && (
