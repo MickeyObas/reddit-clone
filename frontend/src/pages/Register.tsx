@@ -96,6 +96,7 @@ const Register: React.FC = () => {
     }
   };
 
+  /*
   const handlegoogleLoginSuccess = async (credentialsResponse: CodeResponse) => {
     console.log(credentialsResponse);
      try {
@@ -130,7 +131,7 @@ const Register: React.FC = () => {
     onError: handleGoogleLoginError,
     flow: 'auth-code',
   })
-
+  */
 
   if(step === 1){
     return (
@@ -142,7 +143,7 @@ const Register: React.FC = () => {
             <p className="text-center text-xs">Registration via Apple & Google is currently not available</p>
             <div className="flex flex-col mt-4 gap-y-2 hover:cursor-not-allowed">
             <div 
-              onClick={googleLogin}
+              // onClick={googleLogin}
               className="relative flex items-center justify-between p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
               <div className="w-5 h-5 bg-red-400 rounded-full"></div>
               <p className="text-slate-400">Continue with Google</p>

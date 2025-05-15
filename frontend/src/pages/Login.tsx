@@ -121,7 +121,7 @@ const Login = (): JSX.Element => {
   }
 };
 
-  const handlegoogleLoginSuccess = async (credentialsResponse: CodeResponse) => {
+  /* const handlegoogleLoginSuccess = async (credentialsResponse: CodeResponse) => {
     console.log(credentialsResponse);
      try {
       setIsLoading(true);
@@ -158,6 +158,7 @@ const Login = (): JSX.Element => {
     onError: handleGoogleLoginError,
     flow: 'auth-code',
   })
+  */
 
   return (
     <div className="container max-w-lg mx-auto p-5 h-dvh md:h-screen flex md:items-center md:justify-center overflow-hidden">
@@ -167,7 +168,7 @@ const Login = (): JSX.Element => {
           <p className="text-center my-3">By continuing, you agree to our <span className="text-blue-400">User Agreement</span> and acknowledge that you understand the <span className="text-blue-400">Privacy Policy</span>.</p>
           <p className="text-center text-xs">Login via Apple & Google is currently not available</p>
           <div 
-            onClick={googleLogin}
+            // onClick={googleLogin}
             className="flex flex-col mt-4 gap-y-2 cursor-not-allowed">
             <div className="relative flex items-center justify-between p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
               <div className="w-5 h-5 bg-red-400 rounded-full"></div>
