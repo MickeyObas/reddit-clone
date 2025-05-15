@@ -7,7 +7,7 @@ from django.utils.crypto import get_random_string
 from rest_framework import serializers
 
 from api.models import VerificationCode
-from api.utils import is_valid_email
+from api.utils import is_valid_email, generate_random_username
 
 from .models import User
 
@@ -76,87 +76,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return email
 
     def create(self, validated_data):
-        validated_data["username"] = self.generate_random_username()
+        validated_data["username"] = generate_random_username()
         user = User.objects.create_user(**validated_data)
         user.save()
         return user
-
-    def generate_random_username(self):
-        adjectives = [
-            "Wobbly",
-            "Soggy",
-            "Spicy",
-            "Bouncy",
-            "Crispy",
-            "Jolly",
-            "Goofy",
-            "Dizzy",
-            "Clumsy",
-            "Zesty",
-            "Witty",
-            "Sassy",
-            "Nifty",
-            "Quirky",
-            "Snappy",
-            "Gloomy",
-            "Peppy",
-            "Bizarre",
-            "NoodleLike",
-            "Jazzy",
-            "Lumpy",
-            "Mischievous",
-            "Wonky",
-            "Sleepy",
-            "Speedy",
-            "Tacky",
-            "Loopy",
-            "Gleaming",
-            "Mysterious",
-            "Lukewarm",
-        ]
-
-        nouns = [
-            "Cactus",
-            "Waffle",
-            "Penguin",
-            "Octopus",
-            "Pickle",
-            "Giraffe",
-            "Pancake",
-            "Squid",
-            "Flamingo",
-            "Squirrel",
-            "Tornado",
-            "Meatball",
-            "Koala",
-            "Goblin",
-            "Turnip",
-            "Tofu",
-            "Llama",
-            "Cabbage",
-            "Gnome",
-            "Ravioli",
-            "Jellyfish",
-            "Walrus",
-            "Noodle",
-            "TaterTot",
-            "Chimichanga",
-            "Lobster",
-            "Marshmallow",
-            "Ferret",
-            "Pudding",
-            "Kangaroo",
-            "Muffin",
-            "Banana",
-            "Hedgehog",
-            "Narwhal",
-        ]
-
-        while True:
-            random_username = f"{random.choice(adjectives)}{random.choice(nouns)}{random.randint(10000, 99999)}"
-
-            if not User.objects.filter(username=random_username).exists():
-                return random_username
 
 
 class UserSerializer(serializers.ModelSerializer):

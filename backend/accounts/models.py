@@ -18,6 +18,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     date_joined = models.DateTimeField(default=timezone.now)
     last_seen = models.DateTimeField(null=True, blank=True)
     is_first_login = models.BooleanField(default=True)
+    google_sub = models.CharField(max_length=100, null=True, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

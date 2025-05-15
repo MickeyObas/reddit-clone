@@ -1,5 +1,7 @@
 from django.contrib.auth import authenticate
 from django.utils import timezone
+from django.conf import settings
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -11,8 +13,13 @@ from accounts.serializers import (PasswordResetConfirmSerializer,
                                   UserRegistrationSerializer, UserSerializer)
 
 from .models import VerificationCode
-from .services import VerificationService
-from .utils import is_valid_email
+from .services import VerificationService, GoogleAuthService
+from .utils import is_valid_email, generate_random_username
+
+import json
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+import requests
 
 
 @api_view(["POST"])
@@ -152,3 +159,71 @@ def password_reset_confirm(request):
         serializer.save()
         return Response({"message": "Password has been reset successfully."})
     return Response(serializer.errors, status=400)
+
+
+
+@api_view(['POST'])
+def google_login(request):
+    code = json.loads(request.body)['auth_code']
+
+    if not code:
+        return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user_id_info = GoogleAuthService.exchange_code_for_tokens(code)
+        user_qs = User.objects.filter(
+            Q(email=user_id_info.get('email')) | Q(google_sub=user_id_info.get('sub'))
+        )
+
+        if user_qs.exists():
+            user = user_qs.first()
+            if not user.google_sub:
+                user.google_sub = user_id_info.get('sub')
+                user.save()
+
+            # Generate Tokens
+            refresh = RefreshToken.for_user(user)
+            print(refresh)
+            return Response(
+                {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                    "user": UserSerializer(user, context={"request": request}).data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response({'error': 'There is no account associated with this email.'}, status=404)
+
+    except Exception as e:
+        return Response({'error': e})    
+
+
+@api_view(['POST'])
+def google_register(request):
+    # Get authorization token from FE
+    code = json.loads(request.body)['auth_code']
+
+    if not code:
+        return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user_id_info = GoogleAuthService.exchange_code_for_tokens(code)
+
+        if User.objects.filter(
+            Q(email=user_id_info.get('email')) | Q(google_sub=user_id_info.get('sub'))
+        ).exists():
+            return Response({'error': 'An account with this email address already exists.Please proceed to Login'}, status=400)
+
+        new_google_user = User.objects.create(
+            email=user_id_info.get('email'),
+            google_sub=user_id_info.get('sub'),
+            username=generate_random_username()
+        )
+
+        return Response(
+            {"message": "User registration successful"}, status=status.HTTP_201_CREATED
+        )
+    
+    except Exception as e:
+        return Response({'error': f'User registration failed, {e}'}, status=400)

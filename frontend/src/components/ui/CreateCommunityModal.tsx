@@ -421,13 +421,13 @@ const StepStyle = ({
           </div>
         </div>
         <input 
-          className="hidden" 
+          className="hidden text-[16px]" 
           ref={bannerFileRef} 
           type="file" 
           onChange={handleBannerChange} 
           accept="image/*"/>
         <input 
-          className="hidden" 
+          className="hidden text-[16px]" 
           ref={iconFileRef} 
           type="file" 
           onChange={handleIconChange}
@@ -537,7 +537,7 @@ const StepTopics = ({
           onChange={handleSearchQueryChange}
           type="text" 
           placeholder='Filter topics' 
-          className='w-full border-0 outline-0' />
+          className='w-full border-0 outline-0 text-[16px]' />
       </div>
       <h2 className='font-bold text-[16px] mt-2'>Topics {formData.topics.length}/3</h2>
       <div className='flex gap-x-1.5 mt-2 w-full flex-wrap gap-y-2'>

@@ -7,7 +7,7 @@ class Post(TimeStampedModel):
     owner = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     community = models.ForeignKey("communities.Community", on_delete=models.CASCADE)
     title = models.CharField(max_length=300, blank=False)
-    body = models.TextField()
+    body = models.TextField(blank=True, null=True)
     flairs = models.ManyToManyField("tags.Flair", blank=True)
 
     def __str__(self):

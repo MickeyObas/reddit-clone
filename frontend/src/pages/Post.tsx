@@ -255,7 +255,9 @@ const Post = () => {
             <img src={ellipsisIcon} alt="" className='w-6 h-6 ms-auto'/>
           </div>
           <h1 className='font-semibold text-[17px] mt-1'>{post?.title}</h1>
-          <p className='text-xs leading-5 mt-3'>{post?.body}</p>
+          {post?.body && (
+            <p className='text-xs leading-5 mt-3'>{post?.body}</p>
+          )}
           {post?.media && post.media.length > 0 && (
             <div className='bg-black aspect-[4/3] mt-3 max-h-[100vw] overflow-hidden w-full max-w-full md:rounded-lg select-none'>
               <Swiper

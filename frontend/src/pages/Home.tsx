@@ -53,7 +53,6 @@ const Home: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const sortFilter = searchParams.get('sort') || 'best';
   const {setIsSidebarOpen, setIsCommunityModalOpen} = useOutletContext<LayoutContextType>();
-  console.log(setIsSidebarOpen, setIsCommunityModalOpen);
 
   const toggleDropdown = (option: string) => {
     setOpenDropdown((prev) => prev === option ? null : option);

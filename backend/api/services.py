@@ -1,4 +1,8 @@
 from datetime import datetime
+import json
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+import requests
 
 from django.conf import settings
 from django.core.cache import cache
@@ -10,6 +14,7 @@ from accounts.models import User
 
 from .models import VerificationCode
 from .utils import generate_6_digit_code
+
 
 
 class VerificationService:
@@ -67,3 +72,40 @@ class VerificationService:
             code_entry.save()
         except VerificationCode.DoesNotExist:
             raise ValueError("Invalid code")
+
+
+class GoogleAuthService:
+    @staticmethod
+    def exchange_code_for_tokens(code):
+        CLIENT_ID = settings.GOOGLE_CLIENT_ID
+        CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
+        TOKEN_URL = "https://oauth2.googleapis.com/token"
+
+        response = requests.post(
+            TOKEN_URL,
+            data={
+                "code": code,
+                "client_id": CLIENT_ID,
+                "client_secret": CLIENT_SECRET,
+                "redirect_uri": "postmessage",
+                "grant_type": "authorization_code",
+            },
+        )
+
+        if response.status_code == 200:
+            response_data = response.json()
+
+            try:
+                idinfo = id_token.verify_oauth2_token(response_data['id_token'], google_requests.Request(), CLIENT_ID)
+
+                return {
+                    "email": idinfo.get('email'),
+                    "sub": idinfo.get('sub')
+                }
+
+            except Exception as e:
+                raise ValueError(e)
+
+        else:
+            raise Exception(f"Failed to exchange code: {response.text}")
+

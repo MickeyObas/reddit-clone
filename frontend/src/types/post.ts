@@ -3,7 +3,7 @@ import { CommentType } from "./comment"
 export type Post = {
     id: number,
     title: string,
-    body: string,
+    body: string | null,
     community: {
         id: number,
         name: string,
@@ -27,7 +27,7 @@ export type Post = {
 export type PostDisplay = {
     id: number,
     title: string,
-    body: string,
+    body: string | null,
     community: string,
     thumbnail: string,
     vote_count: number,
@@ -46,7 +46,7 @@ export type PostDisplay = {
 export type PostFeed = {
     id: number,
     title: string,
-    body: string,
+    body: string | null,
     community: {
         id: number,
         avatar: string,

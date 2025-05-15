@@ -26,7 +26,7 @@ type Post = {
 type ErrorState = {
   title: string,
   link: string,
-  content: string
+  // content: string
 }
 
 type LayoutContextType = {
@@ -56,7 +56,7 @@ const CreatePost = () => {
   const [error, setError] = useState<ErrorState>({
     title: '',
     link: '',
-    content: ''
+    // content: ''
   })
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -110,8 +110,11 @@ const CreatePost = () => {
     if(post.media){
       post.media.forEach((file) => formData.append('media', file));
     }
+    if(post.content){
+      formData.append('body', post.content);
+    }
+
     formData.append('title', post.title);
-    formData.append('body', post.content);
     // if (communityId) {
     //   formData.append('community_id', String(communityId));
     // } else if (post.community) {
@@ -130,7 +133,11 @@ const CreatePost = () => {
         console.log(error);
         console.error("Bad response.");
       }else{
-        navigate(from);
+        if(from === '/'){
+          navigate('/?sort=new');
+        }else{
+          navigate(from);
+        }
       }
     }catch(err){
       console.error(err);
@@ -180,7 +187,7 @@ const CreatePost = () => {
     fetchCommunity();
   }, [communityId])
 
-  const isValid = post.community && post.title.trim() !== "" && post.content.trim() !== "";
+  const isValid = post.community && post.title.trim() !== "";
   
   return (
     <div className='grid grid-cols-1 md:grid-cols-[1fr_300px] xl:grid-cols-[280px_1fr_300px]'>
@@ -242,7 +249,7 @@ const CreatePost = () => {
               </span>
               <input 
                 type="text" 
-                className='px-3 py-2 outline-none bg-gray-white'
+                className='px-3 py-2 outline-none bg-gray-white text-[16px]'
                 placeholder='Select a community'
                 value={search}
                 onChange={handleSearchChange}
@@ -392,7 +399,7 @@ const CreatePost = () => {
               onChange={handlePostInputChange}
               onBlur={() => handleBlur('title', post.title)}
               onFocus={() => handleFocus('title')}
-              className={`peer w-full mb-1 border border-gray-300 py-3.5 px-3 rounded-2xl focus:outline-2 focus:outline-blue-500 ${error.title && 'outline-deep-red outline-2'}`}
+              className={`text-[16px] peer w-full mb-1 border border-gray-300 py-3.5 px-3 rounded-2xl focus:outline-2 focus:outline-blue-500 ${error.title && 'outline-deep-red outline-2'}`}
               placeholder='Title *'
               />
               {error.title ? (<img 
@@ -435,11 +442,11 @@ const CreatePost = () => {
             onChange={handlePostInputChange}
             onFocus={() => handleFocus('content')}
             onBlur={() => handleBlur('content', post.content)}
-            className='w-full border border-gray-300 px-3 py-3 rounded-2xl resize-none overflow-hidden focus:outline-slate-400'
+            className='text-[16px] w-full border border-gray-300 px-3 py-3 rounded-2xl resize-none overflow-hidden focus:outline-slate-400'
             placeholder='Body'
             rows={3}></textarea>
             <div className='flex justify-between text-xs px-3 mt-1 min-h-5'>
-            {error.content && (
+            {/* {error.content && (
               <div className='error flex items-center'>
               <CircleAlert 
                 size={18}
@@ -447,7 +454,7 @@ const CreatePost = () => {
               />
               <span className='ms-1'>Please fill out this field. Content is required.</span>
             </div>
-            )}
+            )} */}
             </div>
           </div>
         )}
@@ -468,7 +475,7 @@ const CreatePost = () => {
                 onChange={handlePostInputChange}
                 onBlur={() => handleBlur('link', post.link)}
                 onFocus={() => handleFocus('link')}
-                className={`peer w-full mb-1 border border-gray-300 py-3.5 px-3 rounded-2xl focus:outline-2 focus:outline-blue-500 ${error.link && 'outline-deep-red outline-2'}`}
+                className={`text-[16px] peer w-full mb-1 border border-gray-300 py-3.5 px-3 rounded-2xl focus:outline-2 focus:outline-blue-500 ${error.link && 'outline-deep-red outline-2'}`}
                 placeholder='Link URL *'
                 />
                 {error.link ? (<img 

@@ -13,6 +13,8 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("password-reset/", views.password_reset_request),
     path("password-reset-confirm/", views.password_reset_confirm),
+    path('google-login/', views.google_login),
+    path('google-register/', views.google_register),
     path("accounts/", include("accounts.urls")),
     path("posts/", include("posts.urls")),
     path("profiles/", include("profiles.urls")),

@@ -13,9 +13,12 @@ import { Button } from "../components/ui/Button";
 import { FormInput } from "../components/ui/FormInput";
 import toast from "react-hot-toast";
 
+import { useGoogleLogin, CodeResponse } from '@react-oauth/google';
+import { useNavigate } from "react-router-dom";
+
 
 const Register: React.FC = () => {
-
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -93,6 +96,41 @@ const Register: React.FC = () => {
     }
   };
 
+  const handlegoogleLoginSuccess = async (credentialsResponse: CodeResponse) => {
+    console.log(credentialsResponse);
+     try {
+      const response = await fetch(`${BACKEND_URL}/google-register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({'auth_code': credentialsResponse.code})
+      });
+
+      if(!response.ok){
+        console.log("Response is not okay.");
+        const error = await response.json();
+        setError(error.error);
+      }else{
+        const data = await response.json();
+        console.log(data);
+        navigate("/login");
+      }
+    }catch(err){
+        console.log(err);
+    }
+  }
+
+  const handleGoogleLoginError = () => {
+    console.log("Google login failed");
+  }
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: handlegoogleLoginSuccess,
+    onError: handleGoogleLoginError,
+    flow: 'auth-code',
+  })
+
 
   if(step === 1){
     return (
@@ -103,7 +141,9 @@ const Register: React.FC = () => {
             <p className="text-center my-3">By continuing, you agree to our <span className="text-blue-400">User Agreement</span> and acknowledge that you understand the <span className="text-blue-400">Privacy Policy</span>.</p>
             <p className="text-center text-xs">Registration via Apple & Google is currently not available</p>
             <div className="flex flex-col mt-4 gap-y-2 hover:cursor-not-allowed">
-            <div className="relative flex items-center justify-between p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
+            <div 
+              onClick={googleLogin}
+              className="relative flex items-center justify-between p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
               <div className="w-5 h-5 bg-red-400 rounded-full"></div>
               <p className="text-slate-400">Continue with Google</p>
               <img
