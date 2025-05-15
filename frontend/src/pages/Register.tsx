@@ -13,12 +13,10 @@ import { Button } from "../components/ui/Button";
 import { FormInput } from "../components/ui/FormInput";
 import toast from "react-hot-toast";
 
-import { useGoogleLogin, CodeResponse } from '@react-oauth/google';
-import { useNavigate } from "react-router-dom";
+// import { useGoogleLogin, CodeResponse } from '@react-oauth/google';
 
 
 const Register: React.FC = () => {
-  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
