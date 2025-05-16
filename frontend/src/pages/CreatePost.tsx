@@ -239,7 +239,7 @@ const CreatePost = () => {
               className='flex flex-col relative cursor-pointer'
             >
               <div 
-              className='flex items-center bg-gray-white rounded-full max-w-[75vw] outline-2 outline-blue-600'
+              className='flex items-center bg-gray-white rounded-full max-w-[22rem] outline-2 outline-blue-600 overflow-hidden'
               >
               <span className='w-10 h-10 flex'>
                 <img 
