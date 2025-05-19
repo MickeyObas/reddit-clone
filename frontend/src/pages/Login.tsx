@@ -157,6 +157,8 @@ const Login = (): JSX.Element => {
     onSuccess: handlegoogleLoginSuccess,
     onError: handleGoogleLoginError,
     flow: 'auth-code',
+    redirect_uri:"https://reddit-clone-seven-eta.vercel.app/register",
+    ux_mode: "popup"
   })
 
 
