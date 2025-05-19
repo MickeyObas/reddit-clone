@@ -212,7 +212,7 @@ def google_register(request):
         if User.objects.filter(
             Q(email=user_id_info.get('email')) | Q(google_sub=user_id_info.get('sub'))
         ).exists():
-            return Response({'error': 'An account with this email address already exists.Please proceed to Login'}, status=400)
+            return Response({'error': 'An account with this email address already exists. Please proceed to Login with Google'}, status=400)
 
         new_google_user = User.objects.create(
             email=user_id_info.get('email'),

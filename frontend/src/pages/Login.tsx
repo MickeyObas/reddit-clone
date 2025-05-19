@@ -2,7 +2,6 @@ import { JSX, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Assets
-import appleIcon from '../assets/icons/apple-logo.png';
 import googleIcon from '../assets/icons/google.png';
 import { BACKEND_URL } from "../config";
 import { FormInput } from "../components/ui/FormInput";
@@ -167,25 +166,16 @@ const Login = (): JSX.Element => {
         <div className="pt-4 md:pt-0">
           <h1 className="text-2xl font-bold text-center">Log In</h1>
           <p className="text-center my-3">By continuing, you agree to our <span className="text-blue-400">User Agreement</span> and acknowledge that you understand the <span className="text-blue-400">Privacy Policy</span>.</p>
-          <p className="text-center text-xs">Login via Apple & Google is currently not available</p>
           <div 
             onClick={googleLogin}
-            className="flex flex-col mt-4 gap-y-2 cursor-not-allowed">
-            <div className="relative flex items-center justify-between p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
-              <div className="w-5 h-5 bg-red-400 rounded-full"></div>
-              <p className="text-slate-400">Continue with Google</p>
+            className="flex flex-col mt-4 gap-y-2 cursor-pointer group">
+            <div className="relative flex items-center justify-between p-2 border border-slate-300 rounded-full bg-white group-hover:bg-gray-100 color text-slate-800">
+              <div className="w-5 h-5 bg-transparent rounded-full"></div>
+              <p className="">Continue with Google</p>
               <img
                 className="w-[18px] h-[18px]" 
                 src={googleIcon} 
                 alt="Google Icon" />
-            </div>
-            <div className="relative flex items-center justify-between p-2 border border-slate-300 rounded-full bg-white color text-slate-800">
-              <div className="w-5 h-5 bg-red-400 rounded-full"></div>
-              <p className="text-slate-400">Continue with Apple</p>
-              <img
-                className="w-[18px] h-[18px]" 
-                src={appleIcon} 
-                alt="Apple Icon" />
             </div>
           </div>
           <div className="divider my-3">OR</div>
