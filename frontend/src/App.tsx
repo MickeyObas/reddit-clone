@@ -12,7 +12,7 @@ const App = () => {
     <>
       <ModalProvider>
         <Toaster position='top-right' reverseOrder={false} toastOptions={{duration: 5000}}/>
-        <GoogleOAuthProvider clientId='122624213242-71mdgmfrnltubnb8l7ss0ikpfabhvmf7.apps.googleusercontent.com'>
+        <GoogleOAuthProvider clientId='122624213242-jvhlbjd3bhk84e7kdjgpv2nitq8b8j9m.apps.googleusercontent.com'>
           <AppRoutes />
         </GoogleOAuthProvider>
       </ModalProvider>
