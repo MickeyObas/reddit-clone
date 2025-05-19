@@ -183,7 +183,6 @@ def google_login(request):
 
             # Generate Tokens
             refresh = RefreshToken.for_user(user)
-            print(refresh)
             return Response(
                 {
                     "refresh": str(refresh),
