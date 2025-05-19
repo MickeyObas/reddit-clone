@@ -45,10 +45,6 @@ pip install -r requirements.txt
 ```
 python manage.py migrate
 ```
-5. Start the Django development server
-```
-python manage.py runserver
-```
 ### 3. Set up the Frontend
 1. Navigate to the `frontend` directory
 ```
@@ -58,17 +54,27 @@ cd frontend
 ```
 npm install
 ```
-3. Start the development server
-```
-npm install
-```
 ### 4. Set up Environment Variables
+In the `backend` directory, create a `.env` file based on `backend/.env.example`. Enter the appropriate values. 
+```bash
+cd backend
+cp .env.example .env
 ```
-SECRET_KEY=your-secret-key
-DEBUG=True
-DATABASE_URL=postgres://user:password@localhost:5432/dbname
+In the `frontend` directory, create a `.env` file based on `frontend/.env.example`. Enter the appropriate values. 
+```bash
+cd frontend
+cp .env.example .env
 ```
-
+### 5. Usage
+In the `backend` directory on the terminal:
+```bash
+python manage.py
+```
+In the `frontend` directory on the terminal:
+```node
+npm run dev
+```
+Navigate to `http://localhost:5173` (or whichever port the frontend is being served on) in your browser to interact with the app.
 
 
 
