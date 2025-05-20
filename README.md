@@ -1,7 +1,18 @@
 # Reddit Clone
 
 ## Project Overview
-A full-stack Reddit clone built using React on the front-end and Django with DRF on the back-end. This project implements core features of Reddit, such as user auth, post + community creation, voting, comments, and community-based subreddits.
+A full-stack Reddit clone built using React on the front-end and Django with DRF on the back-end. This project implements core features of Reddit, such as user auth, post + community creation, voting, comments, and community-based subreddits. Check it out [here](https://reddit-clone-seven-eta.vercel.app)!
+
+## Features Demo
+<div style="width:100%; display: flex; justify-content: space-between; margin-bottom: 10px">
+    <img src="screenshots/voting.gif" alt="Description" width="49%"/>
+    <img src="screenshots/create-community.png" alt="Description" width="49%"/>
+</div>
+
+<div style="width:100%; display: flex; justify-content: space-between; margin-bottom: 10px">
+    <img src="screenshots/user-profile.png" alt="Description" width="49%"/>
+    <img src="screenshots/responsive.gif" alt="Description" width="49%"/>
+</div>
 
 ## Technologies Used
 ### Frontend
