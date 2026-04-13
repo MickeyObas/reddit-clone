@@ -14,7 +14,17 @@ import type { Post, PostDisplay } from '../types/post';
 import { CommentType } from '../types/comment';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom';
-import { fetchWithAuth, formatCommunity, formatDate, formatUsername, getCommentCountLabel, getVoteCountLabel, timeAgo, useMediaQuery } from '../utils';
+import {
+  fetchWithAuth,
+  formatCommunity,
+  formatDate,
+  formatUsername,
+  getCommentCountLabel,
+  getVoteCountLabel,
+  timeAgo,
+  togglePostBookmark,
+  useMediaQuery,
+} from "../utils";
 import { BACKEND_URL } from '../config';
 
 import VoteBar from '../components/ui/VoteBar';
@@ -24,6 +34,7 @@ import Comment from '../components/ui/Comment';
 import Sidebar from '../components/layouts/Sidebar';
 import { Community } from '../types/community';
 import { RuleItem } from './AboutCommunity';
+import toast from 'react-hot-toast';
 
 
 type PostVote = {
@@ -52,6 +63,7 @@ const Post = () => {
   const [community, setCommunity] = useState<Community | null>(null);
   const [popularPosts, setPopularPosts] = useState<PostDisplay[]>([]);
   const [isCommunityMember, setIsCommunityMember] = useState<boolean | null>(null)
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
   const formattedDate = useMemo(() => {
     const dateStr = community?.created_at;
     if(!dateStr) return "N/A";
@@ -220,6 +232,32 @@ const Post = () => {
     }
   };
 
+  const handleBookmarkToggle = async () => {
+    if (!post || isBookmarkLoading) return;
+
+    const previousBookmarkState = post.is_bookmarked;
+    setPost((prev) => (prev ? { ...prev, is_bookmarked: !previousBookmarkState } : prev));
+    setIsBookmarkLoading(true);
+
+    try {
+      const response = await togglePostBookmark(post.id, !previousBookmarkState);
+      if (!response?.ok) {
+        setPost((prev) =>
+          prev ? { ...prev, is_bookmarked: previousBookmarkState } : prev
+        );
+        toast.error("Couldn't update bookmark");
+      }
+    } catch (err) {
+      setPost((prev) =>
+        prev ? { ...prev, is_bookmarked: previousBookmarkState } : prev
+      );
+      toast.error("Couldn't update bookmark");
+      console.error(err);
+    } finally {
+      setIsBookmarkLoading(false);
+    }
+  };
+
   if(postLoading) return <h1>Loading...</h1>
 
   return (
@@ -299,6 +337,19 @@ const Post = () => {
                 <ShareIcon size={18}/>
               </div>
             </div>
+            <button
+              disabled={isBookmarkLoading}
+              onClick={handleBookmarkToggle}
+              className='bg-slate-200 flex items-center rounded-full px-3.5 gap-x-1.5 disabled:opacity-50 cursor-pointer'
+            >
+              <span className='h-full py-2 text-sm'>
+                {isBookmarkLoading
+                  ? 'Saving...'
+                  : post?.is_bookmarked
+                  ? 'Saved'
+                  : 'Save'}
+              </span>
+            </button>
           </div>
           {!showCommentBox ? (
             <button 

@@ -98,6 +98,15 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   return response;
 };
 
+export const togglePostBookmark = async (
+  postId: number,
+  shouldBookmark: boolean
+) => {
+  return fetchWithAuth(`${BACKEND_URL}/posts/${postId}/bookmark/`, {
+    method: shouldBookmark ? "POST" : "DELETE",
+  });
+};
+
 export function timeAgo(isoDateString: string) {
   const date = new Date(isoDateString); // Parse the ISO string into a Date object
   const now = new Date(); // Current date and time

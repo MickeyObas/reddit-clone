@@ -5,7 +5,12 @@ import UpArrow from '../../assets/svgs/UpArrow';
 import DownArrow from '../../assets/svgs/DownArrow';
 
 import { useState } from 'react';
-import { fetchWithAuth, formatCommunity, getCommentCountLabel, timeAgo } from '../../utils';
+import {
+  fetchWithAuth,
+  formatCommunity,
+  getCommentCountLabel,
+  timeAgo,
+} from "../../utils";
 import { BACKEND_URL } from '../../config';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -21,10 +26,17 @@ type hoverState = {
 
 type PostItemProps = {
   post: PostFeed,
-  onVote: (postId: number, voteType: "upvote" | "downvote" | null) => void
+  onVote: (postId: number, voteType: "upvote" | "downvote" | null) => void,
+  onBookmarkToggle: (postId: number) => void,
+  bookmarkLoading?: boolean
 }
 
-const PostItem = ({post, onVote}: PostItemProps) => {
+const PostItem = ({
+  post,
+  onVote,
+  onBookmarkToggle,
+  bookmarkLoading = false,
+}: PostItemProps) => {
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -171,7 +183,20 @@ const PostItem = ({post, onVote}: PostItemProps) => {
               <div>{post.comment_count} {getCommentCountLabel(post.comment_count)}</div>
               <div>Share</div>
               <div>Report</div>
-              <div className='hidden [@media(min-width:400px)]:block'>Save</div>
+              <button
+                disabled={bookmarkLoading}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBookmarkToggle(post.id);
+                }}
+                className="hidden [@media(min-width:400px)]:block disabled:opacity-50 cursor-pointer"
+              >
+                {bookmarkLoading
+                  ? "Saving..."
+                  : post.is_bookmarked
+                  ? "Saved"
+                  : "Save"}
+              </button>
               <div className='hidden [@media(min-width:500px)]:block'>Award</div>
               <div className='hidden [@media(min-width:600px)]:block'>Hide</div>
               <img src={ellipsisIcon} className='w-6 h-6 [@media(min-width:600px)]:hidden'/>

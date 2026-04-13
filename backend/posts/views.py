@@ -8,6 +8,7 @@ from django.utils import timezone
 from rest_framework import parsers
 from rest_framework.decorators import (api_view, parser_classes,
                                        permission_classes)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -16,9 +17,9 @@ from comments.models import Comment
 from communities.models import Community
 from votes.models import Vote
 
-from .models import Post, PostMedia, RecentlyViewedPost
+from .models import Bookmark, Post, PostMedia, RecentlyViewedPost
 from .serializers import (PostDisplaySerializer, PostSerializer,
-                          RecentlyViewedPostSerializer)
+                          RecentlyViewedPostSerializer, BookmarkSerializer)
 
 
 @api_view(["GET", "POST"])
@@ -40,6 +41,11 @@ def post_list_or_create(request):
                     "vote_set",
                     queryset=Vote.objects.filter(owner=request.user),
                     to_attr="user_votes",
+                ),
+                Prefetch(
+                    "bookmarks",
+                    queryset=Bookmark.objects.filter(owner=request.user),
+                    to_attr="user_bookmarks",
                 ),
             )
             .order_by("-created_at")
@@ -85,6 +91,11 @@ def post_detail_update_delete(request, pk):
                     "vote_set",
                     queryset=Vote.objects.filter(owner=request.user),
                     to_attr="user_votes",
+                ),
+                Prefetch(
+                    "bookmarks",
+                    queryset=Bookmark.objects.filter(owner=request.user),
+                    to_attr="user_bookmarks",
                 ),
             )
             .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
@@ -138,6 +149,13 @@ def user_post_feed(request):
                     to_attr="user_votes",
                 )
             )
+            .prefetch_related(
+                Prefetch(
+                    "bookmarks",
+                    queryset=Bookmark.objects.filter(owner=request.user),
+                    to_attr="user_bookmarks",
+                )
+            )
             .order_by("-created_at")
             .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
         )
@@ -149,6 +167,13 @@ def user_post_feed(request):
                     "vote_set",
                     queryset=Vote.objects.filter(owner=request.user),
                     to_attr="user_votes",
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "bookmarks",
+                    queryset=Bookmark.objects.filter(owner=request.user),
+                    to_attr="user_bookmarks",
                 )
             )
             .select_related("community")
@@ -167,6 +192,13 @@ def user_post_feed(request):
                     to_attr="user_votes",
                 )
             )
+            .prefetch_related(
+                Prefetch(
+                    "bookmarks",
+                    queryset=Bookmark.objects.filter(owner=request.user),
+                    to_attr="user_bookmarks",
+                )
+            )
             .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
             .order_by("-vote_count")
         )
@@ -179,6 +211,13 @@ def user_post_feed(request):
                     "vote_set",
                     queryset=Vote.objects.filter(owner=request.user),
                     to_attr="user_votes",
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "bookmarks",
+                    queryset=Bookmark.objects.filter(owner=request.user),
+                    to_attr="user_bookmarks",
                 )
             )
             .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
@@ -196,6 +235,13 @@ def user_post_feed(request):
                     to_attr="user_votes",
                 )
             )
+            .prefetch_related(
+                Prefetch(
+                    "bookmarks",
+                    queryset=Bookmark.objects.filter(owner=request.user),
+                    to_attr="user_bookmarks",
+                )
+            )
             .order_by("-created_at")
             .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
         )
@@ -207,6 +253,13 @@ def user_post_feed(request):
                     "vote_set",
                     queryset=Vote.objects.filter(owner=request.user),
                     to_attr="user_votes",
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "bookmarks",
+                    queryset=Bookmark.objects.filter(owner=request.user),
+                    to_attr="user_bookmarks",
                 )
             )
             .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
@@ -277,3 +330,46 @@ def recent_post_list(request):
 def recent_posts_clear(request):
     RecentlyViewedPost.objects.filter(user=request.user).delete()
     return Response(status=204)
+
+
+@api_view(["POST", "DELETE"])
+@permission_classes([IsAuthenticated])
+def post_bookmark_create_or_delete(request, pk):
+    try:
+        post = Post.objects.get(id=pk)
+
+        if request.method == "POST":
+            bookmark, created = Bookmark.objects.get_or_create(
+                owner=request.user, post=post
+            )
+
+            if created:
+                serializer = BookmarkSerializer(bookmark, context={"request": request})
+                return Response(serializer.data, status=201)
+
+            return Response({"error": "Post already bookmarked."}, status=400)
+
+        Bookmark.objects.filter(owner=request.user, post=post).delete()
+        return Response(status=204)
+
+    except Post.DoesNotExist:
+        return Response({"error": "Post does not exist."}, status=404)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_bookmark_list(request):
+    bookmarks = (
+        Bookmark.objects.filter(owner=request.user)
+        .select_related(
+            "post",
+            "post__owner",
+            "post__owner__profile",
+            "post__community",
+            "post__community__owner",
+        )
+        .prefetch_related("post__community__topics")
+        .order_by("-created_at")
+    )
+    serializer = BookmarkSerializer(bookmarks, many=True, context={"request": request})
+    return Response(serializer.data, status=200)

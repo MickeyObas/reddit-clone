@@ -8,7 +8,15 @@ import redditIcon from '../assets/icons/reddit-outline.png';
 import { CakeSlice, ChevronDown, Globe, NotepadTextIcon, Pin } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { fetchWithAuth, formatCommunity, formatDate, formatUsername, getCommentCountLabel, timeAgo } from '../utils';
+import {
+  fetchWithAuth,
+  formatCommunity,
+  formatDate,
+  formatUsername,
+  getCommentCountLabel,
+  timeAgo,
+  togglePostBookmark,
+} from "../utils";
 import { BACKEND_URL } from '../config';
 import { Post, PostDisplay} from '../types/post';
 import { useAuth } from '../contexts/AuthContext';
@@ -45,6 +53,7 @@ const Community = ({sort='latest'}) => {
   const [posts, setPosts] = useState<PostDisplay[]>([]);
   const [isHovered, setIsHovered] = useState<hoverState | null>(null);
   const [votes, setVotes] = useState<PostVotes>({})
+  const [bookmarkLoadingByPostId, setBookmarkLoadingByPostId] = useState<Record<number, boolean>>({});
   const { communityId } = useParams();
   const navigate = useNavigate();
   const formattedDate = useMemo(() => {
@@ -172,6 +181,35 @@ const Community = ({sort='latest'}) => {
     };
     joinCommunity();
   }
+
+  const handleBookmarkToggle = async (postId: number) => {
+    if (bookmarkLoadingByPostId[postId]) return;
+
+    const updatedPosts = [...posts];
+    const post = updatedPosts.find((item) => item.id === postId);
+    if (!post) return;
+
+    const previousBookmarkState = post.is_bookmarked;
+    post.is_bookmarked = !previousBookmarkState;
+    setPosts(updatedPosts);
+    setBookmarkLoadingByPostId((prev) => ({ ...prev, [postId]: true }));
+
+    try {
+      const response = await togglePostBookmark(postId, !previousBookmarkState);
+      if (!response?.ok) {
+        post.is_bookmarked = previousBookmarkState;
+        setPosts([...updatedPosts]);
+        toast.error("Couldn't update bookmark");
+      }
+    } catch (err) {
+      post.is_bookmarked = previousBookmarkState;
+      setPosts([...updatedPosts]);
+      toast.error("Couldn't update bookmark");
+      console.error(err);
+    } finally {
+      setBookmarkLoadingByPostId((prev) => ({ ...prev, [postId]: false }));
+    }
+  };
 
   if(!community) return <h1></h1>
 
@@ -324,7 +362,20 @@ const Community = ({sort='latest'}) => {
                         <div>{post.comment_count} {getCommentCountLabel(post.comment_count)}</div>
                         <div>Share</div>
                         <div>Report</div>
-                        <div className='hidden [@media(min-width:400px)]:block'>Save</div>
+                        <button
+                          disabled={bookmarkLoadingByPostId[post.id] ?? false}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleBookmarkToggle(post.id);
+                          }}
+                          className='hidden [@media(min-width:400px)]:block disabled:opacity-50 cursor-pointer'
+                        >
+                          {(bookmarkLoadingByPostId[post.id] ?? false)
+                            ? "Saving..."
+                            : post.is_bookmarked
+                            ? "Saved"
+                            : "Save"}
+                        </button>
                         <div className='hidden [@media(min-width:500px)]:block'>Award</div>
                         <div className='hidden [@media(min-width:600px)]:block'>Hide</div>
                         <img src={ellipsisIcon} className='w-6 h-6 [@media(min-width:600px)]:hidden'/>

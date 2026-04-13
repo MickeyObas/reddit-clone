@@ -52,3 +52,25 @@ class RecentlyViewedPost(models.Model):
     class Meta:
         unique_together = ("user", "post")
         ordering = ["-viewed_at"]
+
+
+class Bookmark(TimeStampedModel):
+    owner = models.ForeignKey(
+        "accounts.User", on_delete=models.CASCADE, related_name="bookmarks"
+    )
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="bookmarks")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "post"], name="unique_bookmark_per_user_post"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["owner", "-created_at"]),
+            models.Index(fields=["post"]),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.owner} bookmarked post {self.post.id}"

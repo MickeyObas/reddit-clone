@@ -21,7 +21,8 @@ export type Post = {
     created_at: string,
     user_vote: string | null,
     is_member: boolean,
-    media: string[]
+    media: string[],
+    is_bookmarked: boolean
 }
 
 export type PostDisplay = {
@@ -35,6 +36,7 @@ export type PostDisplay = {
     created_at: string,
     user_vote: string | null,
     is_member: boolean,
+    is_bookmarked: boolean,
     owner: {
         id: number,
         email: string,
@@ -58,7 +60,8 @@ export type PostFeed = {
     created_at: string,
     user_vote: string | null,
     is_member: boolean,
-    type: string
+    type: string,
+    is_bookmarked: boolean
 }
 
 export type RecentPostDisplay = {

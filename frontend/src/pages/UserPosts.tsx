@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useParams, useSearchParams } from "react-router-dom";
-import { fetchWithAuth } from "../utils";
+import { fetchWithAuth, togglePostBookmark } from "../utils";
 import { BACKEND_URL } from "../config";
 import PostItem from "../components/ui/PostItem";
 import { PostFeed } from "../types/post";
@@ -21,6 +21,7 @@ const UserPosts = () => {
   const loaderRef = useRef(null);
   const [nextUrl, setNextUrl] = useState('');
   const loadingRef = useRef<boolean>(false);
+  const [bookmarkLoadingByPostId, setBookmarkLoadingByPostId] = useState<Record<number, boolean>>({});
 
   console.log("NEXT URL: ", nextUrl);
 
@@ -131,6 +132,32 @@ const UserPosts = () => {
     }
   }, [nextUrl]);
 
+  const handleBookmarkToggle = async (postId: number) => {
+    const updatedPosts = [...posts];
+    const post = updatedPosts.find((item) => item.id === postId);
+
+    if (!post || bookmarkLoadingByPostId[postId]) return;
+
+    const previousBookmarkState = post.is_bookmarked;
+    post.is_bookmarked = !previousBookmarkState;
+    setPosts(updatedPosts);
+    setBookmarkLoadingByPostId((prev) => ({ ...prev, [postId]: true }));
+
+    try {
+      const response = await togglePostBookmark(postId, !previousBookmarkState);
+      if (!response?.ok) {
+        post.is_bookmarked = previousBookmarkState;
+        setPosts([...updatedPosts]);
+      }
+    } catch (err) {
+      post.is_bookmarked = previousBookmarkState;
+      setPosts([...updatedPosts]);
+      console.error(err);
+    } finally {
+      setBookmarkLoadingByPostId((prev) => ({ ...prev, [postId]: false }));
+    }
+  };
+
   useEffect(() => {
     if(observer.current) observer.current.disconnect();
 
@@ -165,6 +192,8 @@ const UserPosts = () => {
               key={idx}
               post={post}
               onVote={handleVote}
+              onBookmarkToggle={handleBookmarkToggle}
+              bookmarkLoading={bookmarkLoadingByPostId[post.id] ?? false}
             />
           ))}
           <div>{nextUrl && (

@@ -8,7 +8,7 @@ from communities.serializers import (CommunityDisplaySerializer,
                                      CommunitySerializer)
 from votes.models import Vote
 
-from .models import Post, PostMedia, RecentlyViewedPost
+from .models import Bookmark, Post, PostMedia, RecentlyViewedPost
 
 
 class PostMediaSerializer(serializers.ModelSerializer):
@@ -32,6 +32,7 @@ class PostSerializer(serializers.ModelSerializer):
     community_id = serializers.CharField(write_only=True)
     is_member = serializers.SerializerMethodField()
     vote_count = serializers.IntegerField(default=0, read_only=True)
+    is_bookmarked = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -49,6 +50,7 @@ class PostSerializer(serializers.ModelSerializer):
             "comment_count",
             "created_at",
             "is_member",
+            "is_bookmarked",
         ]
 
     def get_media(self, obj):
@@ -92,6 +94,16 @@ class PostSerializer(serializers.ModelSerializer):
             return False
 
         return user.id in obj.community.members.values_list("id", flat=True)
+
+    def get_is_bookmarked(self, obj):
+        user = self.context.get("request").user
+        if not user or not user.is_authenticated:
+            return False
+
+        if hasattr(obj, "user_bookmarks"):
+            return len(obj.user_bookmarks) > 0
+
+        return Bookmark.objects.filter(owner=user, post=obj).exists()
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -145,6 +157,7 @@ class PostDisplaySerializer(serializers.ModelSerializer):
     user_vote = serializers.SerializerMethodField()
     is_member = serializers.SerializerMethodField()
     vote_count = serializers.IntegerField()
+    is_bookmarked = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -158,6 +171,7 @@ class PostDisplaySerializer(serializers.ModelSerializer):
             "created_at",
             "user_vote",
             "is_member",
+            "is_bookmarked",
         ]
 
     def get_comment_count(self, obj):
@@ -186,6 +200,16 @@ class PostDisplaySerializer(serializers.ModelSerializer):
         if not user or not user.is_authenticated:
             return False
         return user.id in obj.community.members.values_list("id", flat=True)
+
+    def get_is_bookmarked(self, obj):
+        user = self.context.get("request").user
+        if not user or not user.is_authenticated:
+            return False
+
+        if hasattr(obj, "user_bookmarks"):
+            return len(obj.user_bookmarks) > 0
+
+        return Bookmark.objects.filter(owner=user, post=obj).exists()
 
 
 class CommunityPostFeedSerializer(PostDisplaySerializer):
@@ -235,3 +259,11 @@ class RecentlyViewedPostSerializer(serializers.ModelSerializer):
         if not media_files:
             return None
         return request.build_absolute_uri(media_files[0].file.url)
+
+
+class BookmarkSerializer(serializers.ModelSerializer):
+    post = ThinPostSerializer(read_only=True)
+
+    class Meta:
+        model = Bookmark
+        fields = ["id", "post", "created_at"]

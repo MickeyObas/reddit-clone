@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchWithAuth } from '../utils';
+import { fetchWithAuth, togglePostBookmark } from '../utils';
 import { BACKEND_URL } from '../config';
 import { useAuth } from '../contexts/AuthContext';
 import { PostFeed } from '../types/post';
@@ -10,6 +10,7 @@ import { CommentFeed } from '../types/comment';
 import { Profile } from '../types/profile';
 import Skeleton from 'react-loading-skeleton';
 import redditIcon from '../assets/icons/reddit.png';
+import toast from 'react-hot-toast';
 
 
 const UserProfile = () => {
@@ -26,6 +27,7 @@ const UserProfile = () => {
   const loaderRef = useRef(null);
   const [nextUrl, setNextUrl] = useState('');
   const observer = useRef<IntersectionObserver>(null);
+  const [bookmarkLoadingByPostId, setBookmarkLoadingByPostId] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     const fetchOverview = async () => {
@@ -176,6 +178,38 @@ const UserProfile = () => {
     }
   }
 
+  const handleBookmarkToggle = async (postId: number) => {
+    if (bookmarkLoadingByPostId[postId]) return;
+
+    const updatedFeedItems = [...feed];
+    const post = updatedFeedItems.find(
+      (item): item is PostFeed => item.type === "post" && item.id === postId
+    );
+
+    if (!post) return;
+
+    const previousBookmarkState = post.is_bookmarked;
+    post.is_bookmarked = !previousBookmarkState;
+    setFeed(updatedFeedItems);
+    setBookmarkLoadingByPostId((prev) => ({ ...prev, [postId]: true }));
+
+    try {
+      const response = await togglePostBookmark(postId, !previousBookmarkState);
+      if (!response?.ok) {
+        post.is_bookmarked = previousBookmarkState;
+        setFeed([...updatedFeedItems]);
+        toast.error("Couldn't update bookmark");
+      }
+    } catch (err) {
+      post.is_bookmarked = previousBookmarkState;
+      setFeed([...updatedFeedItems]);
+      toast.error("Couldn't update bookmark");
+      console.error(err);
+    } finally {
+      setBookmarkLoadingByPostId((prev) => ({ ...prev, [postId]: false }));
+    }
+  };
+
     const loadMore = useCallback(async () => {
       if (!nextUrl || loadingRef.current) return;
     
@@ -229,6 +263,8 @@ const UserProfile = () => {
                     key={idx} 
                     post={feedItem as PostFeed} 
                     onVote={handlePostVote}
+                    onBookmarkToggle={handleBookmarkToggle}
+                    bookmarkLoading={bookmarkLoadingByPostId[feedItem.id] ?? false}
                   />
                 );
               } else if (feedItem.type === 'comment') {
