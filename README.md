@@ -20,7 +20,6 @@ A full-stack Reddit clone built using React on the front-end and Django with DRF
 - React Router
 - Vanilla + Tailwind CSS
 - Fetch API
-- React (Typescript)
 - TailwindCSS
 - Vite
 ### Backend
