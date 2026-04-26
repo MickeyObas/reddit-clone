@@ -8,7 +8,7 @@ from communities.serializers import (CommunityDisplaySerializer,
                                      CommunitySerializer)
 from votes.models import Vote
 
-from .models import Bookmark, Post, PostMedia, RecentlyViewedPost
+from .models import Post, PostMedia, RecentlyViewedPost, Bookmark
 
 
 class PostMediaSerializer(serializers.ModelSerializer):
