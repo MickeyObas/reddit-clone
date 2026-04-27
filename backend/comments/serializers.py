@@ -48,7 +48,7 @@ class CommentSerializer(serializers.ModelSerializer):
                     to_attr="user_votes",
                 ),
             )
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
             .order_by("created_at"),
             many=True,
             context={"request": self.context.get("request")},

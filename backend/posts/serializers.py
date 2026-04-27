@@ -236,7 +236,7 @@ class RecentlyViewedPostSerializer(serializers.ModelSerializer):
     community_name = serializers.CharField(source="post.community.name")
     community_avatar = serializers.ImageField(source="post.community.avatar")
     comment_count = serializers.IntegerField()
-    vote_count = serializers.IntegerField()
+    vote_count = serializers.IntegerField(source="post.vote_count")
     thumbnail = serializers.SerializerMethodField()
 
     class Meta:

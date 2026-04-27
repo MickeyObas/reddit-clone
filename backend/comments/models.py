@@ -10,6 +10,7 @@ class Comment(TimeStampedModel):
     owner = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     post = models.ForeignKey("posts.Post", on_delete=models.CASCADE)
     body = models.TextField()
+    vote_count = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.owner} on {self.post.title}"

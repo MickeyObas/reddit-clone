@@ -82,9 +82,10 @@ const Home: React.FC = () => {
         });
         if(response?.ok && isMounted){
           const data = await response.json();
-          setPosts(data);
+          console.log(data);
+          setPosts(data.posts);
           setVotes(
-            data.reduce((acc: PostVotes, post: Post) => {
+            data.posts.reduce((acc: PostVotes, post: Post) => {
               acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
               return acc;
             }, {})

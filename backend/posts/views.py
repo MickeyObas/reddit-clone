@@ -2,7 +2,7 @@ import random
 from itertools import chain
 from operator import attrgetter
 
-from django.db.models import Count, OuterRef, Prefetch, Subquery, Sum, Value
+from django.db.models import Count, OuterRef, Prefetch, Subquery, Sum, Value, When, Case, IntegerField, Q
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from rest_framework import parsers
@@ -20,6 +20,10 @@ from votes.models import Vote
 from .models import Bookmark, Post, PostMedia, RecentlyViewedPost
 from .serializers import (PostDisplaySerializer, PostSerializer,
                           RecentlyViewedPostSerializer, BookmarkSerializer)
+from .services import get_next_cursor, parse_cursor
+
+
+PAGE_SIZE = 12
 
 
 @api_view(["GET", "POST"])
@@ -49,7 +53,7 @@ def post_list_or_create(request):
                 ),
             )
             .order_by("-created_at")
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
         )
         serializer = PostDisplaySerializer(
             posts, many=True, context={"request": request}
@@ -75,7 +79,7 @@ def post_detail_update_delete(request, pk):
                 Prefetch(
                     "comment_set",
                     queryset=Comment.objects.filter(parent__isnull=True)
-                    .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+                    # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
                     .order_by("-created_at")
                     .select_related("owner", "owner__profile", "commentmedia")
                     .prefetch_related(
@@ -98,7 +102,7 @@ def post_detail_update_delete(request, pk):
                     to_attr="user_bookmarks",
                 ),
             )
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
             .get(id=pk)
         )
 
@@ -131,184 +135,125 @@ def post_detail_update_delete(request, pk):
 @api_view(["GET"])
 def user_post_feed(request):
     sort = request.query_params.get("sort", None)
+    cursor = request.query_params.get("cursor")
     print("This is sort: ", sort)
     user = request.user
-    user_communities = Community.objects.filter(
-        # members__in=[user]
-        members=user
+    user_community_ids = list(
+        Community.objects.filter(members=user).values_list("id", flat=True)
     )
 
-    if sort == "new":
-        followed_communities_posts = (
-            Post.objects.filter(community__in=user_communities)
-            .select_related("community")
-            .prefetch_related(
-                Prefetch(
-                    "vote_set",
-                    queryset=Vote.objects.filter(owner=request.user),
-                    to_attr="user_votes",
-                )
-            )
-            .prefetch_related(
-                Prefetch(
-                    "bookmarks",
-                    queryset=Bookmark.objects.filter(owner=request.user),
-                    to_attr="user_bookmarks",
-                )
-            )
-            .order_by("-created_at")
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+    posts_qs = (
+        Post.objects
+        .select_related("community")
+        .prefetch_related(
+            Prefetch(
+                "vote_set",
+                queryset=Vote.objects.filter(owner=request.user),
+                to_attr="user_votes",
+            ),
+            Prefetch(
+                "bookmarks",
+                queryset=Bookmark.objects.filter(owner=request.user),
+                to_attr="user_bookmarks",
+            ),
         )
+        .annotate(
+            is_followed=Case(
+                When(community_id__in=user_community_ids, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            )
+        )
+    )
 
-        trending_posts = (
-            Post.objects.exclude(community__in=user_communities)
-            .prefetch_related(
-                Prefetch(
-                    "vote_set",
-                    queryset=Vote.objects.filter(owner=request.user),
-                    to_attr="user_votes",
+    parsed = parse_cursor(cursor)
+
+    if sort == "new":
+        if parsed:
+            posts_qs = posts_qs.filter(
+                Q(is_followed__lt=parsed["is_followed"]) |
+                Q(
+                    is_followed=parsed["is_followed"],
+                    created_at__lt=parsed["primary"]
+                ) |
+                Q(
+                    is_followed=parsed["is_followed"],
+                    created_at=parsed["primary"],
+                    id__lt=parsed["id"]
                 )
             )
-            .prefetch_related(
-                Prefetch(
-                    "bookmarks",
-                    queryset=Bookmark.objects.filter(owner=request.user),
-                    to_attr="user_bookmarks",
-                )
-            )
-            .select_related("community")
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
-            .order_by("-created_at")[:6]
-        )
+        posts = posts_qs.order_by("-is_followed", "-created_at", "-id")[:PAGE_SIZE]
 
     elif sort == "best" or sort == "hot":
-        followed_communities_posts = (
-            Post.objects.filter(community__in=user_communities)
-            .select_related("community")
-            .prefetch_related(
-                Prefetch(
-                    "vote_set",
-                    queryset=Vote.objects.filter(owner=request.user),
-                    to_attr="user_votes",
+        if parsed:
+            posts_qs = posts_qs.filter(
+                Q(is_followed__lt=parsed["is_followed"]) |
+                Q(
+                    is_followed=parsed["is_followed"],
+                    vote_count__lt=int(parsed["primary"])
+                ) |
+                Q(
+                    is_followed=parsed["is_followed"],
+                    vote_count=int(parsed["primary"]),
+                    id__lt=parsed["id"]
                 )
             )
-            .prefetch_related(
-                Prefetch(
-                    "bookmarks",
-                    queryset=Bookmark.objects.filter(owner=request.user),
-                    to_attr="user_bookmarks",
-                )
-            )
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
-            .order_by("-vote_count")
-        )
-
-        trending_posts = (
-            Post.objects.exclude(community__in=user_communities)
-            .select_related("community")
-            .prefetch_related(
-                Prefetch(
-                    "vote_set",
-                    queryset=Vote.objects.filter(owner=request.user),
-                    to_attr="user_votes",
-                )
-            )
-            .prefetch_related(
-                Prefetch(
-                    "bookmarks",
-                    queryset=Bookmark.objects.filter(owner=request.user),
-                    to_attr="user_bookmarks",
-                )
-            )
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
-            .order_by("-vote_count")[:6]
-        )
-
+        posts = posts_qs.order_by("-is_followed", "-vote_count", "-id")[:PAGE_SIZE]
+        
     else:
-        followed_communities_posts = (
-            Post.objects.filter(community__in=user_communities)
-            .select_related("community")
-            .prefetch_related(
-                Prefetch(
-                    "vote_set",
-                    queryset=Vote.objects.filter(owner=request.user),
-                    to_attr="user_votes",
+        if parsed:
+            posts_qs = posts_qs.filter(
+                Q(is_followed__lt=parsed["is_followed"]) |
+                Q(
+                    is_followed=parsed["is_followed"],
+                    created_at__lt=parsed["primary"]
+                ) |
+                Q(
+                    is_followed=parsed["is_followed"],
+                    created_at=parsed["primary"],
+                    id__lt=parsed["id"]
                 )
             )
-            .prefetch_related(
-                Prefetch(
-                    "bookmarks",
-                    queryset=Bookmark.objects.filter(owner=request.user),
-                    to_attr="user_bookmarks",
-                )
-            )
-            .order_by("-created_at")
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
-        )
-        trending_posts = (
-            Post.objects.exclude(community__in=user_communities)
-            .select_related("community")
-            .prefetch_related(
-                Prefetch(
-                    "vote_set",
-                    queryset=Vote.objects.filter(owner=request.user),
-                    to_attr="user_votes",
-                )
-            )
-            .prefetch_related(
-                Prefetch(
-                    "bookmarks",
-                    queryset=Bookmark.objects.filter(owner=request.user),
-                    to_attr="user_bookmarks",
-                )
-            )
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
-            .order_by("-created_at")[:6]
-        )
 
-    posts = list(followed_communities_posts) + list(trending_posts)
-
-    if sort == "none":
-        random.shuffle(posts)
-    elif sort == "new":
-        posts = sorted(posts, key=attrgetter("created_at"), reverse=True)
-    elif sort == "best":
-        posts = sorted(posts, key=attrgetter("vote_count"), reverse=True)
+        posts = posts_qs.order_by("-is_followed", "-created_at", "-id")[:PAGE_SIZE]
 
     serializer = PostDisplaySerializer(posts, many=True, context={"request": request})
 
-    return Response(serializer.data)
+    return Response({
+        "posts": serializer.data,
+        "cursor": get_next_cursor(posts, sort)
+    })
 
 
-@api_view(["POST", "PATCH"])
-def track_post_view(request, pk):
-    try:
-        post = Post.objects.get(id=pk)
-        if request.user.is_authenticated:
-            obj, created = RecentlyViewedPost.objects.update_or_create(
-                user=request.user, post=post, defaults={"viewed_at": timezone.now()}
-            )
-            return Response({"message": "'Recent posts' updated."})
-        else:
-            return Response({"error": "User not authorized"}, status=401)
+# @api_view(["POST", "PATCH"])
+# def track_post_view(request, pk):
+#     try:
+#         post = Post.objects.get(id=pk)
+#         if request.user.is_authenticated:
+#             obj, created = RecentlyViewedPost.objects.update_or_create(
+#                 user=request.user, post=post, defaults={"viewed_at": timezone.now()}
+#             )
+#             return Response({"message": "'Recent posts' updated."})
+#         else:
+#             return Response({"error": "User not authorized"}, status=401)
 
-    except Post.DoesNotExist:
-        return Response({"error": "Post does not exist"}, status=404)
+#     except Post.DoesNotExist:
+#         return Response({"error": "Post does not exist"}, status=404)
 
-    except Exception as e:
-        print(e)
-        return Response({"error": "Something went wrong"}, status=400)
+#     except Exception as e:
+#         print(e)
+#         return Response({"error": "Something went wrong"}, status=400)
 
 
 @api_view(["GET"])
 def recent_post_list(request):
     user = request.user
 
-    vote_sum_subquery = (
-        Post.objects.filter(id=OuterRef("post_id"))
-        .annotate(vote_sum=Coalesce(Sum("vote__type"), Value(0)))
-        .values("vote_sum")[:1]
-    )
+    # vote_sum_subquery = (
+    #     Post.objects.filter(id=OuterRef("post_id"))
+    #     .annotate(vote_sum=Coalesce(Sum("vote__type"), Value(0)))
+    #     .values("vote_sum")[:1]
+    # )
 
     recently_viewed_posts = (
         RecentlyViewedPost.objects.filter(user=user)
@@ -316,7 +261,7 @@ def recent_post_list(request):
         .prefetch_related("post__vote_set", "post__postmedia_set")
         .annotate(
             comment_count=Coalesce(Count("post__comment"), Value(0)),
-            vote_count=Subquery(vote_sum_subquery),
+            # vote_count=Subquery(vote_sum_subquery),
         )
         .order_by("-viewed_at")[:10]
     )

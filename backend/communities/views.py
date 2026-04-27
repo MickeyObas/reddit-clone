@@ -98,7 +98,7 @@ def community_post_feed(request, pk):
                 )
             )
             .filter(community=community)
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
         )
 
         if sort == "latest":
@@ -127,7 +127,7 @@ def community_popular_posts_list(request, pk):
         posts = (
             Post.objects.filter(community=community)
             .select_related("community")
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
             .order_by("-vote_count")[:5]
         )
         serializer = PostDisplaySerializer(

@@ -19,8 +19,17 @@ class Vote(TimeStampedModel):
     type = models.SmallIntegerField(choices=VOTE_TYPE)
 
     class Meta:
-        # Enforce either post/comment
-        unique_together = [("owner", "post"), ("owner", "comment")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "post"],
+                name="unique_user_post_vote"
+            ),
+            models.UniqueConstraint(
+                fields=["owner", "comment"],
+                name="unique_user_comment_vote"
+            )
+        ]
+        # unique_together = [("owner", "post"), ("owner", "comment")]
 
     @property
     def vote_type_name(self):

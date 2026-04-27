@@ -80,7 +80,7 @@ def profile_overview(request, pk):
             )
         )
         .filter(owner=user)
-        .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+        # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
     )
     comments = (
         Comment.objects.select_related("post")
@@ -92,7 +92,7 @@ def profile_overview(request, pk):
             )
         )
         .filter(owner=user)
-        .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+        # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
     )
 
     for p in posts:
@@ -147,7 +147,7 @@ def profile_posts(request, pk):
             )
             .filter(owner=user)
             .order_by("-created_at")
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
         )
     elif sort == "best" or sort == "hot":
         posts = (
@@ -159,7 +159,7 @@ def profile_posts(request, pk):
                 )
             )
             .filter(owner=user)
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
             .order_by("-vote_count")
         )
 
@@ -192,7 +192,7 @@ def profile_comments(request, pk):
             )
             .filter(owner=user)
             .order_by("-created_at")
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
         )
     elif sort == "best" or sort == "hot":
         comments = (
@@ -205,7 +205,7 @@ def profile_comments(request, pk):
                 )
             )
             .filter(owner=user)
-            .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
             .order_by("-vote_count")
         )
 

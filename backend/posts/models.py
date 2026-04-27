@@ -9,6 +9,8 @@ class Post(TimeStampedModel):
     title = models.CharField(max_length=300, blank=False)
     body = models.TextField(blank=True, null=True)
     flairs = models.ManyToManyField("tags.Flair", blank=True)
+    is_deleted = models.BooleanField(default=False)
+    vote_count = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.id} - {self.owner} - {self.title}"

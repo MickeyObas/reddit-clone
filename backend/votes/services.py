@@ -1,48 +1,59 @@
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum, F
+from django.core.exceptions import ObjectDoesNotExist
 
 from comments.models import Comment
 from posts.models import Post
 from votes.models import Vote
 
 
+
 class VoteService:
+    _MODEL_MAP = {
+        "p": (Post, "post"),
+        "c": (Comment, "comment")
+    }
+
     @transaction.atomic
     def vote(self, user, obj_type, obj_id, direction):
-        if obj_type == "p":
-            return self._vote_post(user, obj_id, direction)
-        elif obj_type == "c":
-            return self._vote_comment(user, obj_id, direction)
-        else:
-            raise ValueError("Invalid vote object type.")
+        if direction not in (1, -1):
+            raise ValueError("Invalid vote direction")
 
-    def _vote_post(self, user, obj_id, direction):
-        post = Post.objects.select_for_update().get(id=obj_id)
-        vote_qs = Vote.objects.select_for_update().filter(owner=user, post=post)
-        self._process_vote(vote_qs, user, direction, post=post)
-        vote_count = (
-            Vote.objects.filter(post_id=obj_id).aggregate(total=Sum("type"))["total"]
-            or 0
-        )
-        return vote_count
+        model, fk_field = self._MODEL_MAP.get(obj_type, (None, None))
+        if model is None:
+            raise ValueError("Invalid vote object type")
 
-    def _vote_comment(self, user, obj_id, direction):
-        comment = Comment.objects.select_for_update().get(id=obj_id)
-        vote_qs = Vote.objects.select_for_update().filter(owner=user, comment=comment)
-        self._process_vote(vote_qs, user, direction, comment=comment)
-        vote_count = (
-            Vote.objects.filter(comment_id=obj_id).aggregate(total=Sum("type"))["total"]
-            or 0
-        )
-        return vote_count
+        try:
+            obj = model.objects.get(id=obj_id)
+        except ObjectDoesNotExist:
+            raise ValueError(f"{model.__name__} not found")
+        
+        vote_qs = Vote.objects.select_for_update().filter(owner=user, **{fk_field: obj})
+        delta = self._process_vote(vote_qs, user, direction, obj=obj, fk_field=fk_field)
 
-    def _process_vote(self, vote_qs, user, direction, **kwargs):
-        if vote_qs.exists():
-            existing_vote = vote_qs.first()
+        if delta != 0:
+            model.objects.filter(id=obj_id).update(vote_count=F("vote_count") + delta)
+
+        obj.refresh_from_db(fields=["vote_count"])
+        return obj.vote_count
+
+
+    def _process_vote(self, vote_qs, user, direction, obj, fk_field):
+        existing_vote = vote_qs.first()
+
+        if existing_vote:
             if existing_vote.type == direction:
+                # remove vote
                 existing_vote.delete()
+                return -direction
+
             else:
+                # change vote
+                old = existing_vote.type
                 existing_vote.type = direction
-                existing_vote.save()
+                existing_vote.save(update_fields=["type"])
+                return direction - old
+
         else:
-            Vote.objects.create(owner=user, type=direction, **kwargs)
+            Vote.objects.create(owner=user, type=direction, **{fk_field: obj})
+            return direction
