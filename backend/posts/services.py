@@ -22,3 +22,7 @@ def get_next_cursor(posts, sort):
         primary = last.created_at.isoformat()
 
     return f"{last.is_followed}_{primary}_{last.id}"
+
+
+def get_feed_cache_key(user_id, sort):
+    return f"feed:{user_id}:{sort}:page1"

@@ -4,6 +4,7 @@ from operator import attrgetter
 
 from django.db.models import Count, OuterRef, Prefetch, Subquery, Sum, Value, When, Case, IntegerField, Q
 from django.db.models.functions import Coalesce
+from django.core.cache import cache
 from django.utils import timezone
 from rest_framework import parsers
 from rest_framework.decorators import (api_view, parser_classes,
@@ -20,7 +21,7 @@ from votes.models import Vote
 from .models import Bookmark, Post, PostMedia, RecentlyViewedPost
 from .serializers import (PostDisplaySerializer, PostSerializer,
                           RecentlyViewedPostSerializer, BookmarkSerializer)
-from .services import get_next_cursor, parse_cursor
+from .services import get_next_cursor, parse_cursor, get_feed_cache_key
 
 
 PAGE_SIZE = 12
@@ -136,8 +137,16 @@ def post_detail_update_delete(request, pk):
 def user_post_feed(request):
     sort = request.query_params.get("sort", None)
     cursor = request.query_params.get("cursor")
-    print("This is sort: ", sort)
+    print("Cursor ---> ", cursor)
     user = request.user
+    cache_key = get_feed_cache_key(user.id, sort)
+
+    if not cursor:
+        cached = cache.get(cache_key)
+        print("CACHED -------> ", cached)
+        if cached:
+            return Response(cached)
+
     user_community_ids = list(
         Community.objects.filter(members=user).values_list("id", flat=True)
     )
@@ -219,42 +228,22 @@ def user_post_feed(request):
 
     serializer = PostDisplaySerializer(posts, many=True, context={"request": request})
 
-    return Response({
+    response_data = {
         "posts": serializer.data,
         "cursor": get_next_cursor(posts, sort)
-    })
+    }
 
+    if not cursor:
+        cache.set(cache_key, response_data, timeout=60)
 
-# @api_view(["POST", "PATCH"])
-# def track_post_view(request, pk):
-#     try:
-#         post = Post.objects.get(id=pk)
-#         if request.user.is_authenticated:
-#             obj, created = RecentlyViewedPost.objects.update_or_create(
-#                 user=request.user, post=post, defaults={"viewed_at": timezone.now()}
-#             )
-#             return Response({"message": "'Recent posts' updated."})
-#         else:
-#             return Response({"error": "User not authorized"}, status=401)
+    return Response(response_data)
 
-#     except Post.DoesNotExist:
-#         return Response({"error": "Post does not exist"}, status=404)
-
-#     except Exception as e:
-#         print(e)
-#         return Response({"error": "Something went wrong"}, status=400)
 
 
 @api_view(["GET"])
 def recent_post_list(request):
     user = request.user
-
-    # vote_sum_subquery = (
-    #     Post.objects.filter(id=OuterRef("post_id"))
-    #     .annotate(vote_sum=Coalesce(Sum("vote__type"), Value(0)))
-    #     .values("vote_sum")[:1]
-    # )
-
+    
     recently_viewed_posts = (
         RecentlyViewedPost.objects.filter(user=user)
         .select_related("post", "post__community")
