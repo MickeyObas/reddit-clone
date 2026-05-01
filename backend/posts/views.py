@@ -137,13 +137,11 @@ def post_detail_update_delete(request, pk):
 def user_post_feed(request):
     sort = request.query_params.get("sort", None)
     cursor = request.query_params.get("cursor")
-    print("Cursor ---> ", cursor)
     user = request.user
     cache_key = get_feed_cache_key(user.id, sort)
 
     if not cursor:
         cached = cache.get(cache_key)
-        print("CACHED -------> ", cached)
         if cached:
             return Response(cached)
 
@@ -165,6 +163,9 @@ def user_post_feed(request):
                 queryset=Bookmark.objects.filter(owner=request.user),
                 to_attr="user_bookmarks",
             ),
+            Prefetch(
+                "postmedia_set"
+            )
         )
         .annotate(
             is_followed=Case(
@@ -172,6 +173,8 @@ def user_post_feed(request):
                 default=Value(0),
                 output_field=IntegerField(),
             )
+        ).annotate(
+            comment_count=Count("comments", filter=Q(comments__parent__isnull=True)),
         )
     )
 
@@ -194,6 +197,13 @@ def user_post_feed(request):
         posts = posts_qs.order_by("-is_followed", "-created_at", "-id")[:PAGE_SIZE]
 
     elif sort == "best" or sort == "hot":
+        cached = cache.get("trending:posts")
+        if cached:
+            return Response({
+                "posts": cached[:PAGE_SIZE],
+                "cursor": None
+            })
+        
         if parsed:
             posts_qs = posts_qs.filter(
                 Q(is_followed__lt=parsed["is_followed"]) |

@@ -212,6 +212,23 @@ class PostDisplaySerializer(serializers.ModelSerializer):
         return Bookmark.objects.filter(owner=user, post=obj).exists()
 
 
+class PostDisplayBaseSerializer(serializers.ModelSerializer):
+    comment_count = serializers.IntegerField()
+    thumbnail = serializers.CharField()
+    community = CommunityDisplaySerializer()
+
+    class Meta:
+        model = Post
+        fields = [
+            "id",
+            "community",
+            "title",
+            "vote_count",
+            "comment_count",
+            "thumbnail",
+            "created_at"
+        ]
+
 class CommunityPostFeedSerializer(PostDisplaySerializer):
 
     owner = UserSerializer()

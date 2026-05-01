@@ -200,3 +200,13 @@ CACHES = {
         "LOCATION": "redis://127.0.0.1:6379/1",
     }
 }
+
+CELERY_BROKER_URL = "redis://localhost:6379/1"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_BEAT_SCHEDULE = {
+    'update-trending-posts': {
+        'task': 'posts.tasks.update_trending_cache',
+        'schedule': 60.0
+    }
+}
