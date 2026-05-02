@@ -62,7 +62,7 @@ def comment_list_or_create(request, pk):
         post = Post.objects.get(id=pk)
 
         if request.method == "GET":
-            comments = post.comment_set.select_related("owner").prefetch_related(
+            comments = post.comments.select_related("owner").prefetch_related(
                 "replies", "replies__owner"
             )
             serializer = CommentSerializer(

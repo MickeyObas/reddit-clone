@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import transaction
 
 from accounts.serializers import UserSerializer
 from comments.models import Comment
@@ -22,6 +23,7 @@ class PostMediaSerializer(serializers.ModelSerializer):
         return attrs
 
 
+# NOTE: Split serializer by purpose (create + update etc) 
 class PostSerializer(serializers.ModelSerializer):
     media = serializers.SerializerMethodField()
     owner = UserSerializer(read_only=True)
@@ -55,7 +57,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_media(self, obj):
         request = self.context["request"]
-        media_files = obj.postmedia_set.all()
+        media_files = obj.media.all()
         if media_files:
             return (
                 [
@@ -68,13 +70,13 @@ class PostSerializer(serializers.ModelSerializer):
         return None
 
     def get_comments(self, obj):
-        top_comments = obj.comment_set.all()
+        top_comments = obj.comments.all()
         return CommentSerializer(
             top_comments, many=True, context={"request": self.context.get("request")}
         ).data
 
     def get_comment_count(self, obj):
-        return obj.comment_set.count()
+        return len(obj.comments.all())
 
     def get_user_vote(self, obj):
         user = self.context.get("request").user
@@ -83,9 +85,11 @@ class PostSerializer(serializers.ModelSerializer):
             return None
 
         vote = Vote.objects.filter(post=obj, owner=user)
-        if vote.exists():
-            return vote.first().vote_type_name.lower()
-        return None
+
+        if hasattr(obj, "user_votes") and obj.user_votes:
+            return obj.user_votes[0].vote_type_name.lower()
+        vote = Vote.objects.filter(post=obj, owner=user).first()
+        return vote.vote_type_name.lower() if vote else None
 
     def get_is_member(self, obj):
         user = self.context.get("request").user
@@ -110,34 +114,31 @@ class PostSerializer(serializers.ModelSerializer):
         user = request.user
 
         community_id = validated_data.pop("community_id")
-        community = Community.objects.get(id=community_id)
 
-        if community.type != "public":
-            if user.id not in community.members.values_list("id", flat=True):
-                raise serializers.ValidationError(
-                    "You cannot perform this action. You are not a member of this community"
+        with transaction.atomic():
+            community = Community.objects.get(id=community_id)
+
+            if community.type != "public":
+                if user.id not in community.members.values_list("id", flat=True):
+                    raise serializers.ValidationError(
+                        "You cannot perform this action. You are not a member of this community"
+                    )
+
+            media_files = request.FILES.getlist("media")
+            validated_data["owner"] = user
+            validated_data["community"] = community
+
+            post = Post.objects.create(**validated_data)
+
+            
+            for media_file in media_files:
+                mime_type = media_file.content_type
+                media_type = (
+                    "IMAGE" if mime_type.startswith("image")
+                    else "VIDEO" if mime_type.startswith("video")
+                    else None
                 )
-
-        media_files = request.FILES.getlist("media")
-        validated_data["owner"] = user
-        validated_data["community"] = community
-
-        post = Post.objects.create(**validated_data)
-
-        for media_file in media_files:
-            mime_type = media_file.content_type
-            media_type = None
-
-            if mime_type.startswith("image"):
-                media_type = "IMAGE"
-            elif mime_type.startswith("video"):
-                media_type = "VIDEO"
-
-            PostMedia.objects.create(
-                post=post,
-                type=media_type,
-                file=media_file,
-            )
+                PostMedia.objects.create(post=post, type=media_type, file=media_file)
 
         return post
 
@@ -179,7 +180,7 @@ class PostDisplaySerializer(serializers.ModelSerializer):
 
     def get_thumbnail(self, obj):
         request = self.context.get("request")
-        media_files = obj.postmedia_set.all()
+        media_files = obj.media.all()
         if media_files:
             return request.build_absolute_uri(media_files[0].file.url)
         return None
@@ -214,7 +215,6 @@ class PostDisplaySerializer(serializers.ModelSerializer):
 
 class PostDisplayBaseSerializer(serializers.ModelSerializer):
     comment_count = serializers.IntegerField()
-    thumbnail = serializers.CharField()
     community = CommunityDisplaySerializer()
 
     class Meta:
@@ -228,6 +228,7 @@ class PostDisplayBaseSerializer(serializers.ModelSerializer):
             "thumbnail",
             "created_at"
         ]
+
 
 class CommunityPostFeedSerializer(PostDisplaySerializer):
 
@@ -272,7 +273,7 @@ class RecentlyViewedPostSerializer(serializers.ModelSerializer):
 
     def get_thumbnail(self, obj):
         request = self.context.get("request")
-        media_files = obj.post.postmedia_set.all()
+        media_files = obj.post.media.all()
         if not media_files:
             return None
         return request.build_absolute_uri(media_files[0].file.url)

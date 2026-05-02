@@ -13,6 +13,7 @@ import {
   getVoteCountLabel,
   timeAgo,
   togglePostBookmark,
+  getMediaUrl
 } from "../utils";
 import { BACKEND_URL } from '../config';
 import { useLocation, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
@@ -82,7 +83,7 @@ const Home: React.FC = () => {
         });
         if(response?.ok && isMounted){
           const data = await response.json();
-          console.log(data);
+          console.log("Here is the data ooo ---> ", data);
           setPosts(data.posts);
           setVotes(
             data.posts.reduce((acc: PostVotes, post: Post) => {
@@ -126,50 +127,84 @@ const Home: React.FC = () => {
     fetchRecentPosts();
   }, [])
 
-  // Handlers
-  const handleVote = (postId: number, type: string) => {
-    
-    const postVote = async () => {
-      const dir = type === 'upvote' ? 1 : -1; 
 
-      const response = await fetchWithAuth(`${BACKEND_URL}/votes/vote?user_id=${user?.id}&obj_id=${postId}&dir=${dir}&obj=p`, {
-        method: 'POST'
-      });
-      if(!response?.ok){
-        console.log("Whoops, something went wrong during voting.");
-      }else{
-        setVotes((prevVotes) => {
-          const { count, userVote: prevVote } = prevVotes[postId];
-    
-          let newCount = count;
-          let newVote: string | null = type;
-    
-          if(type === 'upvote'){
-            if(prevVote === 'upvote'){
-              newCount -= 1;
-              newVote = null;
-            }else if(prevVote === 'downvote'){
-              newCount += 2;
-            }else{
-              newCount += 1;
-            }
-          }else if(type === 'downvote'){
-            if(prevVote === 'downvote'){
-              newCount += 1;
-              newVote = null;
-            }else if(prevVote === 'upvote'){
-              newCount -= 2;
-            }else{
-              newCount -= 1;
-            }
-          }
+  function computeVote(prevVote: string | null, type: string, count: number) {
+    if (prevVote === type) {
+      // undo vote
+      return {
+        newVote: null,
+        newCount: count - (type === "upvote" ? 1 : -1),
+      };
+    }
 
-          return {...prevVotes, [postId]: {count: newCount, userVote: newVote}}
-        })
-      }
+    if (prevVote === null) {
+      // new vote
+      return {
+        newVote: type,
+        newCount: count + (type === "upvote" ? 1 : -1),
+      };
+    }
+
+    // switching vote
+    return {
+      newVote: type,
+      newCount: count + (type === "upvote" ? 2 : -2),
     };
-    postVote();
   }
+
+const handleVote = async (postId: number, type: "upvote" | "downvote") => {
+  const prev = votes[postId];
+
+  if (!prev) return;
+
+  const { newVote, newCount } = computeVote(prev.userVote, type, prev.count);
+
+  setVotes((prevVotes) => ({
+    ...prevVotes,
+    [postId]: {
+      count: newCount,
+      userVote: newVote,
+    },
+  }));
+
+  try {
+    // -------------------------
+    // 2. SERVER REQUEST
+    // -------------------------
+    const dir = type === "upvote" ? 1 : -1;
+
+    const response = await fetchWithAuth(
+      `${BACKEND_URL}/votes/vote?user_id=${user?.id}&obj_id=${postId}&dir=${dir}&obj=p`,
+      { method: "POST" }
+    );
+
+    if (!response?.ok) throw new Error("Vote failed");
+
+    // NOTE: Return necessary count data
+    const data = await response.json();
+
+    // -------------------------
+    // 3. RECONCILE WITH SERVER
+    // -------------------------
+    setVotes((prevVotes) => ({
+      ...prevVotes,
+      [postId]: {
+        count: data.count,
+        userVote: data.user_vote,
+      },
+    }));
+  } catch (err) {
+    console.error("Vote error:", err);
+
+    // -------------------------
+    // 4. ROLLBACK ON FAILURE
+    // -------------------------
+    setVotes((prevVotes) => ({
+      ...prevVotes,
+      [postId]: prev, // restore previous state
+    }));
+  }
+};
 
   const handleJoinCommunity = (communityId: number) => {
     const joinCommunity = async () => {
@@ -239,7 +274,7 @@ const Home: React.FC = () => {
   }
 
   if(!isLoading){
-    if(posts.length > 0){
+    if(posts?.length > 0){
       return (
         <div className='grid grid-cols-1 lg:grid-cols-[2fr_330px] xl:grid-cols-[280px_2fr_330px]'>
           <div className='hidden xl:block'>
@@ -302,7 +337,7 @@ const Home: React.FC = () => {
                 <div className='flex border-b border-b-slate-200 hover:bg-gray-50'>
                   <div className='hidden md:flex bg-gray-100 border border-gray-200 w-32 h-20 rounded-lg mt-3 ms-6 overflow-hidden items-center justify-center'>
                     {post.thumbnail ? (
-                      <img src={post.thumbnail} alt="" className='w-full h-full object-cover '/>
+                      <img src={getMediaUrl(post.thumbnail) || ""} alt="" className='w-full h-full object-cover '/>
                     ): (
                       <><NotepadTextIcon color='gray'/></>
                     )}
@@ -313,7 +348,7 @@ const Home: React.FC = () => {
                       <div className='flex'>
                         <div className='left-of-panel flex text-xs items-center'>
                           <div className='w-4 h-4 rounded-full overflow-hidden'>
-                            <img src={post.community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
+                            <img src={getMediaUrl(post.community.avatar) ?? redditIcon} alt="" className='w-full h-full object-cover'/>
                           </div>
                           <span
                             onClick={(e) => {
@@ -361,7 +396,7 @@ const Home: React.FC = () => {
                         {post.thumbnail && (
                             <div className='w-20 lg:w-24 h-16 lg:h-20 rounded-xl overflow-hidden md:hidden'>
                             <img 
-                              src={post.thumbnail} 
+                              src={getMediaUrl(post.thumbnail) || ""} 
                               alt="" 
                               className='w-full h-full object-cover border-0 outline-0'
                               />
@@ -462,19 +497,19 @@ const Home: React.FC = () => {
                             <div className='flex gap-x-2 justify-between'>
                               <div className='flex flex-col w-2/3'>
                                 <div
-                                  onClick={() => navigate(`/community/${post.community_id}/`)} 
+                                  onClick={() => navigate(`/community/${post.community.id}/`)} 
                                   className='flex gap-x-2.5 items-center group cursor-pointer'>
                                   <div className='bg-red-300 w-6 h-6 rounded-full overflow-hidden flex items-center justify-center'>
-                                    <img src={post.community_avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
+                                    <img src={post.community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
                                   </div>
-                                  <span className='text-gray-500 text-xs flex items-center group-hover:underline'>{formatCommunity(post.community_name)}</span>
+                                  <span className='text-gray-500 text-xs flex items-center group-hover:underline'>{formatCommunity(post.community.name)}</span>
                                 </div>
                                 <p 
                                   onClick={() => navigate(`/post/${post.post_id}/`)}
                                   className='line-clamp-2 text-gray-500 font-medium mt-2 leading-5 cursor-pointer hover:underline'>{post.title}</p>
                               </div>
                               <div className='bg-red-400 w-18 h-18 rounded-lg max-w-25 overflow-hidden'>
-                                <img src={post.thumbnail} alt="" className='w-full h-full object-cover'/>
+                                <img src={getMediaUrl(post.thumbnail) || ""} alt="" className='w-full h-full object-cover'/>
                               </div>
                             </div>
                             <div className='flex items-center gap-x-1 mt-2.5 text-xs text-slate-500'>
@@ -488,12 +523,12 @@ const Home: React.FC = () => {
                         return (
                           <div key={idx} className='flex flex-col border-b border-b-slate-200 px-4 pb-3'>
                             <div 
-                              onClick={() => navigate(`/community/${post.community_id}/`)}
+                              onClick={() => navigate(`/community/${post.community.id}/`)}
                               className='flex gap-x-2.5 items-center group cursor-pointer'>
                               <div className='bg-red-300 w-6 h-6 rounded-full overflow-hidden flex items-center justify-center'>
-                                <img src={post.community_avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
+                                <img src={post.community.avatar ?? redditIcon} alt="" className='w-full h-full object-cover'/>
                               </div>
-                              <span className='text-gray-500 text-xs flex items-center group-hover:underline'>{formatCommunity(post.community_name)}</span>
+                              <span className='text-gray-500 text-xs flex items-center group-hover:underline'>{formatCommunity(post.community.name)}</span>
                             </div>
                             <p 
                               onClick={() => navigate(`/post/${post.post_id}/`)}

@@ -194,10 +194,12 @@ CLOUDINARY_STORAGE = {
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 
+REDIS_URL = "redis://127.0.0.1:6379/1"
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": REDIS_URL,
     }
 }
 
@@ -210,3 +212,4 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 60.0
     }
 }
+

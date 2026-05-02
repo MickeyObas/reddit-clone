@@ -59,10 +59,9 @@ const Post = () => {
   const { postId } = useParams();
   const formattedTimeAgo = useMemo(() => timeAgo(post?.created_at ?? ''), [post?.created_at]);
   const {setIsSidebarOpen, setIsCommunityModalOpen} = useOutletContext<LayoutContextType>();
-  const isBiggerScreen = useMediaQuery('(min-width: 768px');
+  const isBiggerScreen = useMediaQuery('(min-width: 768px)');
   const [community, setCommunity] = useState<Community | null>(null);
   const [popularPosts, setPopularPosts] = useState<PostDisplay[]>([]);
-  const [isCommunityMember, setIsCommunityMember] = useState<boolean | null>(null)
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
   const formattedDate = useMemo(() => {
     const dateStr = community?.created_at;
@@ -72,15 +71,14 @@ const Post = () => {
 
   useEffect(() => {
     const fetchPost = async () => {
-      const response = await fetchWithAuth(`${BACKEND_URL}/posts/${postId}/`);
       try{
+        const response = await fetchWithAuth(`${BACKEND_URL}/posts/${postId}/`);
         if(!response?.ok){
           const error = await response?.json();
           console.error("Whoops, couldn't fetch post.", error);
         }else{
           const data = await response.json();
           setPost(data);
-          setIsCommunityMember(data.is_member);
           setPostVote({count: data.vote_count, userVote: data.user_vote});
         }
       }catch(err){
@@ -98,51 +96,33 @@ const Post = () => {
       window.scrollTo(0, 0)
     }, [postId]);
 
+
   useEffect(() => {
-    const fetchCommunity = async () => {
-      if(!post?.community.id) return;
-      const response = await fetchWithAuth(`${BACKEND_URL}/communities/${post?.community.id}/`);
+    if (!post?.community.id || !isBiggerScreen) return;
 
-      try{
-        if(!response?.ok){
-          const error = await response?.json();
-          console.error("Whoops, couldn't fetch community.", error);
-        }else{
-          const data = await response.json();
-          setCommunity(data);
-        }
-      }catch(err){
-        console.error(err);
-      }finally{
-        // setPostLoading(false);
+    const fetchSidebarData = async () => {
+      const [communityRes, popularRes] = await Promise.all([
+        fetchWithAuth(`${BACKEND_URL}/communities/${post.community.id}/`),
+        fetchWithAuth(`${BACKEND_URL}/communities/${post.community.id}/popular-posts/`)
+      ]);
+
+      if(!communityRes?.ok || !popularRes?.ok){
+        const error = !communityRes?.ok 
+          ? await communityRes?.json() 
+          : await popularRes?.json();
+        console.error("Error occured loading sidebar data, ", error);
+      }else{
+        const communityData = await communityRes?.json();
+        setCommunity(communityData);
+        const popularPostsData = await popularRes?.json();
+        setPopularPosts(popularPostsData);
       }
-    }
+    };
 
-    const fetchPopularPosts = async () => {
-      if(!post?.community.id) return;
-      const response = await fetchWithAuth(`${BACKEND_URL}/communities/${post?.community.id}/popular-posts/`);
+    fetchSidebarData();
 
-      try{
-        if(!response?.ok){
-          const error = await response?.json();
-          console.error("Whoops, couldn't fetch community's popular posts.", error);
-        }else{
-          const data = await response.json();
-          console.log("Popular posts: ", data);
-          setPopularPosts(data);
-        }
-      }catch(err){
-        console.error(err);
-      }finally{
-        // setPostLoading(false);
-      }
-    }
-
-  if(isBiggerScreen){
-    fetchCommunity();
-    fetchPopularPosts();
-  };
   }, [post?.community.id, isBiggerScreen])
+
 
   const handlePostVote = (type: string) => {
     
@@ -225,7 +205,7 @@ const Post = () => {
       if(!response?.ok){
         console.error("Whoops, something went wrong.");
       }else{
-        setIsCommunityMember(true);
+        setPost(prev => prev ? {...prev, is_member: true} : prev);
       }
     }catch(err){
       console.error(err);
@@ -407,7 +387,7 @@ const Post = () => {
                   <h2
                     onClick={() => navigate(`/community/${community.id}/`)} 
                     className='hover:text-blue-900 cursor-pointer text-lg font-bold'>{community.name && formatCommunity(community.name)}</h2>
-                  {isCommunityMember ? (
+                  {post?.is_member ? (
                     <button className='flex items-center justify-center text-xs py-2 border px-3  rounded-full'>
                     <span>Joined</span>
                   </button>
@@ -474,11 +454,11 @@ const Post = () => {
                   </div>
                 </div>
               )}
-              {popularPosts.length > 0 && (
+              {popularPosts?.length > 0 && (
                 <div className='mt-4 px-3'>
                   <h3 className='uppercase font-semibold mb-3'>Top posts</h3>
-                  {popularPosts.map((post, idx) => {
-                    if(post.thumbnail){
+                  {popularPosts.map((popularPost, idx) => {
+                    if(popularPost.thumbnail){
                       return (
                         <div key={idx} className='flex flex-col border-b border-b-slate-200 py-2.5 last-of-type:border-b-0 last-of-type:pb-1'>
                           <div className='flex gap-x-2 justify-between'>
@@ -492,17 +472,17 @@ const Post = () => {
                                 <span className='text-gray-500 text-xs flex items-center group-hover:underline'>{formatCommunity(community.name)}</span>
                               </div>
                               <p 
-                                onClick={() => navigate(`/post/${post.id}/`)}
-                                className='line-clamp-2 text-gray-500 font-medium mt-2 leading-5 cursor-pointer hover:underline'>{post.title}</p>
+                                onClick={() => navigate(`/post/${popularPost.id}/`)}
+                                className='line-clamp-2 text-gray-500 font-medium mt-2 leading-5 cursor-pointer hover:underline'>{popularPost.title}</p>
                             </div>
                             <div className='bg-red-400 w-18 h-18 rounded-lg max-w-25 overflow-hidden'>
-                              <img src={post.thumbnail} alt="" className='w-full h-full object-cover'/>
+                              <img src={popularPost.thumbnail} alt="" className='w-full h-full object-cover'/>
                             </div>
                           </div>
                           <div className='flex items-center gap-x-1 mt-2.5 text-xs text-slate-500'>
-                            <span>{Math.abs(post.vote_count)} {getVoteCountLabel(post.vote_count)}</span>
+                            <span>{Math.abs(popularPost.vote_count)} {getVoteCountLabel(popularPost.vote_count)}</span>
                             <Dot size={10}/>
-                            <span>{post.comment_count} {getCommentCountLabel(post.comment_count)}</span>
+                            <span>{popularPost.comment_count} {getCommentCountLabel(popularPost.comment_count)}</span>
                           </div>
                         </div>
                       )
@@ -518,12 +498,12 @@ const Post = () => {
                             <span className='text-gray-500 text-xs flex items-center group-hover:underline'>{formatCommunity(community.name)}</span>
                           </div>
                           <p 
-                            onClick={() => navigate(`/post/${post.id}/`)}
-                            className='line-clamp-2 text-gray-500 font-medium mt-2 leading-5 cursor-pointer hover:underline'>{post.title}</p>
+                            onClick={() => navigate(`/post/${popularPost.id}/`)}
+                            className='line-clamp-2 text-gray-500 font-medium mt-2 leading-5 cursor-pointer hover:underline'>{popularPost.title}</p>
                           <div className='flex items-center gap-x-1 mt-2.5 text-xs text-slate-500'>
-                            <span>{post.vote_count} {getVoteCountLabel(post.vote_count)}</span>
+                            <span>{popularPost.vote_count} {getVoteCountLabel(popularPost.vote_count)}</span>
                             <Dot size={10}/>
-                            <span>{post.comment_count} {getCommentCountLabel(post.comment_count)}</span>
+                            <span>{popularPost.comment_count} {getCommentCountLabel(popularPost.comment_count)}</span>
                           </div>
                         </div>
                       )}

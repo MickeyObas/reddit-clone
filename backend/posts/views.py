@@ -1,11 +1,5 @@
-import random
-from itertools import chain
-from operator import attrgetter
-
-from django.db.models import Count, OuterRef, Prefetch, Subquery, Sum, Value, When, Case, IntegerField, Q
-from django.db.models.functions import Coalesce
+from django.db.models import Count, OuterRef, Prefetch, Q, Exists
 from django.core.cache import cache
-from django.utils import timezone
 from rest_framework import parsers
 from rest_framework.decorators import (api_view, parser_classes,
                                        permission_classes)
@@ -18,13 +12,10 @@ from comments.models import Comment
 from communities.models import Community
 from votes.models import Vote
 
-from .models import Bookmark, Post, PostMedia, RecentlyViewedPost
+from .models import Bookmark, Post
 from .serializers import (PostDisplaySerializer, PostSerializer,
-                          RecentlyViewedPostSerializer, BookmarkSerializer)
-from .services import get_next_cursor, parse_cursor, get_feed_cache_key
-
-
-PAGE_SIZE = 12
+                          BookmarkSerializer, PostDisplayBaseSerializer)
+from .services import track_recent_view, get_recent_post_ids, clear_recent_views, get_user_feed
 
 
 @api_view(["GET", "POST"])
@@ -35,9 +26,9 @@ def post_list_or_create(request):
         posts = (
             Post.objects.select_related("owner", "community")
             .prefetch_related(
-                "postmedia_set",
+                "media",
                 Prefetch(
-                    "comment_set",
+                    "comments",
                     queryset=Comment.objects.filter(parent__isnull=True)
                     .select_related("owner")
                     .prefetch_related("replies__owner"),
@@ -54,7 +45,7 @@ def post_list_or_create(request):
                 ),
             )
             .order_by("-created_at")
-            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
+            .defer("body")
         )
         serializer = PostDisplaySerializer(
             posts, many=True, context={"request": request}
@@ -73,48 +64,46 @@ def post_list_or_create(request):
 @api_view(["GET", "PATCH", "DELETE"])
 def post_detail_update_delete(request, pk):
     try:
-        post = (
-            Post.objects.select_related("owner", "community")
-            .prefetch_related(
-                "postmedia_set",
-                Prefetch(
-                    "comment_set",
-                    queryset=Comment.objects.filter(parent__isnull=True)
-                    # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
-                    .order_by("-created_at")
-                    .select_related("owner", "owner__profile", "commentmedia")
-                    .prefetch_related(
-                        "replies__owner",
-                        Prefetch(
-                            "vote_set",
-                            queryset=Vote.objects.filter(owner=request.user),
-                            to_attr="user_votes",
+        if request.method == "GET":
+            post = (
+                Post.objects.select_related("owner", "community")
+                .prefetch_related(
+                    "media",
+                    Prefetch(
+                        "comments",
+                        queryset=Comment.objects.filter(parent__isnull=True)
+                        .order_by("-created_at")
+                        .select_related("owner", "owner__profile", "commentmedia")
+                        .prefetch_related(
+                            "replies__owner",
+                            Prefetch(
+                                "vote_set",
+                                queryset=Vote.objects.filter(owner=request.user),
+                                to_attr="user_votes",
+                            ),
                         ),
                     ),
-                ),
-                Prefetch(
-                    "vote_set",
-                    queryset=Vote.objects.filter(owner=request.user),
-                    to_attr="user_votes",
-                ),
-                Prefetch(
-                    "bookmarks",
-                    queryset=Bookmark.objects.filter(owner=request.user),
-                    to_attr="user_bookmarks",
-                ),
-            )
-            # .annotate(vote_count=Coalesce(Sum("vote__type"), Value(0)))
-            .get(id=pk)
-        )
-
-        if request.method == "GET":
-            if request.user.is_authenticated:
-                obj, created = RecentlyViewedPost.objects.update_or_create(
-                    user=request.user, post=post, defaults={"viewed_at": timezone.now()}
+                    Prefetch(
+                        "vote_set",
+                        queryset=Vote.objects.filter(owner=request.user),
+                        to_attr="user_votes",
+                    ),
+                    Prefetch(
+                        "bookmarks",
+                        queryset=Bookmark.objects.filter(owner=request.user),
+                        to_attr="user_bookmarks",
+                    ),
                 )
+                .get(id=pk)
+            )
+            if request.user.is_authenticated:
+                track_recent_view(request.user.id, post.id)
+
             serializer = PostSerializer(post, context={"request": request})
             return Response(serializer.data, status=200)
 
+        post = Post.objects.only("id", "owner").get(id=pk)
+        
         if request.user != post.owner:
             raise PermissionDenied("You cannot perform this action")
 
@@ -135,144 +124,44 @@ def post_detail_update_delete(request, pk):
 
 @api_view(["GET"])
 def user_post_feed(request):
-    sort = request.query_params.get("sort", None)
-    cursor = request.query_params.get("cursor")
-    user = request.user
-    cache_key = get_feed_cache_key(user.id, sort)
-
-    if not cursor:
-        cached = cache.get(cache_key)
-        if cached:
-            return Response(cached)
-
-    user_community_ids = list(
-        Community.objects.filter(members=user).values_list("id", flat=True)
+    print(request.query_params)
+    result = get_user_feed(
+        user=request.user,
+        sort=request.query_params.get("sort"),
+        cursor=request.query_params.get("cursor")
     )
+    return Response(result)
 
-    posts_qs = (
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def recent_post_list(request):
+    user = request.user
+    post_ids = get_recent_post_ids(user.id)
+    
+    posts = (
         Post.objects
+        .filter(id__in=post_ids)
         .select_related("community")
-        .prefetch_related(
-            Prefetch(
-                "vote_set",
-                queryset=Vote.objects.filter(owner=request.user),
-                to_attr="user_votes",
-            ),
-            Prefetch(
-                "bookmarks",
-                queryset=Bookmark.objects.filter(owner=request.user),
-                to_attr="user_bookmarks",
-            ),
-            Prefetch(
-                "postmedia_set"
-            )
-        )
+        .prefetch_related("media")
         .annotate(
-            is_followed=Case(
-                When(community_id__in=user_community_ids, then=Value(1)),
-                default=Value(0),
-                output_field=IntegerField(),
-            )
-        ).annotate(
             comment_count=Count("comments", filter=Q(comments__parent__isnull=True)),
         )
     )
 
-    parsed = parse_cursor(cursor)
-
-    if sort == "new":
-        if parsed:
-            posts_qs = posts_qs.filter(
-                Q(is_followed__lt=parsed["is_followed"]) |
-                Q(
-                    is_followed=parsed["is_followed"],
-                    created_at__lt=parsed["primary"]
-                ) |
-                Q(
-                    is_followed=parsed["is_followed"],
-                    created_at=parsed["primary"],
-                    id__lt=parsed["id"]
-                )
-            )
-        posts = posts_qs.order_by("-is_followed", "-created_at", "-id")[:PAGE_SIZE]
-
-    elif sort == "best" or sort == "hot":
-        cached = cache.get("trending:posts")
-        if cached:
-            return Response({
-                "posts": cached[:PAGE_SIZE],
-                "cursor": None
-            })
-        
-        if parsed:
-            posts_qs = posts_qs.filter(
-                Q(is_followed__lt=parsed["is_followed"]) |
-                Q(
-                    is_followed=parsed["is_followed"],
-                    vote_count__lt=int(parsed["primary"])
-                ) |
-                Q(
-                    is_followed=parsed["is_followed"],
-                    vote_count=int(parsed["primary"]),
-                    id__lt=parsed["id"]
-                )
-            )
-        posts = posts_qs.order_by("-is_followed", "-vote_count", "-id")[:PAGE_SIZE]
-        
-    else:
-        if parsed:
-            posts_qs = posts_qs.filter(
-                Q(is_followed__lt=parsed["is_followed"]) |
-                Q(
-                    is_followed=parsed["is_followed"],
-                    created_at__lt=parsed["primary"]
-                ) |
-                Q(
-                    is_followed=parsed["is_followed"],
-                    created_at=parsed["primary"],
-                    id__lt=parsed["id"]
-                )
-            )
-
-        posts = posts_qs.order_by("-is_followed", "-created_at", "-id")[:PAGE_SIZE]
-
-    serializer = PostDisplaySerializer(posts, many=True, context={"request": request})
-
-    response_data = {
-        "posts": serializer.data,
-        "cursor": get_next_cursor(posts, sort)
-    }
-
-    if not cursor:
-        cache.set(cache_key, response_data, timeout=60)
-
-    return Response(response_data)
-
-
-
-@api_view(["GET"])
-def recent_post_list(request):
-    user = request.user
+    posts_by_id = {str(p.id): p for p in posts}
+    ordered_posts = [posts_by_id[pid] for pid in post_ids if pid in posts_by_id]
     
-    recently_viewed_posts = (
-        RecentlyViewedPost.objects.filter(user=user)
-        .select_related("post", "post__community")
-        .prefetch_related("post__vote_set", "post__postmedia_set")
-        .annotate(
-            comment_count=Coalesce(Count("post__comment"), Value(0)),
-            # vote_count=Subquery(vote_sum_subquery),
-        )
-        .order_by("-viewed_at")[:10]
-    )
-    serializer = RecentlyViewedPostSerializer(
-        recently_viewed_posts, many=True, context={"request": request}
+    serializer = PostDisplayBaseSerializer(
+        ordered_posts, many=True, context={"request": request}
     )
     return Response(serializer.data)
 
 
 @api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
 def recent_posts_clear(request):
-    RecentlyViewedPost.objects.filter(user=request.user).delete()
+    clear_recent_views(request.user.id)
     return Response(status=204)
 
 

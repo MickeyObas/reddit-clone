@@ -1,5 +1,5 @@
 import { Outlet, Navigate, useLocation } from "react-router-dom";
-import { BACKEND_URL } from "./config";
+import { BACKEND_URL, BASE_BACKEND_URL} from "./config";
 
 export const formatCommunity = (community: string) => {
   return "r/" + community;
@@ -22,8 +22,16 @@ export const formatDate = (dateString: string):string => {
   });
 }
 
-export const getImage = (imageURL: string) => {
-  return `https://reddit-clone-seven-eta.vercel.app/media/` + imageURL;
+// export const getImage = (imageURL: string) => {
+//   return `https://reddit-clone-seven-eta.vercel.app/media/` + imageURL;
+// }
+
+
+export function getMediaUrl(path: string) {
+  if (!path) return null;
+  return path.startsWith("http")
+    ? path
+    : `${BASE_BACKEND_URL}${path}`;
 }
 
 export const validateEmail = (email: string) => {

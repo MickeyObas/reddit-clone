@@ -35,6 +35,7 @@ def vote(request):
                 "message": "Vote administered successfully.",
                 "obj": obj,
                 "count": new_vote_total,
+                "user_vote": "upvote" if dir == 1 else "downvote"
             }
         )
 

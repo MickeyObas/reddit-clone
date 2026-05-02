@@ -8,7 +8,7 @@ class Comment(TimeStampedModel):
         "self", on_delete=models.CASCADE, blank=True, null=True, related_name="replies"
     )
     owner = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
-    post = models.ForeignKey("posts.Post", on_delete=models.CASCADE)
+    post = models.ForeignKey("posts.Post", on_delete=models.CASCADE, related_name="comments")
     body = models.TextField()
     vote_count = models.IntegerField(default=0)
 
