@@ -1,4 +1,4 @@
-from django.db.models import Prefetch, Sum, Value
+from django.db.models import Prefetch, OuterRef, Prefetch, Exists, Count
 from django.db.models.functions import Coalesce
 from rest_framework import parsers, status
 from rest_framework.decorators import (api_view, parser_classes,
@@ -8,6 +8,7 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
+from accounts.models import User
 from posts.models import Post
 from posts.serializers import (CommunityPostFeedSerializer,
                                PostDisplaySerializer)
@@ -16,11 +17,15 @@ from votes.models import Vote
 from .models import Community
 from .serializers import CommunitySerializer
 
+import logging
+
+
+logger = logging.getLogger("app.communities.views")
 
 @api_view(["GET"])
 def user_community_list(request):
     user = request.user
-    communities = Community.objects.filter(members=user)
+    communities = Community.objects.filter(members=user).only("id", "avatar", "name")
     serializer = CommunitySerializer(
         communities, many=True, context={"request": request}
     )
@@ -32,7 +37,16 @@ def user_community_list(request):
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def community_list_or_create(request):
     if request.method == "GET":
-        communities = Community.objects.all()
+        is_member_qs = Community.members.through.objects.filter(
+            community=OuterRef("pk"), user=request.user
+        )
+        communities = Community.objects.prefetch_related(
+            Prefetch("moderators", queryset=User.objects.select_related("profile")),
+            "topics"
+        ).annotate(
+            is_member=Exists(is_member_qs),
+            member_count=Count("members")
+        )
         serializer = CommunitySerializer(
             communities, many=True, context={"request": request}
         )
@@ -40,7 +54,6 @@ def community_list_or_create(request):
 
     elif request.method == "POST":
         data = request.data
-        print(data)
         serializer = CommunitySerializer(data=data, context={"request": request})
         if serializer.is_valid():
             new_community = serializer.save()
@@ -54,13 +67,20 @@ def community_list_or_create(request):
 @api_view(["GET", "PATCH", "DELETE"])
 def community_detail_update_delete(request, pk):
     try:
-        community = Community.objects.get(id=pk)
-
         if request.method == "GET":
+            is_member_qs = Community.members.through.objects.filter(
+                community=OuterRef("pk"), user=request.user
+            )
+            community = Community.objects.select_related("owner").annotate(
+                is_member=Exists(is_member_qs),
+                member_count=Count("members")
+            ).get(id=pk)
+
             serializer = CommunitySerializer(community, context={"request": request})
             return Response(serializer.data, status=200)
 
-        # NOTE: I should probably go back to using CBVs
+        community = Community.objects.only("id", "owner").get(id=pk)
+
         if community.owner != request.user:
             raise PermissionDenied("You cannot perform this action.")
 
@@ -88,7 +108,10 @@ def community_detail_update_delete(request, pk):
 def community_post_feed(request, pk):
     sort = request.GET.get("sort")
     try:
-        community = Community.objects.select_related("owner").get(id=pk)
+        is_member_qs = Community.members.through.objects.filter(
+            community=OuterRef("pk"), user=request.user
+        )
+        community = Community.objects.only("id").get(id=pk)
         posts = (
             Post.objects.prefetch_related(
                 Prefetch(
@@ -139,7 +162,7 @@ def community_popular_posts_list(request, pk):
         return Response({"error": "Community does not exist"}, status=404)
 
     except Exception as e:
-        print(e)
+        logger.error(f"Error getting popular posts for user: {request.user.id}", exc_info=True)
         return Response({"error": str(e)})
 
 

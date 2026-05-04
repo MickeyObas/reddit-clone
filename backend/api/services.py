@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import logging
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import requests
@@ -16,6 +17,7 @@ from .models import VerificationCode
 from .utils import generate_6_digit_code
 
 
+logger = logging.getLogger("app.api.services")
 
 class VerificationService:
     @staticmethod
@@ -44,17 +46,24 @@ class VerificationService:
             VerificationCode.objects.create(email=email, code=code)
 
         except Exception as e:
-            print(e)
+            logger.error("Error trying to send verification code", exc_info=True)
             raise ValueError(e)
 
     @staticmethod
     def resend_verification_code(email):
-        cache_key = f"sent_token_{email}"
-        if cache.get(cache_key):
+        cache_key = f"sent_token_{email.lower().strip()}"
+
+        try:
+            was_added = cache.add(cache_key, True, timeout=60)
+        except Exception as e:
+            logger.error("Cache error during resend_verification_code, ", exc_info=True)
+            was_added = True
+
+        if not was_added:
             raise ValueError(
                 "Too many requests. Please wait before requesting a new code"
             )
-        cache.set(cache_key, True, 60)
+        
         VerificationCode.objects.filter(email=email).delete()
         VerificationService.send_verification_code(email=email)
 

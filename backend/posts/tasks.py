@@ -1,4 +1,3 @@
-# any_app/tasks.py
 from celery import shared_task
 from django.core.cache import cache
 from django.db.models import Count, Q
@@ -6,12 +5,8 @@ from django.db.models import Count, Q
 from posts.models import Post
 from posts.serializers import PostDisplaySerializer, PostDisplayBaseSerializer
 
-@shared_task
-def add(x, y):
-    return x + y
 
-
-@shared_task
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=5, max_retries=3)
 def update_trending_cache():
     posts = list(
         Post.objects

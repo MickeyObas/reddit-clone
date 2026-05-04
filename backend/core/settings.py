@@ -213,3 +213,77 @@ CELERY_BEAT_SCHEDULE = {
     }
 }
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name} {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs/app.log",
+            "maxBytes": 1024 * 1024 * 5,
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
+        "error_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs/errors.log",
+            "maxBytes": 1024 * 1024 * 5,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "level": "ERROR",
+        },
+    },
+
+    "loggers": {
+        "app": {
+            "handlers": ["console", "file", "error_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console", "error_file"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        # "django.db.backends": {
+        #     "handlers": ["console"],
+        #     "level": "DEBUG" if DEBUG else "WARNING",
+        #     "propagate": False,
+        # },
+    },
+}
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
+
+
+sentry_sdk.init(
+    dsn="https://a956ca01002cdf7dadf57900162cc208@o4511332128325632.ingest.us.sentry.io/4511332133830656",
+    send_default_pii=True,
+    integrations=[
+        DjangoIntegration(),
+        CeleryIntegration(),
+        RedisIntegration(),
+    ],
+)
+
+

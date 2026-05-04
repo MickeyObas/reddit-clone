@@ -1,4 +1,5 @@
 import time
+import logging
 
 from django.core.cache import cache
 from django.db.models import Count, OuterRef, Q, Exists
@@ -13,6 +14,8 @@ from communities.models import Community
 MAX_RECENT = 20
 KEY_TTL = 60 * 60 * 24 * 30
 PAGE_SIZE = 12
+
+logger = logging.getLogger("app.posts")
 
 
 def parse_cursor(cursor):
@@ -117,10 +120,14 @@ def fetch_feed_posts(user, sort, cursor):
         )
     )
 
-    if sort == "best" or sort == "hot":
-        cached = cache.get("trending:posts")
+    if sort in ["best", "hot"]:
+        try:
+            cached = cache.get("trending:posts")
+        except Exception as e:
+            cached = None
+
         if cached:
-            return cached
+            return cached[:PAGE_SIZE]
 
         if parsed:
             posts_qs = posts_qs.filter(
@@ -149,11 +156,16 @@ def fetch_feed_posts(user, sort, cursor):
     return posts_qs.order_by("-is_followed", "-created_at", "-id")[:PAGE_SIZE]
 
 def get_user_feed(user, sort, cursor):
+    logger.info("Feed requested", extra={"user_id": user.id, "sort": sort, "cursor": cursor})
+
     cache_key = get_feed_cache_key(user.id, sort)
-    print(cache_key)
     
     if not cursor:
-        cached = cache.get(cache_key)
+        try:
+            cached = cache.get(cache_key)
+        except Exception as e:
+            cached = None
+            logger.error("Cache error (User Feed) ", exc_info=True)
 
         if cached:
             return {
@@ -165,7 +177,10 @@ def get_user_feed(user, sort, cursor):
     serialized = PostDisplayBaseSerializer(posts, many=True).data
 
     if not cursor:
-        cache.set(cache_key, serialized, timeout=60)
+        try:
+            cache.set(cache_key, serialized, timeout=60)
+        except Exception as e:
+            logger.error("Cache set failed (User Feed) ", exc_info=True)
 
     return {
         "posts": apply_user_context(serialized, user),

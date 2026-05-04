@@ -62,61 +62,94 @@ const Community = ({sort='latest'}) => {
       return formatDate(dateStr);
     }, [community?.created_at])
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/posts/?sort=${sort}`, {
-          method: 'GET'
-        });
-        if(!response?.ok) console.error("Whoopps, something went wrong.");
-        else{
-          const data = await response?.json();
-          setPosts(data.posts);
-          setVotes(
-            data.posts.reduce((acc: PostVotes, post: Post) => {
-              acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
-              return acc;
-            }, {})
-          )}
-      }catch(err){
-        console.error(err);
-      };
-    };
+  // useEffect(() => {
+  //   const fetchPosts = async () => {
+  //     try{
+  //       const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/posts/?sort=${sort}`, {
+  //         method: 'GET'
+  //       });
+  //       if(!response?.ok) console.error("Whoopps, something went wrong.");
+  //       else{
+  //         const data = await response?.json();
+  //         setPosts(data.posts);
+  //         setVotes(
+  //           data.posts.reduce((acc: PostVotes, post: Post) => {
+  //             acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
+  //             return acc;
+  //           }, {})
+  //         )}
+  //     }catch(err){
+  //       console.error(err);
+  //     };
+  //   };
 
-    fetchPosts();
+  //   fetchPosts();
     
-  }, [sort, communityId])
+  // }, [sort, communityId])
 
   const processedPosts = useMemo(() => {
-    return posts.map(post => ({
+    return posts?.map(post => ({
       ...post,
       timeAgoText: timeAgo(post.created_at)
     }))
   }, [posts])
 
   useEffect(() => {
-    const fetchCommunityPosts = async () => {
-      try{
-        const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/posts/?sort=${sort}`, {
-          method: 'GET'
-        });
-        if(!response?.ok) console.error("Whoopps, something went wrong.");
-        else{
-          const data = await response?.json();
-          setPosts(data.posts);
-          setCommunity(data.community);
-          setVotes(
-            data.posts.reduce((acc: PostVotes, post: Post) => {
-              acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
-              return acc;
-            }, {})
-          )}
-      }catch(err){
-        console.error(err);
-      };
+    const fetchCommunityPageData = async () => {
+      const [communityRes, communityPostsRes] = await Promise.all([
+        fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/`),
+        fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/posts/?sort=${sort}`)
+      ])
+      
+      if(!communityRes?.ok || !communityPostsRes?.ok){
+        const error = !communityRes?.ok
+          ? await communityRes?.json()
+          : await communityPostsRes?.json();
+        console.error("Error occured loading community page data ", error);
+      }else{
+        const communityData = await communityRes.json();
+        setCommunity(communityData);
+        const communityPostsData = await communityPostsRes.json();
+        setPosts(communityPostsData.posts);
+        setVotes(
+             communityPostsData.posts.reduce((acc: PostVotes, post: Post) => {
+               acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
+               return acc;
+             }, {})
+            )
+        
+        console.log(communityData, communityPostsData);
+      }
     };
-    fetchCommunityPosts();
+
+    fetchCommunityPageData();
+
   }, [sort, communityId])
+
+  // useEffect(() => {
+  //   const fetchCommunityPosts = async () => {
+  //     try{
+  //       const response = await fetchWithAuth(`${BACKEND_URL}/communities/${communityId}/posts/?sort=${sort}`, {
+  //         method: 'GET'
+  //       });
+  //       if(!response?.ok) console.error("Whoopps, something went wrong.");
+  //       else{
+  //         const data = await response?.json();
+  //         setPosts(data.posts);
+  //         setCommunity(data.community);
+  //         console.log(data.community);
+  //         setVotes(
+  //           data.posts.reduce((acc: PostVotes, post: Post) => {
+  //             acc[post.id] = {count: post.vote_count, userVote: post.user_vote};
+  //             return acc;
+  //           }, {})
+  //         )}
+  //     }catch(err){
+  //       console.error(err);
+  //     };
+  //   };
+  //   fetchCommunityPosts();
+  // }, [sort, communityId])
 
     // Handlers
     const handleVote = (postId: number, type: string) => {

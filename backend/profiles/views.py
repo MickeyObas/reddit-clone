@@ -128,7 +128,6 @@ def profile_overview(request, pk):
 @api_view(["GET"])
 def profile_posts(request, pk):
     sort = request.query_params.get("sort", "new")
-    print(sort)
     user = User.objects.get(id=pk)
 
     posts = []

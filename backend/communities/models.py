@@ -29,9 +29,9 @@ class Community(TimeStampedModel):
     class Meta:
         verbose_name_plural = "Communities"
 
-    @property
-    def member_count(self):
-        return self.members.count()
+    # @property
+    # def member_count(self):
+    #     return self.members.count()
 
     def __str__(self):
         return self.name

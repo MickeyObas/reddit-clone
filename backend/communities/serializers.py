@@ -8,6 +8,7 @@ from .models import Community
 
 class CommunitySerializer(serializers.ModelSerializer):
     is_member = serializers.SerializerMethodField()
+    member_count = serializers.IntegerField(read_only=True)
     moderators = UserSerializer(many=True, required=False)
     # topic_ids = serializers.ListField(write_only=True, child=serializers.IntegerField(), required=False)
     topics = TopicSerializer(many=True, read_only=True)
@@ -33,10 +34,7 @@ class CommunitySerializer(serializers.ModelSerializer):
         ]
 
     def get_is_member(self, obj):
-        user = self.context.get("request").user
-        if not user or not user.is_authenticated:
-            return False
-        return obj.members.filter(id=user.id).exists()
+        return getattr(obj, "is_member", False)
 
     def create(self, validated_data):
         # topic_ids = validated_data.pop('topic_ids')

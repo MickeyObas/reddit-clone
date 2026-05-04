@@ -9,6 +9,9 @@ from comments.models import Comment
 from posts.models import Post
 
 from .services import VoteService
+import logging
+
+logger = logging.getLogger("app.votes.services")
 
 
 @api_view(["POST"])
@@ -49,5 +52,5 @@ def vote(request):
         return Response({"error": "Comment does not exist."}, status=400)
 
     except Exception as e:
-        print(e)
+        logger.error("Error during vote action", exc_info=True)
         return Response({"error": f"Something went wrong -> {e}"})

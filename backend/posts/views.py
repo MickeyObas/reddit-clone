@@ -124,7 +124,6 @@ def post_detail_update_delete(request, pk):
 
 @api_view(["GET"])
 def user_post_feed(request):
-    print(request.query_params)
     result = get_user_feed(
         user=request.user,
         sort=request.query_params.get("sort"),
